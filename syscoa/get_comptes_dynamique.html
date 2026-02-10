@@ -1,0 +1,290 @@
+
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saisie Comptable Hiérarchisée OHADA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        /* Style pour l'autocomplétion */
+        datalist option { padding: 4px; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-5xl mx-auto bg-white p-6 md:p-10 shadow-2xl rounded-xl">
+        <h1 class="text-3xl font-extrabold text-blue-800 mb-6 border-b pb-2">
+            Automatisation SYSCOHADA : Saisie Guidée <i class="text-xl text-yellow-500">v2.0</i>
+        </h1>
+        <p class="text-gray-600 mb-8">
+            Sélectionnez d'abord la classe (1 à 8) pour affiner la recherche du compte.
+        </p>
+
+        <!-- Formulaire de Saisie -->
+        <form action="calcul/insert_operation.php" method="POST" id="comptaForm" class="space-y-6">
+
+            <!-- Bloc Informations Générales -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 border-b pb-6 mb-6">
+                <div>
+                    <label for="date_ecriture" class="block text-sm font-medium text-gray-700">Date</label>
+                    <input type="date" name="date_ecriture" id="date_ecriture" required 
+                           class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2 border">
+                </div>
+                <div>
+                    <label for="journal_code" class="block text-sm font-medium text-gray-700">Code Journal</label>
+                    <input type="text" name="journal_code" id="journal_code" required maxlength="5" placeholder="OD, CA, ACH..."
+                           class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2 border uppercase">
+                </div>
+                <div class="md:col-span-2">
+                    <label for="libelle_ecriture" class="block text-sm font-medium text-gray-700">Libellé de l'opération</label>
+                    <input type="text" name="libelle_ecriture" id="libelle_ecriture" required placeholder="Facture N° XXX de Fournisseur"
+                           class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-2 border">
+                </div>
+            </div>
+
+            <!-- Bloc Débit / Crédit -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Colonne DÉBIT -->
+                <div class="p-4 border border-green-300 bg-green-50 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold text-green-700 mb-4">Mouvement Débit (Utilisation)</h3>
+                    
+                    <div class="mb-4">
+                        <label for="classe_debit" class="block text-sm font-medium text-gray-700">1. Sélectionner la Classe</label>
+                        <select id="classe_debit" data-target="compte_debit"
+                                class="mt-1 block w-full rounded-lg border-green-400 shadow-sm focus:ring-green-500 p-2 border bg-white">
+                            <option value="0">--- Choisir une Classe (1-9) ---</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="compte_debit" class="block text-sm font-medium text-gray-700">2. N° Compte Débit (Filtré)</label>
+                        <input type="text" name="compte_debit" id="compte_debit" required list="suggestions_debit" maxlength="10"
+                               placeholder="Commencez à taper (ex: 601)" oninput="fetchSuggestions('compte_debit', 'classe_debit')"
+                               class="mt-1 block w-full rounded-lg border-green-400 shadow-sm focus:ring-green-500 p-2 border">
+                        <datalist id="suggestions_debit"></datalist>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="montant_debit" class="block text-sm font-medium text-gray-700">3. Montant Débit (XOF)</label>
+                        <input type="number" name="montant_debit" id="montant_debit" step="0.01" min="0.01" required value=""
+                               placeholder="100000.00" oninput="syncAmounts('debit')"
+                               class="mt-1 block w-full rounded-lg border-green-400 shadow-sm focus:ring-green-500 p-2 border font-mono text-lg">
+                    </div>
+                </div>
+
+                <!-- Colonne CRÉDIT -->
+                <div class="p-4 border border-red-300 bg-red-50 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-bold text-red-700 mb-4">Mouvement Crédit (Source)</h3>
+                    
+                    <div class="mb-4">
+                        <label for="classe_credit" class="block text-sm font-medium text-gray-700">1. Sélectionner la Classe</label>
+                        <select id="classe_credit" data-target="compte_credit"
+                                class="mt-1 block w-full rounded-lg border-red-400 shadow-sm focus:ring-red-500 p-2 border bg-white">
+                            <option value="0">--- Choisir une Classe (1-9) ---</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="compte_credit" class="block text-sm font-medium text-gray-700">2. N° Compte Crédit (Filtré)</label>
+                        <input type="text" name="compte_credit" id="compte_credit" required list="suggestions_credit" maxlength="10"
+                               placeholder="Commencez à taper (ex: 401)" oninput="fetchSuggestions('compte_credit', 'classe_credit')"
+                               class="mt-1 block w-full rounded-lg border-red-400 shadow-sm focus:ring-red-500 p-2 border">
+                        <datalist id="suggestions_credit"></datalist>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="montant_credit" class="block text-sm font-medium text-gray-700">3. Montant Crédit (XOF)</label>
+                        <input type="number" name="montant_credit" id="montant_credit" step="0.01" min="0.01" required value=""
+                               placeholder="100000.00" oninput="syncAmounts('credit')"
+                               class="mt-1 block w-full rounded-lg border-red-400 shadow-sm focus:ring-red-500 p-2 border font-mono text-lg">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Affichage du solde et du bouton -->
+            <div id="balance_status" class="text-center font-extrabold text-xl p-4 rounded-xl mt-8 shadow-inner transition duration-300">
+                Équilibre : <span id="balance_message" class="text-yellow-700">Saisir les montants...</span>
+            </div>
+
+            <button type="submit" id="submit_btn" disabled
+                    class="w-full py-4 px-4 bg-blue-600 text-white font-semibold rounded-xl shadow-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition duration-150">
+                <i class="fas fa-save mr-2"></i> Enregistrer l'Écriture (Journaliser)
+            </button>
+            
+            <div id="response_message" class="mt-4 p-3 rounded-lg text-center hidden" role="alert"></div>
+
+        </form>
+    </div>
+
+    <script>
+        // Chemins des scripts PHP
+        const CLASSES_SCRIPT_URL = 'calcul/get_classes_ohada.php';
+        const COMPTES_SCRIPT_URL = 'calcul/get_comptes_dynamique.php';
+        
+        // --- 1. Gestion de l'équilibre et de la synchronisation (Partie Double) ---
+        function checkBalance() {
+            const debit = parseFloat($('#montant_debit').val()) || 0;
+            const credit = parseFloat($('#montant_credit').val()) || 0;
+            const difference = Math.abs(debit - credit);
+
+            const balanceStatus = $('#balance_status');
+            const balanceMessage = $('#balance_message');
+            const submitBtn = $('#submit_btn');
+
+            balanceStatus.removeClass('bg-green-100 bg-red-100 bg-yellow-100 text-green-700 text-red-700');
+
+            if (debit > 0 && difference < 0.01) {
+                balanceMessage.text(`Équilibré ! ${debit.toLocaleString('fr-FR', { style: 'currency', currency: 'XOF' })}`);
+                balanceStatus.addClass('bg-green-100 text-green-700');
+                submitBtn.prop('disabled', false);
+            } else if (debit > 0 || credit > 0) {
+                balanceMessage.text(`Déséquilibre : ${difference.toLocaleString('fr-FR', { style: 'currency', currency: 'XOF' })}`);
+                balanceStatus.addClass('bg-red-100 text-red-700');
+                submitBtn.prop('disabled', true);
+            } else {
+                balanceMessage.text('Saisir les montants...');
+                balanceStatus.addClass('bg-yellow-100 text-yellow-700');
+                submitBtn.prop('disabled', true);
+            }
+        }
+        
+        function syncAmounts(source) {
+            const debitVal = $('#montant_debit').val();
+            const creditVal = $('#montant_credit').val();
+            
+            if (source === 'debit') {
+                $('#montant_credit').val(debitVal);
+            } else if (source === 'credit') {
+                $('#montant_debit').val(creditVal);
+            }
+            checkBalance();
+        }
+
+        // --- 2. Chargement initial des classes ---
+        function loadClasses() {
+            $.getJSON(CLASSES_SCRIPT_URL, function(data) {
+                if (data.error) {
+                    console.error("Erreur de chargement des classes:", data.error);
+                    return;
+                }
+                
+                // Remplir les deux dropdowns de classe
+                const classSelects = $('#classe_debit, #classe_credit');
+                
+                $.each(data, function(i, classe) {
+                    // Utiliser le numero_classe comme valeur pour le filtrage
+                    const optionText = `${classe.numero_classe} - ${classe.nom_classe}`;
+                    classSelects.append(`<option value="${classe.id_classe}">${optionText}</option>`);
+                });
+            }).fail(function(jqXHR, textStatus, errorThrown) {
+                console.error("Erreur AJAX lors du chargement des classes:", textStatus, errorThrown);
+            });
+        }
+        
+        // --- 3. Fonction de recherche dynamique (Autocomplétion filtrée) ---
+        let debounceTimer;
+
+        function fetchSuggestions(inputId, classSelectId) {
+            clearTimeout(debounceTimer);
+            
+            const inputElement = $(`#${inputId}`);
+            const datalistElement = $(`#suggestions_${inputId.split('_')[1]}`); // suggestions_debit ou suggestions_credit
+            const searchTerm = inputElement.val().trim();
+            const id_classe = $(`#${classSelectId}`).val(); 
+
+            // Ne rien faire si le terme est trop court ET aucune classe n'est sélectionnée
+            if (searchTerm.length < 2 && id_classe == 0) {
+                datalistElement.empty();
+                return;
+            }
+
+            // Attendre 300ms après la dernière frappe ou changement de classe
+            debounceTimer = setTimeout(() => {
+                const url = `${COMPTES_SCRIPT_URL}?term=${encodeURIComponent(searchTerm)}&id_classe=${id_classe}`;
+
+                $.getJSON(url, function(data) {
+                    datalistElement.empty(); // Vider les anciennes suggestions
+
+                    if (data.error) {
+                        console.error('Erreur de recherche :', data.error);
+                        return;
+                    }
+
+                    $.each(data, function(i, item) {
+                        // value est le numéro de compte, textContent est le libellé affiché
+                        datalistElement.append(`<option value="${item.id}">${item.text}</option>`);
+                    });
+                }).fail(function(jqXHR, textStatus, errorThrown) {
+                    console.error('Erreur lors de la récupération des comptes:', textStatus, errorThrown);
+                });
+            }, 300);
+        }
+        
+        // --- 4. Initialisation et Événements ---
+        $(document).ready(function() {
+            // Initialisation de la date
+            const today = new Date().toISOString().split('T')[0];
+            $('#date_ecriture').val(today);
+            checkBalance();
+            loadClasses();
+
+            // Événement : Changement de montant pour vérifier l'équilibre
+            $('#montant_debit, #montant_credit').on('input', checkBalance);
+
+            // Événement : Changement de Classe pour déclencher une nouvelle recherche (vide ou filtrée)
+            $('#classe_debit').on('change', function() {
+                // Forcer la recherche pour rafraîchir la datalist même si le champ est vide
+                fetchSuggestions('compte_debit', 'classe_debit'); 
+                $('#compte_debit').focus(); // Mettre le focus sur le champ de saisie
+            });
+             $('#classe_credit').on('change', function() {
+                fetchSuggestions('compte_credit', 'classe_credit');
+                $('#compte_credit').focus();
+            });
+
+            // Événement : Soumission du formulaire (utilise le script insert_operation.php non modifié)
+            $('#comptaForm').on('submit', function(e) {
+                e.preventDefault();
+                const form = $(this);
+                const submitBtn = $('#submit_btn');
+                const responseMessage = $('#response_message');
+                
+                submitBtn.text("Enregistrement en cours...").prop('disabled', true);
+                responseMessage.slideUp().removeClass('bg-green-100 bg-red-100 text-green-700 text-red-700');
+
+                $.ajax({
+                    url: form.attr('action'),
+                    type: 'POST',
+                    data: form.serialize(),
+                    dataType: 'json',
+                    success: function(data) {
+                        if (data.status === 'success') {
+                            responseMessage.addClass('bg-green-100 text-green-700').html(`<strong>Succès !</strong> ${data.message}`);
+                            form[0].reset(); // Vider le formulaire après succès
+                        } else {
+                            responseMessage.addClass('bg-red-100 text-red-700').html(`<strong>Erreur !</strong> ${data.message}`);
+                        }
+                    },
+                    error: function(jqXHR, textStatus, errorThrown) {
+                        responseMessage.addClass('bg-red-100 text-red-700').html(`<strong>Erreur réseau :</strong> Le serveur n'a pas répondu.`);
+                        console.error("Erreur serveur ou réseau:", textStatus, errorThrown);
+                    },
+                    complete: function() {
+                        responseMessage.slideDown();
+                        submitBtn.text("Enregistrer l'Écriture (Journaliser)");
+                        checkBalance(); // Réinitialiser l'état d'équilibre et les boutons
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+
+
+

@@ -1,0 +1,296 @@
+
+
+
+
+
+
+C'est un projet ambitieux et très complet pour une PME. En tant que lead développeur, je vais vous guider pour structurer cette application Intranet ERP (Enterprise Resource Planning). Puisque vous venez de créer la base de données grh, nous allons commencer par construire une architecture solide (Schéma SQL) puis nous passerons à l'interface utilisateur (Frontend Bootstrap).
+
+Voici la feuille de route technique pour démarrer votre mission.
+
+Étape 1 : Conception de la Base de Données (Schéma SQL)
+Nous devons créer des tables relationnelles pour gérer les utilisateurs, les documents, la messagerie et la facturation/stock.
+
+Copiez et collez ce script SQL dans votre terminal MariaDB (mariadb -u root -p grh) ou via un client comme phpMyAdmin.
+
+SQL
+-- 1. Table des Services (Départements)
+CREATE TABLE services (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom_service VARCHAR(50) NOT NULL UNIQUE, -- Comptabilité, Marketing, etc.
+    description TEXT
+);
+
+-- Insertion des services par défaut
+INSERT INTO services (nom_service) VALUES 
+('Direction'), ('Comptabilité'), ('Marketing'), ('Secrétariat'), ('Logistique'), ('Informatique');
+
+-- 2. Table des Utilisateurs (Collaborateurs)
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    service_id INT,
+    nom VARCHAR(100) NOT NULL,
+    prenom VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL, -- Hashé (password_hash en PHP)
+    role ENUM('admin', 'user', 'manager') DEFAULT 'user',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (service_id) REFERENCES services(id) ON DELETE SET NULL
+);
+
+-- 3. Table de Gestion Documentaire (Uploads)
+CREATE TABLE documents (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT, -- Qui a uploadé
+    service_cible_id INT, -- Pour quel service (partage)
+    nom_fichier VARCHAR(255) NOT NULL,
+    chemin_fichier VARCHAR(255) NOT NULL,
+    type_mime VARCHAR(50),
+    date_upload DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (service_cible_id) REFERENCES services(id)
+);
+
+-- 4. Table de Messagerie Interne
+CREATE TABLE messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    sender_id INT,
+    receiver_id INT,
+    sujet VARCHAR(200),
+    corps TEXT,
+    lu BOOLEAN DEFAULT FALSE,
+    date_envoi DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (sender_id) REFERENCES users(id),
+    FOREIGN KEY (receiver_id) REFERENCES users(id)
+);
+
+-- 5. Gestion de Stock (Produits)
+CREATE TABLE produits (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    designation VARCHAR(200) NOT NULL,
+    ref_interne VARCHAR(50) UNIQUE,
+    stock_actuel INT DEFAULT 0,
+    prix_unitaire DECIMAL(10, 2),
+    seuil_alerte INT DEFAULT 10
+);
+
+-- 6. Facturation / Commandes
+CREATE TABLE commandes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    client_nom VARCHAR(150),
+    cree_par_id INT,
+    date_commande DATETIME DEFAULT CURRENT_TIMESTAMP,
+    etat ENUM('devis', 'validee', 'livree', 'facturee', 'annulee') DEFAULT 'devis',
+    total_ht DECIMAL(12, 2),
+    FOREIGN KEY (cree_par_id) REFERENCES users(id)
+);
+
+-- Optimisation : Index pour accélérer les recherches fréquentes
+CREATE INDEX idx_user_email ON users(email);
+CREATE INDEX idx_doc_service ON documents(service_cible_id);
+CREATE INDEX idx_commande_etat ON commandes(etat);
+Étape 2 : Structure des fichiers PHP (Bootstrap)
+Nous allons utiliser Bootstrap 5 (via CDN pour faire simple) pour avoir une interface responsive et professionnelle.
+
+Créez la structure de fichiers suivante dans votre dossier web (ex: /var/www/html/grh/) :
+
+Plaintext
+/grh
+├── css/
+├── uploads/
+├── includes/
+│   ├── db.php       (Connexion BDD)
+│   ├── header.php   (Entête + Menu)
+│   └── footer.php   (Pied de page)
+├── index.php        (Tableau de bord)
+├── login.php
+└── ... (autres modules)
+A. Fichier de connexion (includes/db.php)
+PHP
+<?php
+$host = 'localhost';
+$db   = 'grh';
+$user = 'root';
+$pass = ''; // Votre mot de passe root, vide par défaut en local parfois, sinon mettez le vôtre
+$charset = 'utf8mb4';
+
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+    PDO::ATTR_EMULATE_PREPARES   => false,
+];
+
+try {
+    $pdo = new PDO($dsn, $user, $pass, $options);
+} catch (\PDOException $e) {
+    throw new \PDOException($e->getMessage(), (int)$e->getCode());
+}
+?>
+B. L'Entête (includes/header.php)
+Ce fichier inclut le CSS Bootstrap et la barre de navigation qui s'adapte aux services.
+
+PHP
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intranet PME - Gestion</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body { background-color: #f8f9fa; }
+        .card-dashboard { transition: transform 0.2s; }
+        .card-dashboard:hover { transform: translateY(-5px); shadow: lg; }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
+  <div class="container">
+    <a class="navbar-brand" href="index.php"><i class="fas fa-network-wired"></i> Intranet PME</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item"><a class="nav-link active" href="index.php">Accueil</a></li>
+        
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Services</a>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="comptabilite.php">Comptabilité & Factures</a></li>
+            <li><a class="dropdown-item" href="marketing.php">Marketing</a></li>
+            <li><a class="dropdown-item" href="logistique.php">Logistique & Stocks</a></li>
+            <li><a class="dropdown-item" href="rh.php">Ressources Humaines</a></li>
+          </ul>
+        </li>
+
+        <li class="nav-item"><a class="nav-link" href="documents.php">Documents</a></li>
+      </ul>
+      
+      <div class="d-flex">
+        <span class="navbar-text text-white me-3">Bonjour, Momo (Admin)</span>
+        <a href="logout.php" class="btn btn-outline-light btn-sm">Déconnexion</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+    ```
+
+#### C. Le Pied de page (`includes/footer.php`)
+
+```php
+    </div>
+
+<footer class="bg-light text-center text-lg-start mt-5 border-top">
+  <div class="container p-4">
+    <div class="row">
+      <div class="col-lg-6 col-md-12 mb-4 mb-md-0">
+        <h5 class="text-uppercase">Intranet PME v1.0</h5>
+        <p>Système de gestion intégré pour l'optimisation des flux entre services.</p>
+      </div>
+      <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
+        <h5 class="text-uppercase">Liens Utiles</h5>
+        <ul class="list-unstyled mb-0">
+          <li><a href="#!" class="text-dark">Support IT</a></li>
+          <li><a href="#!" class="text-dark">Procédures</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="text-center p-3 bg-dark text-white">
+    © 2025 Copyright: Société d'Ingénierie Informatique
+  </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+D. Le Tableau de Bord (index.php)
+C'est le cœur de votre application, qui redirige vers les différents modules.
+
+PHP
+<?php
+// include 'includes/auth_check.php'; // À créer pour vérifier la session
+include 'includes/header.php';
+?>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2 class="fw-bold text-dark">Tableau de Pilotage</h2>
+        <p class="text-muted">Vue d'ensemble des activités de la PME.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="card h-100 card-dashboard border-primary">
+            <div class="card-body text-center">
+                <i class="fas fa-file-invoice-dollar fa-3x text-primary mb-3"></i>
+                <h5 class="card-title">Facturation & Commandes</h5>
+                <p class="card-text">Suivi des devis, bons de commande et factures clients.</p>
+                <a href="facturation.php" class="btn btn-primary">Gérer</a>
+            </div>
+            <div class="card-footer bg-transparent border-primary">
+                <small class="text-muted">État financier en direct</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 card-dashboard border-success">
+            <div class="card-body text-center">
+                <i class="fas fa-boxes fa-3x text-success mb-3"></i>
+                <h5 class="card-title">Logistique & Stock</h5>
+                <p class="card-text">Gestion des entrées/sorties et alertes de stock.</p>
+                <a href="stock.php" class="btn btn-success">Accéder</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card h-100 card-dashboard border-warning">
+            <div class="card-body text-center">
+                <i class="fas fa-cloud-upload-alt fa-3x text-warning mb-3"></i>
+                <h5 class="card-title">Partage Documents</h5>
+                <p class="card-text">Uploads et partage de fichiers entre services (Marketing, RH...).</p>
+                <a href="documents.php" class="btn btn-warning text-dark">Mes Fichiers</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card h-100 card-dashboard border-info">
+            <div class="card-body d-flex align-items-center">
+                <div class="me-3">
+                     <i class="fas fa-users-cog fa-3x text-info"></i>
+                </div>
+                <div>
+                    <h5 class="card-title">Administration & RH</h5>
+                    <p class="card-text mb-0">Gestion des collaborateurs, rôles et permissions d'accès.</p>
+                    <a href="admin_users.php" class="btn btn-sm btn-outline-info mt-2">Administrer</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php include 'includes/footer.php'; ?>
+Conseils pour l'optimisation (Votre mission d'ingénieur)
+Sécurité des Uploads : Dans votre module PHP d'upload, vérifiez toujours l'extension du fichier (autoriser PDF, DOCX, JPG, mais interdire .PHP ou .EXE) pour éviter qu'un utilisateur malveillant n'exécute du code sur le serveur.
+
+Requêtes Préparées : Utilisez toujours PDO::prepare() (comme configuré dans db.php) pour éviter les injections SQL.
+
+Gestion des Sessions : Créez un fichier auth_check.php à inclure en haut de chaque page pour vérifier if (!isset($_SESSION['user_id'])) { header('Location: login.php'); }.
+
+Voulez-vous que je vous écrive le script PHP pour gérer l'upload des fichiers ou celui pour la gestion du login utilisateur ?
+
+
+
+
+Vérifiez les réponses de Gemini, car il peut se tromper.
+

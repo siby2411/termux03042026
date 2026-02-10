@@ -1,0 +1,59 @@
+mysql> describe classe  ;
++-------------+--------------+------+-----+---------+----------------+
+| Field       | Type         | Null | Key | Default | Extra          |
++-------------+--------------+------+-----+---------+----------------+
+| id          | int          | NO   | PRI | NULL    | auto_increment |
+| nom         | varchar(100) | NO   |     | NULL    |                |
+| description | varchar(255) | YES  |     | NULL    |                |
++-------------+--------------+------+-----+---------+----------------+
+3 rows in set (0.06 sec)
+
+mysql> describe classe_comptes  ;
++-------------+--------------+------+-----+---------+----------------+
+| Field       | Type         | Null | Key | Default | Extra          |
++-------------+--------------+------+-----+---------+----------------+
+| id          | int          | NO   | PRI | NULL    | auto_increment |
+| nom         | varchar(255) | NO   |     | NULL    |                |
+| description | varchar(255) | NO   |     | NULL    |                |
++-------------+--------------+------+-----+---------+----------------+
+3 rows in set (0.01 sec)
+
+mysql> describe comptes  ;
++---------------+--------------+------+-----+---------+----------------+
+| Field         | Type         | Null | Key | Default | Extra          |
++---------------+--------------+------+-----+---------+----------------+
+| id            | int          | NO   | PRI | NULL    | auto_increment |
+| numero_compte | varchar(10)  | NO   | UNI | NULL    |                |
+| nom           | varchar(255) | NO   |     | NULL    |                |
+| id_classe     | int          | NO   | MUL | NULL    |                |
+| classe_id     | int          | YES  |     | NULL    |                |
+| statut        | varchar(255) | YES  |     | NULL    |                |
++---------------+--------------+------+-----+---------+----------------+
+6 rows in set (0.01 sec)
+
+mysql>
+comptes | CREATE TABLE `comptes` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `numero_compte` varchar(10) NOT NULL,
+  `nom` varchar(255) NOT NULL,
+  `id_classe` int NOT NULL,
+  `classe_id` int DEFAULT NULL,
+  `statut` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `numero_compte` (`numero_compte`),
+  KEY `id_classe` (`id_classe`)
+) ENGINE=MyISAM AUTO_INCREMENT=110 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci |
+
+ classe_comptes | CREATE TABLE `classe_comptes` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nom` varchar(255) NOT NULL,
+  `description` varchar(255) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci |
+
+ classe | CREATE TABLE `classe` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `nom` varchar(100) NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci |

@@ -1,0 +1,193 @@
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Stock - SYSCOHADA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-3xl mx-auto bg-white p-6 md:p-8 shadow-2xl rounded-xl">
+        <h1 class="text-3xl font-extrabold text-green-800 mb-6 border-b pb-2">
+            Module 4 : Gestion des Stocks (CMUP)
+        </h1>
+        <p class="text-gray-600 mb-8">
+            Enregistrez les entrées (achats) et sorties (ventes/conso) pour valoriser le stock selon le Coût Moyen Unitaire Pondéré (CMUP) et automatiser l'écriture comptable du Coût des Ventes (Classe 6).
+        </p>
+
+        <!-- Sélecteur d'Exercice et Statut -->
+        <div class="mb-6 p-4 bg-yellow-50 rounded-xl shadow-inner flex items-center space-x-4">
+            <label for="id_exercice_fk" class="font-semibold text-yellow-700">Exercice Actif :</label>
+            <select id="id_exercice_fk" class="p-2 border rounded-lg focus:ring-yellow-500 focus:border-yellow-500 w-40">
+                <!-- Les options seront chargées par AJAX -->
+            </select>
+        </div>
+
+        <!-- Formulaire de Saisie -->
+        <form id="stock_movement_form" class="space-y-6">
+            
+            <div>
+                <label for="type_mouvement" class="block text-sm font-medium text-gray-700">Type de Mouvement</label>
+                <select id="type_mouvement" name="type_mouvement" required
+                        class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 border focus:border-blue-500">
+                    <option value="">-- Choisir le type --</option>
+                    <option value="ENTREE_ACHAT">Entrée (Achat de Stock)</option>
+                    <option value="SORTIE_VENTE">Sortie (Vente / Livraison Client)</option>
+                    <option value="SORTIE_CONSOMMATION">Sortie (Consommation Interne)</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="code_article" class="block text-sm font-medium text-gray-700">Code Article / Produit</label>
+                <input type="text" id="code_article" name="code_article" required placeholder="Ex: ART-MCH001"
+                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 border">
+            </div>
+
+            <div>
+                <label for="quantite" class="block text-sm font-medium text-gray-700">Quantité</label>
+                <input type="number" step="0.0001" id="quantite" name="quantite" required value="1.0"
+                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 border">
+            </div>
+
+            <!-- Champ conditionnel pour les ENTRÉES -->
+            <div id="cout_achat_field" class="hidden">
+                <label for="cout_unitaire_achat" class="block text-sm font-medium text-gray-700">Coût Unitaire d'Achat (Pour les Entrées)</label>
+                <input type="number" step="0.0001" id="cout_unitaire_achat" name="cout_unitaire_achat" value="0.00"
+                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 border bg-blue-50">
+                <p class="text-xs text-gray-500 mt-1">Ce coût sert à calculer le nouveau CMUP.</p>
+            </div>
+
+            <div>
+                <label for="date_mouvement" class="block text-sm font-medium text-gray-700">Date du Mouvement</label>
+                <input type="date" id="date_mouvement" name="date_mouvement" required value="<?php echo date('Y-m-d'); ?>"
+                       class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 border">
+            </div>
+
+            <button type="submit" id="submit_btn"
+                    class="w-full py-3 px-4 bg-green-600 text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition duration-150">
+                Enregistrer le Mouvement et Mettre à Jour
+            </button>
+        </form>
+
+        <div id="response_message" class="mt-8 p-3 rounded-lg text-center hidden" role="alert"></div>
+
+        <!-- Section des Données Actuelles du Stock (Fonctionnalité analytique) -->
+        <div id="stock_info" class="mt-10 p-6 bg-gray-100 rounded-xl border border-gray-300">
+            <h3 class="text-xl font-bold text-gray-700 mb-4">Statut Actuel du Stock</h3>
+            <div id="article_details" class="space-y-2 text-sm">
+                <p class="text-gray-500">Sélectionnez un article ci-dessus ou entrez son code pour voir son statut actuel (CMUP et quantité).</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_PROCESS_MOUVEMENT = './calcul/process_stock_mouvement.php';
+        const API_GET_EXERCICES = './calcul/get_exercices.php';
+        // Simuler un appel pour récupérer les détails de l'article
+        const API_GET_ARTICLE_DETAILS = './calcul/get_article_details.php'; 
+
+        // 1. Initialisation
+        $(document).ready(function() {
+            loadExercicesSelect();
+            // Lancer le chargement des détails de l'article quand l'utilisateur entre le code
+            $('#code_article').on('blur', loadArticleDetails);
+            $('#type_mouvement').on('change', toggleCoutAchatField);
+        });
+
+        // 2. Chargement de l'exercice actif
+        function loadExercicesSelect() {
+            $.getJSON(API_GET_EXERCICES)
+                .done(function(data) {
+                    const select = $('#id_exercice_fk');
+                    select.empty();
+                    
+                    if (data.status === 'success' && data.exercices.length > 0) {
+                        data.exercices.forEach(exo => {
+                            select.append(`<option value="${exo.id_exercice}">${exo.annee_exercice} (${exo.statut})</option>`);
+                        });
+                        
+                        const openedExo = data.exercices.find(exo => exo.statut === 'OUVERT');
+                        if (openedExo) {
+                            select.val(openedExo.id_exercice);
+                        }
+                    } else {
+                        select.append('<option value="">Aucun exercice ouvert</option>');
+                    }
+                });
+        }
+
+        // 3. Affichage conditionnel du champ Coût d'Achat
+        function toggleCoutAchatField() {
+            const type = $('#type_mouvement').val();
+            if (type === 'ENTREE_ACHAT') {
+                $('#cout_achat_field').slideDown();
+                $('#cout_unitaire_achat').prop('required', true);
+            } else {
+                $('#cout_achat_field').slideUp();
+                $('#cout_unitaire_achat').prop('required', false);
+            }
+        }
+        
+        // 4. Charger les détails de l'article (Simulation)
+        function loadArticleDetails() {
+            const code = $('#code_article').val().trim();
+            if (!code) {
+                $('#article_details').html('<p class="text-gray-500">Entrez le code pour afficher les détails.</p>');
+                return;
+            }
+            
+            // NOTE: Ceci est une simulation. En réalité, il faudrait un script PHP dédié: get_article_details.php
+            // Pour l'exercice, nous simulons une réponse pour le statut
+            const detailsHtml = `
+                <p><strong>Code:</strong> ${code}</p>
+                <p><strong>Stock Actuel:</strong> <span class="font-bold text-lg text-green-600">500.0000</span> Unités</p>
+                <p><strong>CMUP Actuel:</strong> <span class="font-bold text-lg text-blue-600">250.50</span> XOF/Unité</p>
+                <p><strong>Compte Stock Rattaché:</strong> 37100 (Marchandises)</p>
+            `;
+            $('#article_details').html(detailsHtml);
+        }
+
+
+        // 5. Soumission du Formulaire
+        $('#stock_movement_form').on('submit', function(e) {
+            e.preventDefault();
+            
+            const form = $(this);
+            const submitBtn = $('#submit_btn');
+            const responseDiv = $('#response_message');
+            
+            submitBtn.text("Traitement en cours...").prop('disabled', true);
+            responseDiv.removeClass().addClass('hidden');
+
+            const formData = form.serialize() + '&id_exercice_fk=' + $('#id_exercice_fk').val();
+            
+            $.post(API_PROCESS_MOUVEMENT, formData)
+                .done(function(data) {
+                    if (data.status === 'success') {
+                        responseDiv.removeClass('bg-red-100 text-red-700').addClass('bg-green-100 text-green-700').html(`<strong>Succès !</strong> ${data.message}`).slideDown();
+                        // Mettre à jour les détails de l'article après le mouvement
+                        loadArticleDetails(); 
+                    } else {
+                        responseDiv.removeClass('bg-green-100 text-green-700').addClass('bg-red-100 text-red-700').html(`<strong>Échec:</strong> ${data.message}`).slideDown();
+                    }
+                })
+                .fail(function() {
+                     responseDiv.removeClass('bg-green-100 text-green-700').addClass('bg-red-100 text-red-700').text('Erreur de communication avec le serveur.').slideDown();
+                })
+                .always(function() {
+                    submitBtn.text("Enregistrer le Mouvement et Mettre à Jour").prop('disabled', false);
+                });
+        });
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,33 @@
+<?php
+// Vérification simple que le formulaire a été soumis
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    // 1. Récupération des données du formulaire (et sécurisation)
+    $destinataire_intranet = "intranetuser@DESKTOP-456SQV5.localdomain"; 
+    // OU toute autre adresse valide Intranet/locale, ex: "admin@votre-domaine.local"
+    
+    $sujet_mail = "Nouveau message Intranet: " . htmlspecialchars($_POST['sujet']);
+    
+    // Assurez-vous d'échapper les données du corps pour la sécurité (XSS) si elles devaient être affichées.
+    // Pour l'envoi de mail, nous nous concentrons sur la construction du message.
+    $message_corps = "Message reçu de: " . htmlspecialchars($_POST['nom']) . "\n\n";
+    $message_corps .= "Contenu du message:\n";
+    $message_corps .= htmlspecialchars($_POST['message']);
+
+    // Adresse de l'expéditeur pour les en-têtes. Important pour les réponses.
+    $headers = "From: omega@wsl-dev.local\r\n";
+    $headers .= "Reply-To: " . htmlspecialchars($_POST['email']) . "\r\n";
+    $headers .= "X-Mailer: PHP/" . phpversion();
+
+    // 2. Envoi de l'e-mail via Postfix/sendmail
+    if (mail($destinataire_intranet, $sujet_mail, $message_corps, $headers)) {
+        echo "✅ Le message a été envoyé avec succès à l'Intranet.";
+    } else {
+        echo "❌ Erreur lors de l'envoi du message.";
+    }
+} else {
+    // Si le formulaire n'a pas été soumis directement
+    header("Location: index.html");
+    exit;
+}
+?>

@@ -1,0 +1,12 @@
+# /var/www/html/gestion_previsionnelle/.htaccess
+
+# Activer le moteur de réécriture
+RewriteEngine On
+
+# Si la requête n'est PAS pour un fichier existant (-f)
+# et si la requête n'est PAS pour un répertoire existant (-d)
+# et si l'utilisateur essaie d'accéder à l'index (URL base)
+RewriteRule ^(index\.php)?$ login.php [L]
+
+# NOTE: Si vous utilisez un système de sessions, le fichier index.php doit
+# vérifier l'état de la session et rediriger vers login.php s'il n'est pas connecté.

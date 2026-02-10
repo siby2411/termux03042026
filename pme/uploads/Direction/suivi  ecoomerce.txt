@@ -1,0 +1,209 @@
+<?php
+// ==========================
+// File: public/index.php
+// ==========================
+?>
+<?php
+session_start();
+if (!isset($_SESSION['user'])) {
+    header('Location: login.php');
+    exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Tableau de bord</title>
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <h1 class="text-center">Bienvenue dans l'e-commerce</h1>
+    <div class="text-center mt-4">
+        <a href="list.php" class="btn btn-primary">Gérer les Produits</a>
+        <a href="logout.php" class="btn btn-danger">Déconnexion</a>
+    </div>
+</div>
+</body>
+</html>
+
+<?php
+// ==========================
+// File: public/login.php
+// ==========================
+?>
+<?php
+session_start();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = $_POST['username'];
+    $password = $_POST['password'];
+
+    if ($username === 'admin' && $password === 'admin') {
+        $_SESSION['user'] = $username;
+        header('Location: index.php');
+        exit;
+    }
+    $error = "Identifiants invalides";
+}
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Connexion</title>
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+</head>
+<body class="bg-light d-flex align-items-center" style="height: 100vh;">
+<div class="container w-25">
+    <h3 class="text-center mb-3">Connexion</h3>
+    <?php if(isset($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
+    <form method="POST">
+        <input class="form-control mb-3" type="text" name="username" placeholder="Nom d'utilisateur" required>
+        <input class="form-control mb-3" type="password" name="password" placeholder="Mot de passe" required>
+        <button class="btn btn-primary w-100">Se connecter</button>
+    </form>
+</div>
+</body>
+</html>
+
+<?php
+// ==========================
+// File: public/logout.php
+// ==========================
+?>
+<?php
+session_start();
+session_destroy();
+header('Location: login.php');
+exit;
+?>
+
+<?php
+// ==========================
+// File: public/.htaccess
+// ==========================
+
+RewriteEngine On
+Options -Indexes
+
+?>
+
+
+
+<?php
+// ==========================
+// File: src/list.php
+// ==========================
+?>
+<?php
+$pdo = new PDO("mysql:host=localhost;dbname=ecommerce;charset=utf8", "root", "");
+$products = $pdo->query("SELECT * FROM produits")->fetchAll(PDO::FETCH_ASSOC);
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des produits</title>
+    <link rel="stylesheet" href="../public/assets/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <h2>Liste des produits</h2>
+    <a href="edit.php" class="btn btn-success mb-3">Ajouter un produit</a>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nom</th>
+                <th>Prix</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($products as $p): ?>
+            <tr>
+                <td><?= $p['id'] ?></td>
+                <td><?= $p['nom'] ?></td>
+                <td><?= $p['prix'] ?> F CFA</td>
+                <td>
+                    <a href="edit.php?id=<?= $p['id'] }" class="btn btn-warning btn-sm">Modifier</a>
+                    <a href="delete.php?id=<?= $p['id'] }" class="btn btn-danger btn-sm">Supprimer</a>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
+
+<?php
+// ==========================
+// File: src/edit.php
+// ==========================
+?>
+<?php
+$pdo = new PDO("mysql:host=localhost;dbname=ecommerce;charset=utf8", "root", "");
+$id = $_GET['id'] ?? null;
+$product = ['nom' => '', 'prix' => ''];
+
+if ($id) {
+    $stmt = $pdo->prepare("SELECT * FROM produits WHERE id=?");
+    $stmt->execute([$id]);
+    $product = $stmt->fetch();
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nom = $_POST['nom'];
+    $prix = $_POST['prix'];
+
+    if ($id) {
+        $stmt = $pdo->prepare("UPDATE produits SET nom=?, prix=? WHERE id=?");
+        $stmt->execute([$nom, $prix, $id]);
+    } else {
+        $stmt = $pdo->prepare("INSERT INTO produits(nom, prix) VALUES(?,?)");
+        $stmt->execute([$nom, $prix]);
+    }
+
+    header('Location: list.php');
+    exit;
+}
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Produit</title>
+    <link rel="stylesheet" href="../public/assets/css/bootstrap.min.css">
+</head>
+<body class="bg-light">
+<div class="container mt-5">
+    <h2><?= $id ? 'Modifier' : 'Ajouter' ?> un produit</h2>
+    <form method="POST">
+        <label>Nom du produit</label>
+        <input type="text" class="form-control mb-3" name="nom" required value="<?= $product['nom'] ?>">
+
+        <label>Prix</label>
+        <input type="number" step="0.01" class="form-control mb-3" name="prix" required value="<?= $product['prix'] ?>">
+
+        <button class="btn btn-success">Enregistrer</button>
+        <a href="list.php" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+</body>
+</html>
+
+<?php
+// ==========================
+// File: src/delete.php
+// ==========================
+?>
+<?php
+$pdo = new PDO("mysql:host=localhost;dbname=ecommerce;charset=utf8", "root", "");
+$id = $_GET['id'];
+$stmt = $pdo->prepare("DELETE FROM produits WHERE id=?");
+$stmt->execute([$id]);
+header('Location: list.php');
+exit;
+?>

@@ -1,0 +1,348 @@
+<?php
+// /var/www/syscoa/includes/header_complet.php
+require_once '../config_complet.php';
+check_auth();
+
+$current_module = $_GET['module'] ?? 'dashboard';
+$current_submodule = $_GET['submodule'] ?? '';
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYSCOHADA - Système Comptable OHADA</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- DataTables -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css">
+    <script type="text/javascript" charset="utf8" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
+    
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --success-color: #27ae60;
+            --warning-color: #f39c12;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+        }
+        
+        .sidebar {
+            background: linear-gradient(180deg, var(--primary-color) 0%, #1a2530 100%);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 260px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar .logo {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar .logo h3 {
+            margin: 0;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .sidebar .logo .subtitle {
+            font-size: 0.8em;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: white;
+            background-color: rgba(255,255,255,0.1);
+            border-left-color: var(--secondary-color);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .nav-link[data-bs-toggle="collapse"]::after {
+            content: '\f054';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            float: right;
+            transition: transform 0.3s;
+        }
+        
+        .nav-link[data-bs-toggle="collapse"][aria-expanded="true"]::after {
+            transform: rotate(90deg);
+        }
+        
+        .submenu {
+            background-color: rgba(0,0,0,0.2);
+        }
+        
+        .submenu .nav-link {
+            padding: 10px 20px 10px 40px;
+            font-size: 0.9em;
+        }
+        
+        .main-content {
+            margin-left: 260px;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .navbar-top {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-left: 260px;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+        
+        .stat-card {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card .card-body {
+            padding: 20px;
+        }
+        
+        .stat-card i {
+            font-size: 2.5em;
+            opacity: 0.8;
+        }
+        
+        .stat-card .count {
+            font-size: 2em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .stat-card .label {
+            text-transform: uppercase;
+            font-size: 0.8em;
+            opacity: 0.7;
+        }
+        
+        .module-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            background: white;
+            margin-bottom: 20px;
+            height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .module-card:hover {
+            background: var(--secondary-color);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(52, 152, 219, 0.2);
+        }
+        
+        .module-card i {
+            font-size: 2.5em;
+            margin-bottom: 15px;
+        }
+        
+        .module-card h5 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .quick-stats {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .dashboard-header h1 {
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        .dashboard-header p {
+            opacity: 0.9;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .alert-custom {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <div class="logo">
+            <h3><i class="fas fa-balance-scale"></i> SYSCOHADA</h3>
+            <div class="subtitle">Système Comptable OHADA</div>
+            <div class="mt-3 small text-center">
+                <i class="fas fa-user-circle me-2"></i>
+                <?php echo $_SESSION['user_name'] ?? 'Administrateur'; ?>
+            </div>
+        </div>
+        
+        <ul class="nav flex-column mt-4">
+            <!-- Dashboard -->
+            <li class="nav-item">
+                <a class="nav-link <?php echo ($current_module == 'dashboard') ? 'active' : ''; ?>" href="index.php?module=dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Tableau de bord</span>
+                </a>
+            </li>
+            
+            <!-- Modules dynamiques -->
+            <?php echo generate_menu($current_module); ?>
+            
+            <!-- Séparateur -->
+            <li class="nav-item mt-4">
+                <hr style="border-color: rgba(255,255,255,0.1); margin: 20px;">
+            </li>
+            
+            <!-- Administration -->
+            <li class="nav-item">
+                <a class="nav-link" href="index.php?module=administration&submodule=parametres">
+                    <i class="fas fa-cog"></i>
+                    <span>Paramètres</span>
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link text-danger" href="logout.php">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Déconnexion</span>
+                </a>
+            </li>
+        </ul>
+        
+        <!-- Version -->
+        <div class="position-absolute bottom-0 start-0 p-3 w-100 text-center small" style="opacity: 0.7;">
+            Version 2.0 • SYSCOHADA Compliant
+        </div>
+    </nav>
+    
+    <!-- Navbar Top -->
+    <nav class="navbar-top navbar-expand-lg">
+        <div class="container-fluid">
+            <div class="d-flex justify-content-between w-100 align-items-center">
+                <div>
+                    <h4 class="mb-0">
+                        <?php 
+                        if ($current_module == 'dashboard') {
+                            echo 'Tableau de bord';
+                        } elseif (isset(SYSCOHADA_MODULES[$current_module])) {
+                            echo SYSCOHADA_MODULES[$current_module]['name'];
+                            if ($current_submodule && isset(SYSCOHADA_MODULES[$current_module]['submodules'][$current_submodule])) {
+                                echo ' / ' . SYSCOHADA_MODULES[$current_module]['submodules'][$current_submodule]['name'];
+                            }
+                        }
+                        ?>
+                    </h4>
+                </div>
+                
+                <div class="d-flex align-items-center">
+                    <!-- Exercice courant -->
+                    <div class="me-3">
+                        <span class="badge bg-primary">
+                            <i class="fas fa-calendar-alt me-1"></i>
+                            Exercice: <?php echo date('Y'); ?>
+                        </span>
+                    </div>
+                    
+                    <!-- Notifications -->
+                    <div class="dropdown me-3">
+                        <a href="#" class="dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-bell text-muted"></i>
+                            <span class="badge bg-danger">3</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <h6 class="dropdown-header">Notifications</h6>
+                            <a class="dropdown-item" href="#"><i class="fas fa-exclamation-triangle text-warning me-2"></i> Clôture à effectuer</a>
+                            <a class="dropdown-item" href="#"><i class="fas fa-check-circle text-success me-2"></i> TVA déclarée</a>
+                            <a class="dropdown-item" href="#"><i class="fas fa-file-invoice text-info me-2"></i> Nouveau rapport disponible</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Aide -->
+                    <a href="#" class="text-muted me-3">
+                        <i class="fas fa-question-circle"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container-fluid">

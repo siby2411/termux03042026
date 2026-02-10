@@ -1,0 +1,14 @@
+<?php
+// /var/www/piece_auto/public/logout.php
+session_start();
+
+// Vider toutes les variables de session
+$_SESSION = array();
+
+// Détruire la session
+session_destroy();
+
+// Rediriger vers la page de connexion
+header("Location: /piece_auto/public/login.php");
+exit;
+?>

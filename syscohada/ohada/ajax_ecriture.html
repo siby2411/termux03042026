@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Vérification de Compte</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <h1>Vérifier si un Numéro de Compte Existe</h1>
+
+    <form>
+        <label for="num_compte">Saisir un numéro de compte :</label>
+        <input type="text" id="num_compte" placeholder="Entrez le numéro de compte" required>
+    </form>
+
+    <div id="result"></div>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            // Quand l'utilisateur termine la saisie dans le champ
+            $('#num_compte').on('input', function() {
+                var numCompte = $(this).val();
+
+                if (numCompte !== "") {
+                    // Effectuer la requête AJAX
+                    $.ajax({
+                        url: "search1.php",
+                        method: "POST",
+                        data: {num_compte: numCompte},
+                        success: function(response) {
+                            $('#result').html(response);
+                        }
+                    });
+                } else {
+                    $('#result').html(''); // Vider le résultat si le champ est vide
+                }
+            });
+        });
+    </script>
+
+<H1> Ajouter Numéro de Compte </H1>
+
+
+ <form action="insert_compte.php" method="POST">
+        <label for="num_compte">Numéro de Compte :</label>
+        <input type="text" id="num_compte" name="num_compte" required><br><br>
+        
+        <label for="intitule">Intitulé :</label>
+        <input type="text" id="intitule" name="intitule" required><br><br>
+        
+        <label for="sous_classe_id">Sous-classe ID (optionnel) :</label>
+        <input type="number" id="sous_classe_id" name="sous_classe_id"><br><br>
+        
+        <label for="description">Description :</label>
+        <textarea id="description" name="description"></textarea><br><br>
+        
+        <button type="submit">Ajouter le Compte</button>
+    </form>
+
+
+
+<form action="inserer_ecriture.php" method="POST">
+  <label for="date_operation">Date de l'opération :</label>
+  <input type="date" id="date_operation" name="date_operation" required><br>
+
+  <label for="compte_debit">Compte Débit :</label>
+  <input type="text" id="compte_debit" name="compte_debit" required><br>
+
+  <label for="montant_debit">Montant Débit :</label>
+  <input type="number" step="0.01" id="montant_debit" name="montant_debit" required><br>
+
+  <label for="compte_credit">Compte Crédit :</label>
+  <input type="text" id="compte_credit" name="compte_credit" required><br>
+
+  <label for="montant_credit">Montant Crédit :</label>
+  <input type="number" step="0.01" id="montant_credit" name="montant_credit" required><br>
+
+  <label for="description">Description :</label>
+  <input type="text" id="description" name="description"><br>
+
+  <input type="submit" value="Enregistrer l'écriture">
+</form>
+
+
+
+
+</body>
+</html>

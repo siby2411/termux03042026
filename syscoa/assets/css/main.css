@@ -1,0 +1,70 @@
+/* assets/css/main.css */
+
+/* Styles de base */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Sidebar */
+.sidebar {
+    background: linear-gradient(180deg, #2c3e50 0%, #1a252f 100%);
+    color: white;
+    min-height: 100vh;
+    position: fixed;
+    width: 250px;
+    z-index: 1000;
+}
+
+.main-content {
+    margin-left: 250px;
+    padding: 20px;
+    transition: margin-left 0.3s;
+}
+
+/* Navigation */
+.nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    padding: 12px 20px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    transition: all 0.3s;
+}
+
+.nav-link:hover, .nav-link.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    text-decoration: none;
+}
+
+/* Cartes */
+.card {
+    border-radius: 10px;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.stat-card {
+    color: white;
+    border-radius: 10px;
+    padding: 20px;
+    transition: transform 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        position: relative;
+        min-height: auto;
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+}

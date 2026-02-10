@@ -1,0 +1,71 @@
+/* style.css - SynthesePro layout */
+
+/* reset / font */
+body { font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif; background:#f5f7fb; margin:0; }
+
+/* APP SHELL */
+.app-shell { min-height:100vh; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 270px;
+  padding: 18px 12px;
+  box-sizing: border-box;
+  position: fixed;
+  left:0; top:0; bottom:0;
+  overflow-y: auto;
+  background: linear-gradient(180deg,#0f1724,#111827);
+  color: #e6eef9;
+  z-index: 1050;
+  transition: transform .25s ease;
+}
+.sidebar .sidebar-logo { max-width:160px; width:100%; height:auto; display:block; margin:0 auto 8px; border-radius:10px; box-shadow:0 10px 30px rgba(2,6,23,0.6); }
+.sidebar .sidebar-title { text-align:center; font-weight:600; color:#dbeafe; margin-bottom:12px; }
+
+/* nav */
+.sidebar-menu { list-style:none; padding-left:0; margin:0; }
+.sidebar-menu .nav-link {
+  color:#cfe8ff;
+  padding:10px 12px;
+  border-radius:8px;
+  margin-bottom:6px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  text-decoration:none;
+  transition: background .12s, transform .12s;
+}
+.sidebar-menu .nav-link:hover { background: rgba(255,255,255,0.04); transform: translateX(3px); color:#fff; }
+.sidebar-menu .nav-link i { font-size:1.05rem; color:inherit; }
+
+/* active link look */
+.sidebar-menu .nav-link.active,
+.sidebar-menu .nav-link.active:hover {
+  background: linear-gradient(90deg,#0ea5e9,#0b8fe6);
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(12,74,110,0.12);
+}
+
+/* main content */
+.main-content { margin-left: 270px; min-height:100vh; display:flex; flex-direction:column; }
+
+/* topbar */
+.topbar { height:64px; display:flex; align-items:center; justify-content:space-between; padding:0 18px; }
+
+/* page area */
+.page { padding-top:10px; }
+
+/* cards and tables */
+.card { border-radius:12px; }
+.table thead th { background:#0b1220; color:#fff; }
+
+/* responsive: collapse sidebar on small */
+@media (max-width: 992px) {
+  .sidebar { transform: translateX(-100%); position:fixed; }
+  .sidebar.open { transform: translateX(0); }
+  .main-content { margin-left:0; }
+}
+
+/* small tweaks */
+hr.text-secondary { border-color: rgba(255,255,255,0.06); margin:10px 0; }
+

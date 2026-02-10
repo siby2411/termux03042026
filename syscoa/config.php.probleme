@@ -1,0 +1,160 @@
+<?php
+// Configuration SYSCOHADA
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'sysco_ohada');
+define('DB_USER', 'root');
+define('DB_PASS', '123');
+
+function get_db_connection() {
+    static $pdo = null;
+    if ($pdo === null) {
+        try {
+            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+            $pdo = new PDO($dsn, DB_USER, DB_PASS, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+            ]);
+        } catch (PDOException $e) {
+            die("Erreur DB: " . $e->getMessage());
+        }
+    }
+    return $pdo;
+}
+
+function check_login() {
+    if (empty($_SESSION['logged_in'])) {
+        header('Location: login.php');
+        exit();
+    }
+}
+
+function check_auth() { check_login(); }
+
+define('SYSCOHADA_VERSION', '2.0');
+define('SYSCOHADA_MODULES', serialize([
+    'dashboard' => ['Tableau de bord', 'fas fa-tachometer-alt', 'admin'],
+    'journaux' => ['Journaux', 'fas fa-book', 'comptable'],
+    'grand_livre' => ['Grand Livre', 'fas fa-file-invoice-dollar', 'comptable'],
+    'balance' => ['Balance', 'fas fa-scale-balanced', 'comptable'],
+    'comptes' => ['Plan Comptable', 'fas fa-list', 'admin'],
+    'tiers' => ['Tiers', 'fas fa-users', 'comptable'],
+    'rapports' => ['Rapports', 'fas fa-chart-bar', 'comptable'],
+    'etats' => ['États Financiers', 'fas fa-file-contract', 'comptable'],
+    'parametres' => ['Paramètres', 'fas fa-cog', 'admin']
+]));
+
+define('SITE_NAME', 'SYSCOHADA');
+define('SITE_URL', 'http://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . '/syscoa/');
+define('DEFAULT_MODULE', 'dashboard');
+define('DEFAULT_SUBMODULE', '');
+
+function generate_menu($current_module = 'dashboard') {
+    $modules = unserialize(SYSCOHADA_MODULES);
+    $html = '';
+    foreach ($modules as $key => $module) {
+        $active = ($current_module == $key) ? ' active' : '';
+        $html .= '<a class="nav-link' . $active . '" href="index.php?module=' . $key . '">';
+        $html .= '<i class="' . $module[1] . '"></i> ' . $module[0];
+        $html .= '</a>';
+    }
+    return $html;
+}
+
+function has_module_access($module, $role = 'user') {
+    $modules = unserialize(SYSCOHADA_MODULES);
+    if (!isset($modules[$module])) return false;
+    return ($role === 'admin' || $modules[$module][2] === $role || $modules[$module][2] === 'user');
+}
+?>
+
+// ============================================
+// FONCTIONS UTILITAIRES SUPPLÉMENTAIRES
+// ============================================
+
+function get_breadcrumb($module, $submodule = '') {
+    $all_modules = unserialize(SYSCOHADA_MODULES);
+    $module_name = $all_modules[$module][0] ?? 'Inconnu';
+    
+    $breadcrumb = [
+        ['url' => 'index.php?module=dashboard', 'label' => 'Tableau de bord'],
+        ['url' => "index.php?module=$module", 'label' => $module_name]
+    ];
+    
+    if (!empty($submodule)) {
+        $breadcrumb[] = ['url' => "#", 'label' => ucfirst($submodule)];
+    }
+    
+    return $breadcrumb;
+}
+
+function display_breadcrumb($module, $submodule = '') {
+    $breadcrumb = get_breadcrumb($module, $submodule);
+    $html = '<nav aria-label="breadcrumb"><ol class="breadcrumb">';
+    
+    foreach ($breadcrumb as $index => $item) {
+        $is_last = ($index === count($breadcrumb) - 1);
+        $html .= '<li class="breadcrumb-item' . ($is_last ? ' active' : '') . '">';
+        if (!$is_last) {
+            $html .= '<a href="' . $item['url'] . '">' . $item['label'] . '</a>';
+        } else {
+            $html .= $item['label'];
+        }
+        $html .= '</li>';
+    }
+    
+    $html .= '</ol></nav>';
+    return $html;
+}
+
+function get_module_title($module) {
+    $all_modules = unserialize(SYSCOHADA_MODULES);
+    return $all_modules[$module][0] ?? 'Module inconnu';
+}
+
+function get_module_icon($module) {
+    $all_modules = unserialize(SYSCOHADA_MODULES);
+    return $all_modules[$module][1] ?? 'fas fa-question-circle';
+}
+
+function alert_message($type, $message, $dismissible = true) {
+    $class = "alert alert-$type";
+    if ($dismissible) {
+        $class .= ' alert-dismissible fade show';
+    }
+    
+    $html = '<div class="' . $class . '" role="alert">';
+    $html .= htmlspecialchars($message);
+    if ($dismissible) {
+        $html .= '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+    }
+    $html .= '</div>';
+    
+    return $html;
+}
+
+function redirect_with_message($url, $message, $type = 'success') {
+    $_SESSION['flash_message'] = $message;
+    $_SESSION['flash_type'] = $type;
+    header("Location: $url");
+    exit();
+}
+
+function display_flash_message() {
+    if (isset($_SESSION['flash_message'])) {
+        $message = $_SESSION['flash_message'];
+        $type = $_SESSION['flash_type'] ?? 'info';
+        
+        echo alert_message($type, $message);
+        
+        unset($_SESSION['flash_message']);
+        unset($_SESSION['flash_type']);
+    }
+}
+?>

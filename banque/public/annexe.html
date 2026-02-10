@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annexe Technique - BANQUE Mutuelle</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1000px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            color: #007bff;
+            margin-top: 25px;
+        }
+        .table th {
+            background-color: #e9ecef;
+        }
+        .section-title {
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="text-center mb-4"><i class="fas fa-file-alt me-2"></i> Annexe Technique et Fonctionnelle</h1>
+    <p class="text-center text-muted">Documentation des fonctionnalités clés, de l'automatisation et des indicateurs de performance de l'application BANQUE Mutuelle.</p>
+
+    <h2 class="section-title mt-5">1. Fonctionnalités et Modules de l'Application</h2>
+    <p>Cette section détaille les modules accessibles et leurs objectifs métiers spécifiques.</p>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Module / Page PHP</th>
+                <th>Utilisateurs Ciblés</th>
+                <th>Description Fonctionnelle</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong><code>dashboard.php</code></strong></td>
+                <td>Admin, Manager, Agent</td>
+                <td>Tableau de bord central affichant en temps réel les indicateurs de performance (KPIs) et les résumés financiers de l'activité (soldes totaux, nouveaux clients).</td>
+            </tr>
+            <tr>
+                <td><strong><code>clients.php</code></strong></td>
+                <td>Agent, Admin</td>
+                <td>Gestion complète du cycle de vie du client : création, modification des données personnelles, consultation de l'historique des comptes et des crédits.</td>
+            </tr>
+            <tr>
+                <td><strong><code>operations.php</code></strong></td>
+                <td>Agent</td>
+                <td>Saisie sécurisée des transactions (dépôts, retraits). L'intégrité du solde est garantie par les *Triggers* de la base de données.</td>
+            </tr>
+            <tr>
+                <td><strong><code>credits.php</code></strong></td>
+                <td>AgentCredit</td>
+                <td>Module dédié à la gestion des prêts : enregistrement des demandes, calcul des mensualités, génération et suivi des calendriers de remboursement.</td>
+            </tr>
+            <tr>
+                <td><strong><code>capitalisation.php</code></strong></td>
+                <td>Comptable, Manager</td>
+                <td>Exécution des procédures de capitalisation (calcul et ajout des intérêts aux comptes épargne) et gestion des provisions.</td>
+            </tr>
+            <tr>
+                <td><strong><code>analyse.php</code></strong></td>
+                <td>Admin, Manager</td>
+                <td>Outil de diagnostic expert pour consulter les Ratios financiers critiques et les rapports agrégés de la santé de la Mutuelle.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2 class="section-title">2. Automatisation et Intégrité : Triggers & Procédures</h2>
+    <p>L'application utilise l'intelligence de la base de données pour garantir l'exactitude des données et l'exécution automatique des règles métier.</p>
+
+    <h3>2.1. Les Triggers (Garantie de Solde)</h3>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Trigger (Logique)</th>
+                <th>Table Cible</th>
+                <th>Rôle et Bénéfice pour la Banque</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong><code>AFTER_INSERT_OPERATION</code></strong></td>
+                <td><code>OPERATIONS</code></td>
+                <td>**Mise à jour du Solde en Temps Réel :** Assure que le solde d'un compte est immédiatement ajusté après chaque dépôt ou retrait. Élimine le risque d'erreurs humaines.</td>
+            </tr>
+            <tr>
+                <td><strong><code>BEFORE_INSERT_OPERATION</code></strong></td>
+                <td><code>OPERATIONS</code></td>
+                <td>**Contrôle de Découvert :** Vérifie *avant* l'exécution d'un retrait si le solde est suffisant. Bloque l'opération si le solde est insuffisant, garantissant la conformité réglementaire.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>2.2. Les Procédures Stockées (Calculs & Automatisation)</h3>
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Nom de la Procédure</th>
+                <th>Objectif</th>
+                <th>Explication (Valeur Ajoutée)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong><code>CALCUL_INTERETS_EPARGNE</code></strong></td>
+                <td>Capitalisation</td>
+                <td>Automatise le calcul des intérêts créditeurs sur tous les comptes Épargne et ajoute ces intérêts au solde, souvent de manière périodique (mensuelle ou annuelle).</td>
+            </tr>
+            <tr>
+                <td><strong><code>AJOUT_CREDIT</code></strong></td>
+                <td>Gestion des Prêts</td>
+                <td>Simplifie l'octroi d'un nouveau prêt en enregistrant le crédit et en générant automatiquement le tableau d'amortissement complet des futures échéances.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2 class="section-title">3. Intelligence Analytique : Ratios Financiers Clés</h2>
+    <p>Ces ratios sont calculés à partir des données agrégées de la Mutuelle et servent d'outils décisionnels pour l'équipe de direction et les partenaires.</p>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Ratio Clé</th>
+                <th>Objectif pour les Partenaires</th>
+                <th>Logique de Calcul (Explication)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Ratio de Liquidité Générale (RLG)</strong></td>
+                <td>Mesure la capacité de la banque à couvrir ses obligations immédiates. Un RLG élevé est un signe de **solvabilité et de sécurité**.</td>
+                <td>Compare les actifs facilement disponibles (trésorerie + comptes clients) avec les dettes à court terme.</td>
+            </tr>
+            <tr>
+                <td><strong>Ratio d'Endettement (RE)</strong></td>
+                <td>Évalue la dépendance de la mutuelle aux dettes par rapport à ses fonds propres (capital). Un faible RE est synonyme de **stabilité financière**.</td>
+                <td>Rapporte le total des crédits accordés aux fonds propres et réserves de la mutuelle.</td>
+            </tr>
+            <tr>
+                <td><strong>Taux de Crédit Impayé (TCI)</strong></td>
+                <td>Indicateur direct de la qualité du portefeuille de prêts. Essentiel pour évaluer la **gestion du risque de crédit**.</td>
+                <td>Rapporte le montant des prêts en souffrance (impayés) au montant total des prêts en cours.</td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

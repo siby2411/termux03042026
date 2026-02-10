@@ -1,0 +1,47 @@
+<?php
+session_start();
+require_once 'config.php';
+
+$error = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = $_POST['username'] ?? '';
+    $password = $_POST['password'] ?? '';
+    
+    if ($username === 'admin' && $password === 'admin123') {
+        $_SESSION['logged_in'] = true;
+        $_SESSION['username'] = $username;
+        $_SESSION['user_role'] = 'admin';
+        header('Location: index.php');
+        exit();
+    } else {
+        $error = 'Identifiants incorrects';
+    }
+}
+?>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login SYSCOHADA</title>
+    <style>
+        body { font-family: Arial; background: #f0f0f0; padding: 50px; }
+        .login-box { background: white; padding: 30px; border-radius: 10px; max-width: 400px; margin: auto; }
+        input { width: 100%; padding: 10px; margin: 10px 0; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2>SYSCOHADA - Connexion</h2>
+        <?php if ($error): ?>
+            <div class="error"><?php echo htmlspecialchars($error); ?></div>
+        <?php endif; ?>
+        <form method="POST">
+            <input type="text" name="username" placeholder="Utilisateur" value="admin" required>
+            <input type="password" name="password" placeholder="Mot de passe" value="admin123" required>
+            <button type="submit">Se connecter</button>
+        </form>
+        <p><small>Utilisateur: admin / Mot de passe: admin123</small></p>
+    </div>
+</body>
+</html>

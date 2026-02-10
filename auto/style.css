@@ -1,0 +1,627 @@
+/* Fichier: style.css */
+
+/* Variables CSS pour faciliter les changements de thème */
+:root {
+    --primary-color: #007bff; /* Bleu vibrant */
+    --secondary-color: #6c757d; /* Gris doux */
+    --accent-color: #28a745; /* Vert pour le succès */
+    --danger-color: #dc3545; /* Rouge pour les erreurs/suppression */
+    --background-light: #f8f9fa; /* Arrière-plan clair */
+    --background-dark: #343a40; /* Arrière-plan sombre (pour le footer ou le header) */
+    --text-color: #343a40; /* Couleur de texte principale */
+    --text-light: #ffffff; /* Couleur de texte pour les fonds sombres */
+    --border-color: #dee2e6; /* Couleur de bordure */
+    --box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Ombre douce */
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--background-light);
+    color: var(--text-color);
+    line-height: 1.6;
+}
+
+header {
+    background-color: var(--background-dark);
+    color: var(--text-light);
+    padding: 1.5rem 0;
+    text-align: center;
+    box-shadow: var(--box-shadow);
+}
+
+header h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    letter-spacing: 1px;
+}
+
+nav {
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem; /* Espace entre les liens de navigation */
+}
+
+nav a {
+    color: var(--text-light);
+    text-decoration: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    font-weight: 500;
+    white-space: nowrap; /* Empêche les liens de se couper sur plusieurs lignes */
+}
+
+nav a:hover, nav a.active {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+}
+
+main {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: var(--box-shadow);
+}
+
+h2 {
+    color: var(--primary-color);
+    text-align: center;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+}
+
+/* Messages */
+p[style*="color:green"] {
+    background-color: #d4edda;
+    color: var(--accent-color) !important;
+    border: 1px solid #c3e6cb;
+    padding: 0.75rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+p[style*="color:red"] {
+    background-color: #f8d7da;
+    color: var(--danger-color) !important;
+    border: 1px solid #f5c6cb;
+    padding: 0.75rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+p[style*="color:orange"] {
+    background-color: #fff3cd;
+    color: #856404 !important;
+    border: 1px solid #ffeeba;
+    padding: 0.75rem;
+    border-radius: 5px;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+/* Forms */
+form {
+    display: grid;
+    gap: 1rem;
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background-color: #fefefe;
+}
+
+form label {
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+form input[type="text"],
+form input[type="email"],
+form input[type="password"],
+form input[type="number"],
+form input[type="date"],
+form select,
+form textarea {
+    width: calc(100% - 20px); /* Padding inclus */
+    padding: 0.75rem 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box; /* Important pour le width */
+}
+
+form input[type="file"] {
+    width: calc(100% - 20px);
+    padding: 0.75rem 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    background-color: #e9ecef; /* Un fond pour l'input file */
+}
+
+form input[type="submit"] {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+    width: auto;
+    margin-top: 1rem;
+}
+
+form input[type="submit"]:hover {
+    background-color: #0056b3; /* Teinte plus foncée */
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1.5rem;
+    background-color: #fff;
+}
+
+table th, table td {
+    border: 1px solid var(--border-color);
+    padding: 0.8rem;
+    text-align: left;
+}
+
+table th {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+table tr:nth-child(even) {
+    background-color: #f2f2f2; /* Lignes alternées */
+}
+
+table img {
+    max-width: 60px; /* Taille par défaut pour les miniatures de table */
+    height: auto;
+    border-radius: 4px;
+    vertical-align: middle; /* Alignement de l'image */
+}
+
+table a {
+    color: var(--primary-color);
+    text-decoration: none;
+    margin-right: 0.5rem;
+    transition: color 0.3s ease;
+}
+
+table a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* Buttons (e.g., "Ajouter une nouvelle voiture" en bas de page) */
+.btn {
+    display: inline-block;
+    background-color: var(--accent-color);
+    color: var(--text-light);
+    padding: 0.8rem 1.5rem;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    margin-top: 1.5rem;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #218838;
+}
+
+/* Index page specific - Grille des Voitures Disponibles */
+.voiture-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.voiture-card {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: var(--box-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.voiture-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.voiture-card img {
+    width: 100%;
+    height: 120px; /* Hauteur réduite pour les miniatures */
+    object-fit: contain; /* Conserve le ratio et affiche l'image entière */
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    padding: 5px; /* Ajoute un peu de padding si object-fit: contain laisse des bords blancs */
+    background-color: #f0f0f0; /* Couleur de fond derrière l'image si elle est petite */
+}
+
+.voiture-card h3 {
+    color: var(--primary-color);
+    font-size: 1.4rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.voiture-card p {
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.voiture-card .btn {
+    margin-top: 1rem;
+    width: fit-content;
+    align-self: center;
+}
+
+
+/* Index page specific - Grille des Modules */
+.module-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.module-card {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    box-shadow: var(--box-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.module-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.module-card h3 {
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.module-card p {
+    color: var(--secondary-color);
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+    min-height: 45px; /* Pour unifier la hauteur des cartes si les descriptions varient */
+}
+
+.module-card .module-links a {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    padding: 0.6rem 1rem;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 500;
+    margin: 0.25rem;
+    transition: background-color 0.3s ease;
+}
+
+.module-card .module-links a:hover {
+    background-color: #0056b3;
+}
+
+
+/* Styles spécifiques à detail_voiture.php */
+.car-detail-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    align-items: flex-start;
+    margin-top: 2rem;
+}
+.car-detail-image {
+    flex: 1;
+    min-width: 300px; /* Taille minimale pour l'image */
+    max-width: 600px; /* Taille maximale pour l'image */
+    box-shadow: var(--box-shadow);
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #fff;
+    padding: 1rem;
+    text-align: center; /* Centrer l'image si elle est plus petite que son conteneur */
+}
+.car-detail-image img {
+    width: 100%;
+    max-height: 400px; /* Limite la hauteur de l'image agrandie */
+    height: auto;
+    object-fit: contain; /* Conserver les proportions de l'image */
+    display: block;
+    border-radius: 4px;
+    margin: 0 auto; /* Pour centrer l'image */
+    background-color: #f0f0f0; /* Fond derrière l'image */
+}
+.car-detail-info {
+    flex: 2;
+    min-width: 300px;
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--box-shadow);
+}
+.car-detail-info h2 {
+    text-align: left;
+    margin-top: 0;
+    color: var(--primary-color);
+    font-size: 2.2rem;
+    margin-bottom: 1rem;
+}
+.car-detail-info p {
+    font-size: 1.1rem;
+    margin-bottom: 0.8rem;
+    color: var(--text-color);
+}
+.car-detail-info p strong {
+    color: var(--background-dark);
+    margin-right: 0.5rem;
+}
+.car-detail-info .description {
+    margin-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    padding-top: 1.5rem;
+    font-style: italic;
+    color: var(--secondary-color);
+}
+.action-buttons {
+    margin-top: 2rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap; /* Permet aux boutons de passer à la ligne sur petits écrans */
+}
+.action-buttons a {
+    padding: 0.8rem 1.5rem;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+    white-space: nowrap; /* Empêche les boutons de se couper */
+}
+.action-buttons .btn-primary {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+}
+.action-buttons .btn-primary:hover {
+    background-color: #0056b3;
+}
+.action-buttons .btn-secondary {
+    background-color: var(--secondary-color);
+    color: var(--text-light);
+}
+.action-buttons .btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+
+/* Styles spécifiques à diaporama_voiture.php */
+.slideshow-container {
+    max-width: 800px;
+    position: relative;
+    margin: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--box-shadow);
+    background-color: #fff;
+}
+
+.mySlides {
+    display: none;
+    width: 100%;
+    text-align: center;
+}
+
+.mySlides img {
+    width: 100%;
+    height: auto;
+    max-height: 500px;
+    object-fit: contain; /* Conserve le ratio et affiche l'image entière */
+    border-bottom: 1px solid var(--border-color);
+    background-color: #f0f0f0; /* Fond derrière l'image */
+}
+
+.prev, .next {
+    cursor: pointer;
+    position: absolute;
+    top: 50%;
+    width: auto;
+    padding: 16px;
+    margin-top: -22px;
+    color: white;
+    font-weight: bold;
+    font-size: 18px;
+    transition: 0.6s ease;
+    border-radius: 0 3px 3px 0;
+    user-select: none;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.next {
+    right: 0;
+    border-radius: 3px 0 0 3px;
+}
+
+.prev:hover, .next:hover {
+    background-color: rgba(0,0,0,0.8);
+}
+
+.text {
+    color: var(--text-color);
+    font-size: 15px;
+    padding: 8px 12px;
+    position: absolute;
+    bottom: 8px;
+    width: 100%;
+    text-align: center;
+    background-color: rgba(255,255,255,0.7);
+}
+
+.numbertext {
+    color: #f2f2f2;
+    font-size: 12px;
+    padding: 8px 12px;
+    position: absolute;
+    top: 0;
+}
+
+.dot-container {
+    text-align: center;
+    padding: 20px;
+}
+
+.dot {
+    cursor: pointer;
+    height: 15px;
+    width: 15px;
+    margin: 0 2px;
+    background-color: #bbb;
+    border-radius: 50%;
+    display: inline-block;
+    transition: background-color 0.6s ease;
+}
+
+.active-dot, .dot:hover {
+    background-color: #717171;
+}
+
+/* Fading animation */
+.fade {
+    animation-name: fade;
+    animation-duration: 1.5s;
+}
+
+@keyframes fade {
+    from {opacity: .4} 
+    to {opacity: 1}
+}
+
+
+/* Footer */
+footer {
+    text-align: center;
+    padding: 1.5rem;
+    margin-top: 3rem;
+    background-color: var(--background-dark);
+    color: var(--text-light);
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    header h1 {
+        font-size: 2rem;
+    }
+
+    nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    nav a {
+        padding: 0.6rem 1rem;
+        margin: 0.25rem;
+    }
+
+    main {
+        margin: 1rem auto;
+        padding: 0.5rem;
+    }
+
+    .module-grid, .voiture-grid, .car-detail-container {
+        grid-template-columns: 1fr;
+        flex-direction: column; /* Empile les éléments sur petits écrans */
+    }
+
+    .car-detail-image, .car-detail-info {
+        min-width: unset; /* Supprime la contrainte de largeur minimale */
+        max-width: 100%;
+    }
+
+    table {
+        overflow-x: auto; /* Permet le défilement horizontal des tables sur petits écrans */
+        display: block; /* Nécessaire pour overflow-x */
+        white-space: nowrap; /* Empêche le texte des cellules de se casser */
+    }
+    table thead, table tbody, table th, table td, table tr {
+        display: block; /* Sur petits écrans, transforme les tables en blocs */
+    }
+    table th, table td {
+        white-space: normal; /* Permet le retour à la ligne du contenu des cellules */
+    }
+    table thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    table tr {
+        border: 1px solid var(--border-color);
+        margin-bottom: 1rem;
+        border-radius: 8px;
+    }
+    table td {
+        border: none;
+        position: relative;
+        padding-left: 50%; /* Laisse de la place pour le label */
+        text-align: right;
+    }
+    table td::before {
+        content: attr(data-label); /* Utilise l'attribut data-label pour afficher le titre de la colonne */
+        position: absolute;
+        left: 6px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        text-align: left;
+        font-weight: bold;
+        color: var(--primary-color);
+    }
+    /* Correction spécifique pour les images de table qui ne doivent pas s'empiler */
+    table td img {
+        width: auto;
+        max-width: 60px;
+        height: auto;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+}

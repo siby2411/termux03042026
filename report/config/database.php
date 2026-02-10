@@ -1,0 +1,21 @@
+<?php
+// config/database.php
+$host = 'localhost';
+$db   = 'synthesepro_db';
+$user = 'root';
+$pass = '123';
+$charset = 'utf8mb4';
+
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$options = [
+    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
+    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+];
+
+try {
+    $conn = new PDO($dsn, $user, $pass, $options); // Connexion globale
+} catch (PDOException $e) {
+    die("Erreur DB : " . $e->getMessage());
+}
+?>
+

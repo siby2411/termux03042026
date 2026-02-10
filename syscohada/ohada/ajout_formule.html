@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Insertion de formules comptables</title>
+</head>
+<body>
+    <h2>Ajouter une nouvelle formule comptable</h2>
+    <form action="insert_formula.php" method="post">
+        <label for="libelle">Libellé de la formule :</label><br>
+        <input type="text" id="libelle" name="libelle" required><br><br>
+
+        <label for="formule">Formule (en texte) :</label><br>
+        <textarea id="formule" name="formule" rows="5" cols="50" required></textarea><br><br>
+
+        <input type="submit" value="Ajouter la formule">
+    </form>
+</body>
+</html>
+

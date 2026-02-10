@@ -1,0 +1,267 @@
+
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Immobilisations & Amortissements OHADA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto bg-white p-6 md:p-10 shadow-2xl rounded-xl">
+        <h1 class="text-3xl font-extrabold text-blue-800 mb-6 border-b pb-2">
+            Module 5 : Immobilisations et Amortissements (Classes 2 & 68)
+        </h1>
+        <p class="text-gray-600 mb-8">
+            Gérez l'acquisition des actifs et automatisez la génération des écritures de dotation aux amortissements conformément au SYSCOHADA.
+        </p>
+
+        <!-- Onglets de Navigation -->
+        <div class="mb-8 border-b border-gray-200">
+            <ul class="flex flex-wrap -mb-px" id="tabs" role="tablist">
+                <li class="mr-2" role="presentation">
+                    <button id="tab-acquisition" data-tab-target="#form-acquisition" type="button" role="tab" aria-selected="true" 
+                            class="inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg font-semibold hover:text-blue-700">
+                        1. Enregistrer une Acquisition
+                    </button>
+                </li>
+                <li role="presentation">
+                    <button id="tab-dotation" data-tab-target="#form-dotation" type="button" role="tab" aria-selected="false" 
+                            class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600">
+                        2. Lancer la Dotation Automatique
+                    </button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Contenu des Onglets -->
+        <div id="tab-content">
+
+            <!-- 1. Formulaire d'Acquisition -->
+            <div id="form-acquisition" role="tabpanel" aria-labelledby="tab-acquisition" class="space-y-6">
+                <h2 class="text-2xl font-semibold text-gray-700">Nouvelle Fiche Immobilisation</h2>
+                
+                <form id="acquisition_form">
+                    
+                    <!-- Ligne 1 : Désignation et Référence -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="designation" class="block text-sm font-medium text-gray-700">Désignation du Bien</label>
+                            <input type="text" id="designation" name="designation" required placeholder="Ex: Véhicule de livraison C.F.A."
+                                   class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 border">
+                        </div>
+                        <div>
+                            <label for="reference_interne" class="block text-sm font-medium text-gray-700">Référence Interne / Série</label>
+                            <input type="text" id="reference_interne" name="reference_interne" required placeholder="Ex: VEH0045"
+                                   class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 border">
+                        </div>
+                    </div>
+                    
+                    <!-- Ligne 2 : Coût et Durée -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <div>
+                            <label for="valeur_origine" class="block text-sm font-medium text-gray-700">Valeur d'Origine (VO - H.T.)</label>
+                            <input type="number" step="0.01" id="valeur_origine" name="valeur_origine" required value="0.00"
+                                   class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 border">
+                        </div>
+                        <div>
+                            <label for="date_acquisition" class="block text-sm font-medium text-gray-700">Date d'Acquisition</label>
+                            <input type="date" id="date_acquisition" name="date_acquisition" required value="<?php echo date('Y-m-d'); ?>"
+                                   class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 border">
+                        </div>
+                        <div>
+                            <label for="duree_amortissement_ans" class="block text-sm font-medium text-gray-700">Durée d'Amortissement (Ans)</label>
+                            <input type="number" id="duree_amortissement_ans" name="duree_amortissement_ans" required value="5" min="1" max="50"
+                                   class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 border">
+                            <p class="text-xs text-gray-500 mt-1">Taux linéaire : <span id="taux_calc">20.00</span>%</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Ligne 3 : Comptes de Rapprochement OHADA -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <label for="compte_immobilisation" class="block text-sm font-medium text-gray-700">Compte d'Actif (Classe 2)</label>
+                            <select id="compte_immobilisation" name="compte_immobilisation" required
+                                    class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 border">
+                                <option value="23100">23100 - Bâtiments</option>
+                                <option value="24200">24200 - Matériel de transport</option>
+                                <option value="24400">24400 - Mobilier de bureau</option>
+                                <!-- ... autres comptes de la Classe 2 ... -->
+                            </select>
+                        </div>
+                        <div>
+                            <label for="compte_amortissement" class="block text-sm font-medium text-gray-700">Compte d'Amortissement (Classe 28)</label>
+                            <select id="compte_amortissement" name="compte_amortissement" required
+                                    class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 border">
+                                <option value="28310">28310 - Amortissements Bâtiments</option>
+                                <option value="28420">28420 - Amortissements Matériel de transport</option>
+                                <option value="28440">28440 - Amortissements Mobilier de bureau</option>
+                                <!-- ... autres comptes de la Classe 28 ... -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submit_acquisition_btn"
+                            class="w-full py-3 px-4 bg-blue-600 text-white font-bold rounded-lg shadow-md hover:bg-blue-700 transition duration-150">
+                        Enregistrer l'Immobilisation
+                    </button>
+                </form>
+            </div>
+
+            <!-- 2. Formulaire de Dotation Automatique -->
+            <div id="form-dotation" role="tabpanel" aria-labelledby="tab-dotation" class="hidden space-y-6">
+                <h2 class="text-2xl font-semibold text-gray-700">Génération Automatique des Dotations</h2>
+                <div class="p-4 bg-yellow-50 rounded-xl shadow-inner">
+                    <p class="text-sm text-yellow-800 font-medium">
+                        Cette opération va générer l'écriture (D 68 / C 28) pour **toutes** les immobilisations éligibles à la date choisie. Elle ne doit être lancée qu'une fois par période comptable (mensuelle ou annuelle).
+                    </p>
+                </div>
+
+                <form id="dotation_form">
+                     <!-- Sélecteur d'Exercice et Statut (Réutilisé de l'autre module, mais essentiel ici) -->
+                    <div class="mb-6 p-4 bg-gray-100 rounded-lg flex items-center space-x-4">
+                        <label for="id_exercice_fk" class="font-semibold text-gray-700">Exercice Actif :</label>
+                        <select id="id_exercice_fk_dotation" name="id_exercice_fk" required class="p-2 border rounded-lg focus:ring-blue-500 focus:border-blue-500 w-40">
+                            <!-- Options chargées par AJAX -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="date_dotation" class="block text-sm font-medium text-gray-700">Date de l'Écriture de Dotation</label>
+                        <input type="date" id="date_dotation" name="date_dotation" required value="<?php echo date('Y-m-d'); ?>"
+                               class="mt-1 block w-full rounded-lg border-gray-300 shadow-sm p-3 border">
+                        <p class="text-xs text-gray-500 mt-1">Ex: 31/12/N pour la dotation annuelle, ou fin de mois pour le mensuel.</p>
+                    </div>
+
+                    <button type="submit" id="submit_dotation_btn"
+                            class="w-full py-3 mt-6 px-4 bg-green-600 text-white font-bold rounded-lg shadow-md hover:bg-green-700 transition duration-150">
+                        Lancer la Génération des Dotations
+                    </button>
+                </form>
+            </div>
+            
+        </div>
+        
+        <div id="response_message" class="mt-8 p-3 rounded-lg text-center hidden" role="alert"></div>
+
+    </div>
+
+    <script>
+        const API_PROCESS_ACQUISITION = './calcul/process_acquisition.php';
+        const API_PROCESS_DOTATION = './calcul/process_dotation_amortissement.php';
+        const API_GET_EXERCICES = './calcul/get_exercices.php'; // Simulation
+        
+        // Simulation pour l'acquisition (création d'un fichier simple)
+        // NOTE: En réalité, ce fichier PHP devrait gérer l'insertion dans la table 'immobilisations'
+        const ACQUISITION_DUMMY_URL = 'process_acquisition.php'; 
+
+        $(document).ready(function() {
+            // Initialisation des onglets
+            const tabs = $('#tabs button');
+            tabs.on('click', function() {
+                const target = $(this).data('tab-target');
+                tabs.removeClass('text-blue-600 border-blue-600 font-semibold').addClass('border-transparent hover:text-gray-600');
+                $(this).addClass('text-blue-600 border-blue-600 font-semibold').removeClass('border-transparent hover:text-gray-600');
+                
+                $('#tab-content > div').addClass('hidden');
+                $(target).removeClass('hidden');
+            });
+            
+            // Calcul du Taux Linéaire
+            $('#duree_amortissement_ans').on('input', function() {
+                const duree = parseInt($(this).val());
+                if (duree > 0) {
+                    $('#taux_calc').text((100 / duree).toFixed(2));
+                } else {
+                    $('#taux_calc').text('N/A');
+                }
+            });
+            
+            // Chargement des exercices pour le formulaire de dotation
+            loadExercicesSelect();
+
+            // Soumission des formulaires
+            $('#acquisition_form').on('submit', handleAcquisitionSubmit);
+            $('#dotation_form').on('submit', handleDotationSubmit);
+        });
+        
+        function loadExercicesSelect() {
+            // Simulation de chargement des exercices
+            const selectDotation = $('#id_exercice_fk_dotation');
+            selectDotation.empty();
+            // Simuler l'existence d'un exercice ouvert
+            selectDotation.append('<option value="1">2025 (OUVERT)</option>'); 
+            selectDotation.append('<option value="2">2024 (CLOS)</option>'); 
+            
+            // En production, utiliser l'API_GET_EXERCICES réelle :
+            /*
+            $.getJSON(API_GET_EXERCICES).done(function(data) {
+                // ... (code pour remplir le select) ...
+            });
+            */
+        }
+        
+        function handleAcquisitionSubmit(e) {
+            e.preventDefault();
+            const form = $(this);
+            const submitBtn = $('#submit_acquisition_btn');
+            const responseDiv = $('#response_message');
+            
+            submitBtn.text("Enregistrement en cours...").prop('disabled', true);
+            responseDiv.removeClass().addClass('hidden');
+
+            // NOTE: Nous utilisons ici une URL de simulation car nous n'avons pas créé le script PHP d'acquisition
+            $.post(ACQUISITION_DUMMY_URL, form.serialize()) 
+                .done(function(data) {
+                    // Supposons que l'enregistrement réussit
+                    responseDiv.removeClass('bg-red-100 text-red-700').addClass('bg-blue-100 text-blue-700').html(`<strong>Succès !</strong> Immobilisation ${$('#designation').val()} enregistrée avec une durée de ${$('#duree_amortissement_ans').val()} ans. Plan d'amortissement initialisé.`);
+                    form[0].reset();
+                })
+                .fail(function() {
+                     responseDiv.removeClass('bg-blue-100 text-blue-700').addClass('bg-red-100 text-red-700').text('Erreur lors de l\'enregistrement de l\'acquisition (vérifiez les comptes et la base de données).');
+                })
+                .always(function() {
+                    submitBtn.text("Enregistrer l'Immobilisation").prop('disabled', false);
+                    responseDiv.slideDown();
+                });
+        }
+        
+        function handleDotationSubmit(e) {
+            e.preventDefault();
+            const form = $(this);
+            const submitBtn = $('#submit_dotation_btn');
+            const responseDiv = $('#response_message');
+            
+            submitBtn.text("Génération en cours...").prop('disabled', true);
+            responseDiv.removeClass().addClass('hidden');
+
+            $.post(API_PROCESS_DOTATION, form.serialize())
+                .done(function(data) {
+                    if (data.status === 'success') {
+                        responseDiv.removeClass('bg-red-100 text-red-700').addClass('bg-green-100 text-green-700').html(`<strong>Succès Dotation !</strong> ${data.message}`).slideDown();
+                    } else {
+                        responseDiv.removeClass('bg-green-100 text-green-700').addClass('bg-red-100 text-red-700').html(`<strong>Échec:</strong> ${data.message}`).slideDown();
+                    }
+                })
+                .fail(function() {
+                     responseDiv.removeClass('bg-green-100 text-green-700').addClass('bg-red-100 text-red-700').text('Erreur de communication avec le serveur lors du calcul des dotations.').slideDown();
+                })
+                .always(function() {
+                    submitBtn.text("Lancer la Génération des Dotations").prop('disabled', false);
+                });
+        }
+    </script>
+</body>
+</html>
+
+
+
+
+

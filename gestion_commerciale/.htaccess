@@ -1,0 +1,4 @@
+
+DirectoryIndex login.php index.html index.php
+
+RewriteEngine On

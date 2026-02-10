@@ -1,0 +1,155 @@
+<?php
+// Configuration SYSCOHADA - Version finale corrigée
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Configuration de la base de données
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'sysco_ohada');
+define('DB_USER', 'root');
+define('DB_PASS', '123');
+
+// Connexion PDO
+function get_db_connection() {
+    static $pdo = null;
+    
+    if ($pdo === null) {
+        try {
+            $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+            $pdo = new PDO($dsn, DB_USER, DB_PASS, [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                PDO::ATTR_EMULATE_PREPARES => false
+            ]);
+        } catch (PDOException $e) {
+            die("Erreur de connexion à la base de données: " . $e->getMessage());
+        }
+    }
+    return $pdo;
+}
+
+// Vérification de session
+function check_login() {
+    if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+        header('Location: login.php');
+        exit();
+    }
+}
+
+// Alias pour compatibilité
+function check_auth() {
+    check_login();
+}
+
+// ============================================
+// CONSTANTES SYSCOHADA
+// ============================================
+
+define('SYSCOHADA_VERSION', '2.0');
+define('SYSCOHADA_MODULES', serialize([
+    'dashboard' => ['Tableau de bord', 'fas fa-tachometer-alt', 'admin'],
+    'journaux' => ['Journaux', 'fas fa-book', 'comptable'],
+    'grand_livre' => ['Grand Livre', 'fas fa-file-invoice-dollar', 'comptable'],
+    'balance' => ['Balance', 'fas fa-scale-balanced', 'comptable'],
+    'comptes' => ['Plan Comptable', 'fas fa-list', 'admin'],
+    'tiers' => ['Tiers', 'fas fa-users', 'comptable'],
+    'rapports' => ['Rapports', 'fas fa-chart-bar', 'comptable'],
+    'etats' => ['États Financiers', 'fas fa-file-contract', 'comptable'],
+    'parametres' => ['Paramètres', 'fas fa-cog', 'admin']
+]));
+
+define('SITE_NAME', 'SYSCOHADA');
+define('SITE_URL', 'http://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . '/syscoa/');
+define('DEFAULT_MODULE', 'dashboard');
+define('DEFAULT_SUBMODULE', '');
+
+// Informations entreprise
+define('COMPANY_NAME', 'SYSCOHADA Entreprise');
+define('COMPANY_ADDRESS', '123 Rue des Comptables, Ville');
+define('COMPANY_PHONE', '+225 01 23 45 67 89');
+define('COMPANY_EMAIL', 'contact@syscohada.local');
+define('COMPANY_SLOGAN', 'Votre solution comptable OHADA');
+
+// Configuration système
+define('CURRENCY', 'FCFA');
+define('DATE_FORMAT', 'd/m/Y');
+define('DECIMAL_SEPARATOR', ',');
+define('THOUSAND_SEPARATOR', ' ');
+define('DECIMAL_PLACES', 2);
+
+// Paramètres d'application
+define('ITEMS_PER_PAGE', 20);
+define('SESSION_TIMEOUT', 3600); // 1 heure
+define('DEBUG_MODE', true);
+
+// ============================================
+// FONCTIONS UTILITAIRES
+// ============================================
+
+function generate_menu($current_module = 'dashboard') {
+    $modules = unserialize(SYSCOHADA_MODULES);
+    $html = '';
+    foreach ($modules as $key => $module) {
+        $active = ($current_module == $key) ? ' active' : '';
+        $html .= '<a class="nav-link' . $active . '" href="index.php?module=' . $key . '">';
+        $html .= '<i class="' . $module[1] . '"></i> ' . $module[0];
+        $html .= '</a>';
+    }
+    return $html;
+}
+
+function has_module_access($module, $role = 'user') {
+    $modules = unserialize(SYSCOHADA_MODULES);
+    if (!isset($modules[$module])) return false;
+    
+    $module_role = $modules[$module][2];
+    return ($role === 'admin' || $module_role === $role || $module_role === 'user');
+}
+
+function get_module_title($module) {
+    $modules = unserialize(SYSCOHADA_MODULES);
+    return $modules[$module][0] ?? 'Module';
+}
+
+function get_module_icon($module) {
+    $modules = unserialize(SYSCOHADA_MODULES);
+    return $modules[$module][1] ?? 'fas fa-question-circle';
+}
+
+function format_currency($amount) {
+    return number_format($amount, DECIMAL_PLACES, DECIMAL_SEPARATOR, THOUSAND_SEPARATOR) . ' ' . CURRENCY;
+}
+
+function format_date($date) {
+    if (empty($date)) return '';
+    return date(DATE_FORMAT, strtotime($date));
+}
+
+function execute_query($sql, $params = []) {
+    $pdo = get_db_connection();
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    return $stmt;
+}
+
+function is_admin() {
+    return ($_SESSION['user_role'] ?? 'user') === 'admin';
+}
+
+function redirect($url, $delay = 0) {
+    if ($delay > 0) {
+        echo '<meta http-equiv="refresh" content="' . $delay . ';url=' . $url . '">';
+    } else {
+        header('Location: ' . $url);
+        exit();
+    }
+}
+
+function sanitize_input($data) {
+    return htmlspecialchars(strip_tags(trim($data)));
+}
+?>

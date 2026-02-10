@@ -1,0 +1,46 @@
+<?php
+include '../../includes/header.php';
+include '../../config/database.php';
+
+$action = $_GET['action'] ?? null;
+$id = $_GET['id'] ?? null;
+
+if (!$action || !$id) {
+    header("Location: list.php");
+    exit();
+}
+
+$database = new Database();
+$db = $database->getConnection();
+
+$statut = '';
+switch ($action) {
+    case 'confirm':
+        $statut = 'Confirmé';
+        break;
+    case 'start':
+        $statut = 'En Cours';
+        break;
+    case 'complete':
+        $statut = 'Terminé';
+        break;
+    case 'cancel':
+        $statut = 'Annulé';
+        break;
+    default:
+        header("Location: list.php");
+        exit();
+}
+
+$query = "UPDATE rendez_vous SET statut = :statut WHERE id = :id";
+$stmt = $db->prepare($query);
+$stmt->bindParam(':statut', $statut);
+$stmt->bindParam(':id', $id);
+
+if ($stmt->execute()) {
+    header("Location: list.php?success=Rendez-vous " . strtolower($statut) . " avec succès");
+} else {
+    header("Location: list.php?error=Erreur lors de la modification du rendez-vous");
+}
+exit();
+?>

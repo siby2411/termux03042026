@@ -1,0 +1,74 @@
+mysql> describe comptes_ohada ;
++----------------+--------------+------+-----+---------+----------------+
+| Field          | Type         | Null | Key | Default | Extra          |
++----------------+--------------+------+-----+---------+----------------+
+| id             | int          | NO   | PRI | NULL    | auto_increment |
+| num_compte     | varchar(20)  | NO   |     | NULL    |                |
+| intitule       | varchar(255) | NO   |     | NULL    |                |
+| sous_classe_id | int          | YES  | MUL | NULL    |                |
+| description    | text         | YES  |     | NULL    |                |
++----------------+--------------+------+-----+---------+----------------+
+5 rows in set (0.04 sec)
+
+mysql>
+
+
+
+
+
+mysql> describe classes_ohada ;
++-----------------+--------------+------+-----+---------+----------------+
+| Field           | Type         | Null | Key | Default | Extra          |
++-----------------+--------------+------+-----+---------+----------------+
+| id              | int          | NO   | PRI | NULL    | auto_increment |
+| num_classe      | varchar(10)  | NO   |     | NULL    |                |
+| intitule_classe | varchar(255) | NO   |     | NULL    |                |
++-----------------+--------------+------+-----+---------+----------------+
+3 rows in set (0.01 sec)
+
+mysql>
+
+
+
+describe comptes_ohada ;
++----------------+--------------+------+-----+---------+----------------+
+| Field          | Type         | Null | Key | Default | Extra          |
++----------------+--------------+------+-----+---------+----------------+
+| id             | int          | NO   | PRI | NULL    | auto_increment |
+| num_compte     | varchar(20)  | NO   |     | NULL    |                |
+| intitule       | varchar(255) | NO   |     | NULL    |                |
+| sous_classe_id | int          | YES  | MUL | NULL    |                |
+| description    | text         | YES  |     | NULL    |                |
++----------------+--------------+------+-----+---------+----------------+
+5 rows in set (0.00 sec)
+
+mysql>
+
+
+
+describe ecritures ;
++----------------+---------------+------+-----+---------+----------------+
+| Field          | Type          | Null | Key | Default | Extra          |
++----------------+---------------+------+-----+---------+----------------+
+| id             | int           | NO   | PRI | NULL    | auto_increment |
+| date_operation | date          | NO   |     | NULL    |                |
+| numero_compte  | varchar(20)   | YES  | MUL | NULL    |                |
+| description    | varchar(255)  | YES  |     | NULL    |                |
+| debit          | decimal(10,2) | YES  |     | 0.00    |                |
+| credit         | decimal(10,2) | YES  |     | 0.00    |                |
++----------------+---------------+------+-----+---------+----------------+
+6 rows in set (0.01 sec)
+
+mysql>
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,48 @@
+
+<?php
+// Fix for module parameter
+$module = 'dashboard';
+if (isset($_GET['module'])) {
+    if (is_array($_GET['module'])) {
+        // If it's an array, we log and use the first element? Or use default?
+        // We'll use the first element if it's a string, else default.
+        if (count($_GET['module']) > 0 && is_string($_GET['module'][0])) {
+            $module = $_GET['module'][0];
+        } else {
+            $module = 'dashboard';
+        }
+    } else {
+        $module = $_GET['module'];
+    }
+}
+
+// Now, ensure $module is a string
+$module = (string)$module;
+
+
+
+// Page d'accueil SYSCOHADA
+require_once 'config.php';
+check_login();
+
+$module = $_GET['module'] ?? 'dashboard';
+$submodule = $_GET['submodule'] ?? '';
+
+// Inclure le header
+include 'includes/header.php';
+
+// Contenu principal
+$page_file = "pages/$module.php";
+if (file_exists($page_file)) {
+    include $page_file;
+} else {
+    echo '<div class="alert alert-danger">';
+    echo '<h4><i class="fas fa-exclamation-triangle"></i> Module non disponible</h4>';
+    echo '<p>Le module <strong>' . htmlspecialchars($module) . '</strong> n\'est pas encore implémenté.</p>';
+    echo '<a href="?module=dashboard" class="btn btn-primary">Retour au tableau de bord</a>';
+    echo '</div>';
+}
+
+// Inclure le footer
+include 'includes/footer.php';
+?>

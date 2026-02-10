@@ -1,0 +1,35 @@
+<?php
+// Connexion à la base de données PostgreSQL
+$host = 'localhost';
+$dbname = 'nom_de_votre_base_de_donnees';
+$user = 'postgres';
+$password = 'votre_mot_de_passe';
+
+try {
+    $pdo = new PDO("pgsql:host=$host;dbname=$dbname", $user, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Vérifier si un cours a été sélectionné
+    if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['cours_id'])) {
+        $cours_id = $_POST['cours_id'];
+
+        // Requête pour récupérer les détails du cours sélectionné
+        $sql = "SELECT intitulé, cours FROM cours WHERE id = :cours_id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->bindParam(':cours_id', $cours_id, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Afficher les résultats
+        if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            echo "<h3>Intitulé : " . htmlspecialchars($row['intitulé']) . "</h3>";
+            echo "<p><strong>Contenu du cours :</strong><br>" . nl2br(htmlspecialchars($row['cours'])) . "</p>";
+        } else {
+            echo "Aucun cours trouvé pour cet ID.";
+        }
+    } else {
+        echo "Veuillez sélectionner un cours.";
+    }
+} catch (PDOException $e) {
+    echo "Erreur : " . $e->getMessage();
+}
+?>

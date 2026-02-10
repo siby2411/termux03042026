@@ -1,0 +1,39 @@
+/* /var/www/banque/css/style.css (Mise à jour essentielle) */
+
+/* ... (Les styles précédents restent les mêmes) ... */
+
+#sidebar-wrapper {
+    min-height: 100vh;
+    margin-left: 0; /* L'afficher par défaut */
+    transition: margin .25s ease-out;
+    background-color: #212529;
+}
+
+/* 4. Gestion de la classe 'toggled' */
+#wrapper.toggled #sidebar-wrapper {
+    margin-left: -17rem; /* Cacher la sidebar lorsque 'toggled' est actif */
+}
+
+/* Assurez-vous que le contenu principal prend toute la largeur quand la sidebar est cachée */
+#page-content-wrapper {
+    min-width: 100vw;
+}
+
+#wrapper.toggled #page-content-wrapper {
+    min-width: 100%;
+}
+
+@media (min-width: 992px) {
+    #sidebar-wrapper {
+        margin-left: 0; /* Toujours visible sur desktop */
+    }
+    #page-content-wrapper {
+        min-width: 0; /* S'ajuste à la taille restante */
+        width: 100%;
+    }
+    #wrapper.toggled #sidebar-wrapper {
+        margin-left: 0; /* Désactiver la bascule sur desktop */
+    }
+}
+
+/* ... (Les styles .kpi-card restent les mêmes) ... */

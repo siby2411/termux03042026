@@ -1,0 +1,30 @@
+// Mise à jour des modules
+$modules_array = [
+    'dashboard' => ['Tableau de bord', 'fas fa-tachometer-alt'],
+    'journaux' => ['Journaux', 'fas fa-book'],
+    'journal' => ['Journal', 'fas fa-book'],
+    'grand_livre' => ['Grand Livre', 'fas fa-file-invoice'],
+    'grand-livre' => ['Grand Livre', 'fas fa-file-invoice'],
+    'balance' => ['Balance', 'fas fa-balance-scale'],
+    'balance_comptable' => ['Balance', 'fas fa-balance-scale'],
+    'plan_comptable' => ['Plan Comptable', 'fas fa-chart-line'],
+    'plancomptable' => ['Plan Comptable', 'fas fa-chart-line'],
+    'comptes' => ['Comptes', 'fas fa-chart-line'],
+    'sig' => ['SIG', 'fas fa-chart-bar'],
+    'ratios' => ['Ratios', 'fas fa-percentage'],
+    'analyse_financiere' => ['Analyse Financière', 'fas fa-percentage'],
+    'budget' => ['Budget', 'fas fa-money-check-alt'],
+    'articles' => ['Tiers', 'fas fa-users'],
+    'tiers' => ['Tiers', 'fas fa-users'],
+    'gestion_articles' => ['Tiers', 'fas fa-users'],
+    'rapports' => ['Rapports', 'fas fa-file-contract'],
+    'bilans' => ['Bilans', 'fas fa-file-contract'],
+    'etats_financiers' => ['États Financiers', 'fas fa-chart-line'],
+    'etats' => ['États Financiers', 'fas fa-chart-line'],
+    'bilan-comptable' => ['Bilan', 'fas fa-balance-scale'],
+    'admin' => ['Administration', 'fas fa-cogs'],
+    'administration' => ['Administration', 'fas fa-cogs'],
+    'parametres' => ['Paramètres', 'fas fa-cogs']
+];
+
+define('SYSCOHADA_MODULES', serialize($modules_array));

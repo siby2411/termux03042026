@@ -1,0 +1,120 @@
+<?php
+// Configuration SYSCOHADA MINIMAL - GARANTIE FONCTIONNEL
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Gestion de session robuste
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// Configuration de la base de données
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'sysco_ohada');
+define('DB_USER', 'root');
+define('DB_PASS', '123');
+
+// Connexion PDO sécurisée
+function get_db_connection() {
+    try {
+        $dsn = "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4";
+        $pdo = new PDO($dsn, DB_USER, DB_PASS, [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false
+        ]);
+        return $pdo;
+    } catch (PDOException $e) {
+        die("Erreur de connexion à la base de données: " . $e->getMessage());
+    }
+}
+
+// Vérification de connexion SIMPLE
+function check_login() {
+    if (empty($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
+        header('Location: login.php');
+        exit();
+    }
+}
+
+// Alias pour compatibilité
+function check_auth() { check_login(); }
+?>
+
+// Fonction pour générer le menu (manquante)
+function generate_menu($current_module = 'dashboard') {
+    $menu_items = [
+        'dashboard' => ['icon' => 'fas fa-tachometer-alt', 'label' => 'Tableau de bord'],
+        'journaux' => ['icon' => 'fas fa-book', 'label' => 'Journaux'],
+        'grand_livre' => ['icon' => 'fas fa-file-invoice-dollar', 'label' => 'Grand Livre'],
+        'balance' => ['icon' => 'fas fa-scale-balanced', 'label' => 'Balance'],
+        'comptes' => ['icon' => 'fas fa-list', 'label' => 'Plan Comptable'],
+        'tiers' => ['icon' => 'fas fa-users', 'label' => 'Tiers'],
+        'rapports' => ['icon' => 'fas fa-chart-bar', 'label' => 'Rapports'],
+        'etats' => ['icon' => 'fas fa-file-contract', 'label' => 'États Financiers'],
+        'parametres' => ['icon' => 'fas fa-cog', 'label' => 'Paramètres'],
+    ];
+    
+    $html = '';
+    foreach ($menu_items as $key => $item) {
+        $active = ($current_module === $key) ? 'active' : '';
+        $html .= '<a class="nav-link ' . $active . '" href="index.php?module=' . $key . '">';
+        $html .= '<i class="' . $item['icon'] . '"></i> ' . $item['label'];
+        $html .= '</a>';
+    }
+    
+    return $html;
+}
+
+// Fonction alternative si generate_menu() est appelée avec d'autres paramètres
+function generate_menu_complet() {
+    return generate_menu();
+}
+
+// Fonction generate_menu() manquante
+function generate_menu($current_module = 'dashboard') {
+    $modules = [
+        'dashboard' => ['Dashboard', 'fas fa-tachometer-alt'],
+        'journaux' => ['Journaux', 'fas fa-book'],
+        'grand_livre' => ['Grand Livre', 'fas fa-file-invoice-dollar'],
+        'balance' => ['Balance', 'fas fa-scale-balanced'],
+        'comptes' => ['Plan Comptable', 'fas fa-list'],
+        'tiers' => ['Tiers', 'fas fa-users'],
+        'rapports' => ['Rapports', 'fas fa-chart-bar'],
+        'etats' => ['États Financiers', 'fas fa-file-contract'],
+        'parametres' => ['Paramètres', 'fas fa-cog'],
+    ];
+    
+    $html = '';
+    foreach ($modules as $key => $info) {
+        $active = ($current_module == $key) ? ' active' : '';
+        $html .= '<a class="nav-link' . $active . '" href="?module=' . $key . '">';
+        $html .= '<i class="' . $info[1] . '"></i> ' . $info[0];
+        $html .= '</a>';
+    }
+    return $html;
+}
+
+// Fonction generate_menu pour SYSCOHADA
+function generate_menu($current_module = 'dashboard') {
+    $menu = [
+        'dashboard' => ['Tableau de bord', 'fas fa-tachometer-alt'],
+        'journaux' => ['Journaux', 'fas fa-book'],
+        'grand_livre' => ['Grand Livre', 'fas fa-file-invoice-dollar'],
+        'balance' => ['Balance', 'fas fa-scale-balanced'],
+        'comptes' => ['Plan Comptable', 'fas fa-list'],
+        'tiers' => ['Tiers', 'fas fa-users'],
+        'rapports' => ['Rapports', 'fas fa-chart-bar'],
+        'etats' => ['États Financiers', 'fas fa-file-contract'],
+        'parametres' => ['Paramètres', 'fas fa-cog'],
+    ];
+    
+    $html = '';
+    foreach ($menu as $key => $item) {
+        $active = ($current_module == $key) ? ' active' : '';
+        $html .= '<a class="nav-link' . $active . '" href="index.php?module=' . $key . '">';
+        $html .= '<i class="' . $item[1] . '"></i> ' . $item[0];
+        $html .= '</a>';
+    }
+    return $html;
+}

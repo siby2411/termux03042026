@@ -1,0 +1,26 @@
+<?php
+// Page d'accueil SYSCOHADA pour WSL
+require_once 'config.php';
+check_login();
+
+$module = $_GET['module'] ?? 'dashboard';
+$submodule = $_GET['submodule'] ?? '';
+
+// Inclure le header
+include 'includes/header.php';
+
+// Contenu principal
+if ($module === 'dashboard') {
+    include 'pages/dashboard.php';
+} else {
+    echo '<div class="container-fluid py-4">';
+    echo '<div class="alert alert-info">';
+    echo '<h4><i class="fas fa-cogs"></i> Module en construction</h4>';
+    echo '<p>Le module <strong>' . htmlspecialchars($module) . '</strong> est en cours de développement.</p>';
+    echo '<a href="?module=dashboard" class="btn btn-primary">Retour au tableau de bord</a>';
+    echo '</div>';
+    echo '</div>';
+}
+
+// Inclure le footer
+include 'includes/footer.php';

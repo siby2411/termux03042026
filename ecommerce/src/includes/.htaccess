@@ -1,0 +1,9 @@
+<?php
+// ==========================
+// File: public/.htaccess
+// ==========================
+
+RewriteEngine On
+Options -Indexes
+
+?>

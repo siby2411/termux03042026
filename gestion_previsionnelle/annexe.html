@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Annexe Technique - Gestion Prévisionnelle des Stocks (GPC)</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 1000px;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            color: #17a2b8; /* Couleur cyan/bleu ciel pour le côté industriel/logistique */
+            margin-top: 25px;
+        }
+        .table th {
+            background-color: #e9ecef;
+        }
+        .section-title {
+            border-bottom: 2px solid #17a2b8;
+            padding-bottom: 5px;
+            margin-bottom: 15px;
+        }
+        code {
+            color: #dc3545; /* Rouge pour les noms de fonctions SQL */
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="text-center mb-4"><i class="fas fa-warehouse me-2"></i> Annexe Technique - Gestion Prévisionnelle (GPC)</h1>
+    <p class="text-center text-muted">Documentation des mécanismes clés, de l'automatisation et des indicateurs de performance pour le pilotage des stocks et des ventes.</p>
+
+    <h2 class="section-title mt-5">1. Fonctionnalités et Modules Clés du Projet</h2>
+    <p>Cette section détaille les modules de l'application dédiés à la gestion des achats, des ventes, et du pilotage.</p>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Module / Page PHP</th>
+                <th>Utilisateurs Ciblés</th>
+                <th>Description Fonctionnelle</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong><code>produits.php</code></strong></td>
+                <td>Admin, Logistique</td>
+                <td>Gestion du catalogue produit, définition du Prix de Vente, initialisation du stock et consultation du **CUMP (Coût Unitaire Moyen Pondéré)**.</td>
+            </tr>
+            <tr>
+                <td><strong><code>achats.php</code></strong></td>
+                <td>Acheteur, Logistique</td>
+                <td>Enregistrement des factures d'achat. L'insertion d'une commande d'achat déclenche la mise à jour automatique du **Stock Actuel** et du **CUMP** via une procédure ou un trigger.</td>
+            </tr>
+            <tr>
+                <td><strong><code>commandes.php</code></strong></td>
+                <td>Commercial, Logistique</td>
+                <td>Saisie des commandes clients (ventes). L'enregistrement des détails de commande met à jour le **Stock Actuel** et enregistre le **CUMP** au moment de la vente pour le calcul de la Marge.</td>
+            </tr>
+            <tr>
+                <td><strong><code>dashboard_pilote.php</code></strong></td>
+                <td>Manager, Direction</td>
+                <td>Tableau de bord de performance (KPI) : CA, Marge Brute, Résultat Net Est., Tendance. Utilise les fonctions d'agrégation et le CUMP stocké.</td>
+            </tr>
+            <tr>
+                <td><strong><code>rapport_synthese.php</code></strong></td>
+                <td>Comptable, Direction</td>
+                <td>Rapport financier agrégé : valorisation des **Stocks**, Créances Clients, Coût des Ventes (CDV) et analyse du Bilan Circulant.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <hr>
+
+    <h2 class="section-title">2. Automatisation et Intégrité : Triggers & Procédures (Logique CUMP)</h2>
+    <p>Le projet repose sur une logique d'automatisation critique du CUMP et de mise à jour des stocks directement dans la base de données (couche BDD).</p>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <h3>2.1. Les Triggers (Mise à jour du Stock)</h3>
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Trigger (Logique)</th>
+                        <th>Table Cible</th>
+                        <th>Rôle et Bénéfice</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong><code>AFTER_INSERT_ACHAT</code></strong></td>
+                        <td><code>Achats</code></td>
+                        <td>**Stock :** Augmente le <code>StockActuel</code> du produit après l'insertion d'une nouvelle ligne d'achat.</td>
+                    </tr>
+                    <tr>
+                        <td><strong><code>AFTER_INSERT_DETAIL_CMD</code></strong></td>
+                        <td><code>DetailsCommande</code></td>
+                        <td>**Stock :** Diminue le <code>StockActuel</code> du produit après l'enregistrement d'une vente.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="col-md-6">
+            <h3>2.2. Les Procédures Stockées (Calculs Complexes)</h3>
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>Nom de la Procédure</th>
+                        <th>Objectif</th>
+                        <th>Explication (Valeur Ajoutée)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong><code>CALCUL_ET_UPDATE_CUMP</code></strong></td>
+                        <td>Mise à jour du CUMP</td>
+                        <td>**Calcul financier central :** Calcule le nouveau Coût Unitaire Moyen Pondéré après chaque nouvel achat et met à jour le champ <code>CUMP</code> dans la table <code>Produits</code>.</td>
+                    </tr>
+                    <tr>
+                        <td><strong><code>ENREGISTRER_DETAIL_VENTE</code></strong></td>
+                        <td>Intégrité de la Vente</td>
+                        <td>Assure l'enregistrement des détails de la commande et, surtout, **copie le <code>CUMP</code> actuel du produit dans la colonne <code>CUMP_Au_Moment_Vente</code>** de la table <code>DetailsCommande</code>.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <h3>2.3. Logique de Fonction pour le Calcul du CUMP (Textuel)</h3>
+    <p>La fonction <code>CALCUL_ET_UPDATE_CUMP</code> (souvent intégrée dans une procédure ou déclenchée par un trigger) suit la logique suivante :</p>
+    <blockquote class="blockquote">
+        <p class="mb-0"><code>Nouveau CUMP = (Ancien Coût Total du Stock + Coût Total du Nouvel Achat) / (Ancienne Quantité en Stock + Nouvelle Quantité Achetée)</code></p>
+        <footer class="blockquote-footer">Où : Coût Total du Stock = Quantité en Stock × Ancien CUMP</footer>
+    </blockquote>
+    
+    <hr>
+
+    <h2 class="section-title">3. Intelligence Analytique : Indicateurs et Calculs Financiers</h2>
+    <p>Les indicateurs de performance clés (KPI) et les valeurs du bilan sont calculés à partir des données de transactions.</p>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>KPI Clé</th>
+                <th>Formule de Calcul</th>
+                <th>Source des Données (Tables SQL)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>**Chiffre d'Affaires (CA)**</td>
+                <td>$$\sum (\text{Quantite Vendue} \times \text{PrixVenteUnitaire})$$</td>
+                <td>Agrégation de <code>DetailsCommande</code>, filtrée par <code>Commandes.DateCommande</code>.</td>
+            </tr>
+            <tr>
+                <td>**Coût des Ventes (CDV)**</td>
+                <td>$$\sum (\text{Quantite Vendue} \times \text{CUMP\_Au\_Moment\_Vente})$$</td>
+                <td>Agrégation de <code>DetailsCommande</code> (utilise le CUMP stocké au moment de la vente).</td>
+            </tr>
+            <tr>
+                <td>**Marge Brute HT**</td>
+                <td>$$\text{CA} - \text{CDV}$$</td>
+                <td>Résultat de la soustraction des deux agrégats précédents.</td>
+            </tr>
+            <tr>
+                <td>**Valorisation des Stocks**</td>
+                <td>$$\sum (\text{Produits.StockActuel} \times \text{Produits.CUMP})$$</td>
+                <td>Agrégation de <code>Produits</code> (utilise la valeur CUMP la plus récente).</td>
+            </tr>
+            <tr>
+                <td>**ROI (Return On Investment)**</td>
+                <td>$$\frac{\text{Marge Brute}}{\text{CDV}}$$</td>
+                <td>Mesure la rentabilité des marchandises vendues.</td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

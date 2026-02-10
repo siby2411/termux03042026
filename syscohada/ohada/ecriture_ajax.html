@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Vérification de Compte et Ajout</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .result {
+            color: red;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ajouter un Compte et une Écriture</h1>
+
+    <form action="insert_ecriture.php" method="POST">
+        <label for="num_compte">Numéro de Compte :</label>
+        <input type="text" id="num_compte" name="num_compte" placeholder="Entrez le numéro de compte" required><br>
+        <div id="result_num_compte"></div>
+        <br>
+
+        <label for="intitule">Intitulé :</label>
+        <input type="text" id="intitule" name="intitule" required><br><br>
+
+        <label for="sous_classe_id">Sous-classe ID (optionnel) :</label>
+        <input type="number" id="sous_classe_id" name="sous_classe_id"><br><br>
+
+        <label for="description">Description :</label>
+        <textarea id="description" name="description"></textarea><br><br>
+
+        <button type="submit">Ajouter le Compte</button>
+    </form>
+
+    <h1>Ajouter une Écriture</h1>
+    <form action="inserer_ecriture.php" method="POST">
+        <label for="date_operation">Date de l'opération :</label>
+        <input type="date" id="date_operation" name="date_operation" required><br>
+
+        <label for="compte_debit">Compte Débit :</label>
+        <input type="text" id="compte_debit" name="compte_debit" placeholder="Entrez le numéro de compte débiteur" required><br>
+        <div id="result_compte_debit"></div>
+        <br>
+
+        <label for="montant_debit">Montant Débit :</label>
+        <input type="number" step="0.01" id="montant_debit" name="montant_debit" required><br>
+
+        <label for="compte_credit">Compte Crédit :</label>
+        <input type="text" id="compte_credit" name="compte_credit" placeholder="Entrez le numéro de compte créditeur" required><br>
+        <div id="result_compte_credit"></div>
+        <br>
+
+        <label for="montant_credit">Montant Crédit :</label>
+        <input type="number" step="0.01" id="montant_credit" name="montant_credit" required><br>
+
+        <label for="description">Description :</label>
+        <input type="text" id="description" name="description"><br>
+
+        <input type="submit" value="Enregistrer l'écriture">
+    </form>
+
+    <script type="text/javascript">
+        $(document).ready(function() {
+            // Fonction de vérification du numéro de compte
+            function checkAccountNumber(inputField, resultDiv) {
+                var numCompte = $(inputField).val();
+
+                if (numCompte !== "") {
+                    // Effectuer la requête AJAX
+                    $.ajax({
+                        url: "search1.php",
+                        method: "POST",
+                        data: {num_compte: numCompte},
+                        success: function(response) {
+                            $(resultDiv).html(response);
+                        }
+                    });
+                } else {
+                    $(resultDiv).html(''); // Vider le résultat si le champ est vide
+                }
+            }
+
+            // Vérification du numéro de compte lors de la saisie
+            $('#num_compte').on('input', function() {
+                checkAccountNumber(this, '#result_num_compte');
+            });
+
+            $('#compte_debit').on('input', function() {
+                checkAccountNumber(this, '#result_compte_debit');
+            });
+
+            $('#compte_credit').on('input', function() {
+                checkAccountNumber(this, '#result_compte_credit');
+            });
+        });
+    </script>
+</body>
+</html>

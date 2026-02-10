@@ -1,0 +1,51 @@
+<?php
+// Start session
+session_start();
+
+// Error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Include configuration
+require_once 'config.php';
+
+// Check login if function exists
+if (function_exists('check_login')) {
+    check_login();
+}
+
+// Handle module parameter SAFELY
+$module = 'dashboard';
+if (isset($_GET['module'])) {
+    $raw = $_GET['module'];
+    if (is_array($raw)) {
+        // If array, take first element
+        $module = (is_array($raw) && count($raw) > 0) ? (string)$raw[0] : 'dashboard';
+    } else {
+        $module = (string)$raw;
+    }
+}
+
+// Clean module name
+$module = preg_replace('/[^a-z_]/', '', strtolower($module));
+if (empty($module)) $module = 'dashboard';
+
+$submodule = isset($_GET['submodule']) ? (string)$_GET['submodule'] : '';
+
+// Include header
+include 'includes/header.php';
+
+// Check for module in pages directory
+$page_file = "pages/$module.php";
+if (file_exists($page_file)) {
+    include $page_file;
+} else {
+    echo '<div class="alert alert-danger">';
+    echo '<h4><i class="fas fa-exclamation-triangle"></i> Module non disponible</h4>';
+    echo '<p>Le module <strong>' . htmlspecialchars($module) . '</strong> n\'est pas encore implémenté.</p>';
+    echo '<a href="?module=dashboard" class="btn btn-primary">Retour au tableau de bord</a>';
+    echo '</div>';
+}
+
+// Include footer
+include 'includes/footer.php';

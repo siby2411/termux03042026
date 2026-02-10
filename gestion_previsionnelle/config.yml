@@ -1,0 +1,7 @@
+tunnel: 33f63fe8-032b-4710-8f0b-926f264266f6
+credentials-file: /root/.cloudflared/33f63fe8-032b-4710-8f0b-926f264266f6.json
+
+ingress:
+  - hostname: gestion.omegadev.cloudflareaccess.com
+    service: http://localhost:8080
+  - service: http_status:404

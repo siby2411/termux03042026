@@ -1,0 +1,713 @@
+CREATE TABLE formule_comptabilite (
+    id SERIAL PRIMARY KEY,
+    libelle VARCHAR(255) NOT NULL,
+    formule TEXT NOT NULL
+);
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Insertion de formules comptables</title>
+</head>
+<body>
+    <h2>Ajouter une nouvelle formule comptable</h2>
+    <form action="insert_formula.php" method="post">
+        <label for="libelle">Libellé de la formule :</label><br>
+        <input type="text" id="libelle" name="libelle" required><br><br>
+
+        <label for="formule">Formule (en texte) :</label><br>
+        <textarea id="formule" name="formule" rows="5" cols="50" required></textarea><br><br>
+
+        <input type="submit" value="Ajouter la formule">
+    </form>
+</body>
+</html>
+
+
+<?php
+// Connexion à la base de données PostgreSQL
+$conn = pg_connect("host=localhost dbname=gestion_comptable user=postgres password=momo");
+
+if (!$conn) {
+    die("Erreur de connexion à la base de données.");
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Récupérer les données du formulaire
+    $libelle = $_POST['libelle'];
+    $formule = $_POST['formule'];
+
+    // Insertion dans la base de données
+    $query = "INSERT INTO formule_comptabilite (libelle, formule) VALUES ($1, $2)";
+    $result = pg_query_params($conn, $query, array($libelle, $formule));
+
+    if ($result) {
+        echo "Formule ajoutée avec succès.";
+    } else {
+        echo "Erreur lors de l'ajout de la formule.";
+    }
+}
+
+// Fermer la connexion
+pg_close($conn);
+?>
+
+
+Liste des formules comptables à automatiser
+
+Voici une liste exhaustive de formules comptables couramment utilisées que tu peux insérer dans la table formule_comptabilite :
+
+    Excédent Brut d’Exploitation (EBE)
+        Formule :
+    EBE=Valeur Ajouteˊe (VA)+Subventions d’exploitation−Impoˆts, taxes et versements assimileˊs−Charges de personnel
+    EBE=Valeur Ajouteˊe (VA)+Subventions d’exploitation−Impoˆts, taxes et versements assimileˊs−Charges de personnel
+
+    Marge commerciale
+        Formule :
+    MargeCommerciale=Ventes de marchandises−Achats de marchandises consommeˊes
+    MargeCommerciale=Ventes de marchandises−Achats de marchandises consommeˊes
+
+    Valeur ajoutée (VA)
+        Formule :
+    ValeurAjouteˊe=Chiffre d’affaires HT−Achats de marchandises et matieˋres premieˋres consommeˊes−Charges externes
+    ValeurAjouteˊe=Chiffre d’affaires HT−Achats de marchandises et matieˋres premieˋres consommeˊes−Charges externes
+
+    Résultat d'exploitation
+        Formule :
+    Reˊsultatd′exploitation=EBE−Dotations aux amortissements et provisions+Reprises sur provisions
+    Reˊsultatd′exploitation=EBE−Dotations aux amortissements et provisions+Reprises sur provisions
+
+    Résultat courant avant impôts
+        Formule :
+    ReˊsultatCourantAvantImpo^ts=Reˊsultat d’exploitation+Produits financiers−Charges financieˋres
+    ReˊsultatCourantAvantImpo^ts=Reˊsultat d’exploitation+Produits financiers−Charges financieˋres
+
+    Résultat net comptable
+        Formule :
+    ReˊsultatNet=Reˊsultat courant avant impoˆts−Impoˆt sur les beˊneˊfices−Eˊleˊments exceptionnels
+    ReˊsultatNet=Reˊsultat courant avant impoˆts−Impoˆt sur les beˊneˊfices−Eˊleˊments exceptionnels
+
+    Fonds de Roulement Net Global (FRNG)
+        Formule :
+    FRNG=Capitaux propres+Dettes financieˋres−Actif immobiliseˊ
+    FRNG=Capitaux propres+Dettes financieˋres−Actif immobiliseˊ
+
+    Besoin en Fonds de Roulement (BFR)
+        Formule :
+    BFR=Creˊances clients+Stocks−Dettes fournisseurs
+    BFR=Creˊances clients+Stocks−Dettes fournisseurs
+
+    Trésorerie nette
+        Formule :
+    Treˊsorerienette=Treˊsorerie active−Treˊsorerie passive
+    Treˊsorerienette=Treˊsorerie active−Treˊsorerie passive
+
+    Capacité d’autofinancement (CAF)
+        Formule :
+    CAF=Reˊsultat net comptable+Dotations aux amortissements et provisions−Reprises sur provisions
+    CAF=Reˊsultat net comptable+Dotations aux amortissements et provisions−Reprises sur provisions
+
+Ces formules sont essentielles pour suivre et analyser la performance financière de l'entreprise
+
+1. Production de l'exercice
+
+    Formule :
+
+Productiondel′exercice=Production vendue+Production stockeˊe+Production immobiliseˊe
+Productiondel′exercice=Production vendue+Production stockeˊe+Production immobiliseˊe
+
+    Explication : Cette formule permet de calculer la production totale réalisée par l'entreprise au cours de l'exercice comptable, qu'elle soit vendue, stockée ou immobilisée.
+
+2. Résultat brut d’exploitation (RBE)
+
+    Formule :
+
+ReˊsultatBrutd′Exploitation=EBE−Amortissements−Provisions
+ReˊsultatBrutd′Exploitation=EBE−Amortissements−Provisions
+
+    Explication : Il permet de mesurer le résultat de l'exploitation après déduction des charges d'amortissement et de provision.
+
+3. Coefficient de rotation des stocks
+
+    Formule :
+
+Coefficientderotationdesstocks=Couˆt des marchandises venduesStock moyen
+Coefficientderotationdesstocks=Stock moyenCouˆt des marchandises vendues​
+
+    Explication : Ce coefficient mesure la vitesse à laquelle les stocks de l'entreprise sont renouvelés, ce qui est important pour la gestion des stocks.
+
+4. Ratios de liquidité
+
+    Formule :
+
+Ratiodeliquiditeˊgeˊneˊrale=Actifs circulantsPassifs circulants
+Ratiodeliquiditeˊgeˊneˊrale=Passifs circulantsActifs circulants​
+
+    Explication : Ce ratio évalue la capacité de l'entreprise à faire face à ses obligations à court terme.
+
+5. Ratios de solvabilité
+
+    Formule :
+
+Ratiodesolvabiliteˊ=Capitaux propresTotal du passif
+Ratiodesolvabiliteˊ=Total du passifCapitaux propres​
+
+    Explication : Ce ratio mesure la capacité de l'entreprise à rembourser ses dettes à long terme.
+
+6. Capacité d'endettement
+
+    Formule :
+
+Capaciteˊd′endettement=Capaciteˊ d’autofinancementCharges financieˋres
+Capaciteˊd′endettement=Charges financieˋresCapaciteˊ d’autofinancement​
+
+    Explication : Elle mesure la capacité de l'entreprise à supporter de nouvelles dettes par rapport à sa capacité d'autofinancement.
+
+7. Taux de marge nette
+
+    Formule :
+
+Tauxdemargenette=Reˊsultat netChiffre d’affaires
+Tauxdemargenette=Chiffre d’affairesReˊsultat net​
+
+    Explication : Ce ratio permet de savoir combien de bénéfices nets l'entreprise réalise pour chaque euro de chiffre d'affaires.
+
+8. Taux de rentabilité économique
+
+    Formule :
+
+Tauxderentabiliteˊeˊconomique=Reˊsultat d’exploitationActifs eˊconomiques
+Tauxderentabiliteˊeˊconomique=Actifs eˊconomiquesReˊsultat d’exploitation​
+
+    Explication : Il permet d'évaluer la performance de l'entreprise par rapport à l'ensemble des ressources économiques dont elle dispose.
+
+9. Taux de rentabilité des capitaux propres (ROE)
+
+    Formule :
+
+Tauxderentabiliteˊdescapitauxpropres=Reˊsultat netCapitaux propres
+Tauxderentabiliteˊdescapitauxpropres=Capitaux propresReˊsultat net​
+
+    Explication : Il mesure le rendement des capitaux investis par les actionnaires.
+
+10. Endettement net
+
+    Formule :
+
+Endettementnet=Dettes financieˋres−Treˊsorerie active
+Endettementnet=Dettes financieˋres−Treˊsorerie active
+
+    Explication : Il mesure le niveau d'endettement réel de l'entreprise après prise en compte de sa trésorerie disponible.
+
+11. Taux de couverture des immobilisations
+
+    Formule :
+
+Tauxdecouverturedesimmobilisations=Capitaux propres+Dettes aˋ long termeActifs immobiliseˊs
+Tauxdecouverturedesimmobilisations=Actifs immobiliseˊsCapitaux propres+Dettes aˋ long terme​
+
+    Explication : Ce ratio mesure si l'entreprise est en mesure de financer ses immobilisations à long terme avec ses ressources stables (capitaux propres et dettes à long terme).
+
+12. Coefficient d'exploitation
+
+    Formule :
+
+Coefficientd′exploitation=Charges d’exploitationChiffre d’affaires
+Coefficientd′exploitation=Chiffre d’affairesCharges d’exploitation​
+
+    Explication : Il permet d'analyser la part des charges d'exploitation dans le chiffre d'affaires.
+
+13. Taux d'autofinancement
+
+    Formule :
+
+Tauxd′autofinancement=Capaciteˊ d’autofinancementInvestissements reˊaliseˊs
+Tauxd′autofinancement=Investissements reˊaliseˊsCapaciteˊ d’autofinancement​
+
+    Explication : Il montre la capacité de l'entreprise à financer ses investissements grâce à ses ressources propres.
+
+14. Effet de levier financier
+
+    Formule :
+
+Effetdelevier=Reˊsultat d’exploitation - Charges financieˋresCapitaux propres
+Effetdelevier=Capitaux propresReˊsultat d’exploitation - Charges financieˋres​
+
+    Explication : L'effet de levier montre l'impact de l'endettement sur la rentabilité des capitaux propres.
+
+15. Point mort (Seuil de rentabilité)
+
+    Formule :
+
+Pointmort=Charges fixesTaux de marge sur couˆts variables
+Pointmort=Taux de marge sur couˆts variablesCharges fixes​
+
+    Explication : Le point mort est le niveau de chiffre d'affaires à atteindre pour couvrir l'ensemble des charges fixes et variables de l'entreprise.
+
+16. Délai de rotation des créances clients
+
+    Formule :
+
+Deˊlaiderotationdescreˊancesclients=Creˊances clientsChiffre d’affaires×360
+Deˊlaiderotationdescreˊancesclients=Chiffre d’affairesCreˊances clients​×360
+
+    Explication : Ce ratio permet d'évaluer la rapidité avec laquelle l'entreprise encaisse les paiements de ses clients.
+
+17. Délai de rotation des dettes fournisseurs
+
+    Formule :
+
+Deˊlaiderotationdesdettesfournisseurs=Dettes fournisseursAchats de marchandises×360
+Deˊlaiderotationdesdettesfournisseurs=Achats de marchandisesDettes fournisseurs​×360
+
+    Explication : Il indique la vitesse à laquelle l'entreprise paie ses fournisseurs.
+
+18. Résultat net d’exploitation après impôts (RNAPI)
+
+    Formule :
+
+RNAPI=Reˊsultat d’exploitation−Impoˆts sur les beˊneˊfices
+RNAPI=Reˊsultat d’exploitation−Impoˆts sur les beˊneˊfices
+
+    Explication : C'est une mesure du bénéfice net généré par les opérations courantes de l'entreprise après impôts.
+	
+	En mathématiques financières, il existe de nombreuses formules qui peuvent être automatisées pour simplifier les calculs liés aux emprunts, investissements, taux d’intérêt, et autres opérations financières. Voici une liste des principales formules que tu pourrais envisager d'automatiser :
+1. Valeur future (VF) ou capitalisation
+
+    Formule :
+
+VF=C0×(1+r)n
+VF=C0​×(1+r)n
+
+    Explication :
+    Où :
+        C0C0​ = Capital initial
+        rr = Taux d’intérêt (par période)
+        nn = Nombre de périodes
+    Usage : Calculer la valeur future d'un investissement après un certain nombre de périodes, en tenant compte du taux d’intérêt composé.
+
+2. Valeur actuelle (VA) ou actualisation
+
+    Formule :
+
+VA=VF(1+r)n
+VA=(1+r)nVF​
+
+    Explication :
+    Où :
+        VFVF = Valeur future
+        rr = Taux d’intérêt (par période)
+        nn = Nombre de périodes
+    Usage : Calculer la valeur actuelle d'une somme qui sera reçue ou payée dans le futur, en fonction d'un taux d'actualisation.
+
+3. Taux de rendement interne (TRI)
+
+    Formule :
+
+∑t=0nCt(1+TRI)t=0
+t=0∑n​(1+TRI)tCt​​=0
+
+    Explication :
+        CtCt​ = Flux de trésorerie à la période tt
+        TRITRI = Taux de rendement interne (taux d’actualisation qui annule la somme des flux actualisés)
+    Usage : Le TRI permet de calculer le taux de rentabilité d'un projet ou d'un investissement sur la durée.
+
+4. Taux d'actualisation
+
+    Formule :
+
+r=(VFVA)1n−1
+r=(VAVF​)n1​−1
+
+    Explication :
+    Cette formule est utilisée pour calculer le taux d'intérêt ou le taux de croissance d'un investissement entre deux périodes.
+
+5. Annuité (paiement périodique constant)
+
+    Formule :
+
+A=C0×r1−(1+r)−n
+A=1−(1+r)−nC0​×r​
+
+    Explication :
+    Où :
+        AA = Annuité
+        C0C0​ = Capital initial
+        rr = Taux d’intérêt par période
+        nn = Nombre de périodes
+    Usage : Calcul de l'annuité ou du montant à payer régulièrement (mensuellement, annuellement) pour rembourser un emprunt avec un taux d’intérêt constant.
+
+6. Montant total des intérêts
+
+    Formule :
+
+I=A×n−C0
+I=A×n−C0​
+
+    Explication :
+    Où :
+        II = Montant total des intérêts
+        AA = Annuité (paiement régulier)
+        nn = Nombre de périodes
+        C0C0​ = Capital initial
+    Usage : Calculer le total des intérêts payés sur toute la durée d’un emprunt ou d’un prêt.
+
+7. Valeur actuelle nette (VAN)
+
+    Formule :
+
+VAN=∑t=0nCt(1+r)t−I0
+VAN=t=0∑n​(1+r)tCt​​−I0​
+
+    Explication :
+    Où :
+        CtCt​ = Flux de trésorerie à la période tt
+        rr = Taux d’intérêt ou taux d’actualisation
+        nn = Durée du projet
+        I0I0​ = Investissement initial
+    Usage : La VAN est utilisée pour évaluer la rentabilité d’un projet. Elle permet de savoir si la somme actualisée des flux de trésorerie attendus dépasse le coût initial de l’investissement.
+
+8. Taux de capitalisation
+
+    Formule :
+
+Tauxdecapitalisation=Revenu netValeur de l’actif
+Tauxdecapitalisation=Valeur de l’actifRevenu net​
+
+    Explication :
+    Ce taux permet d’évaluer le rendement d’un investissement immobilier, en comparant le revenu généré par l'actif à sa valeur de marché.
+
+9. Durée de remboursement (méthode des flux actualisés)
+
+    Formule :
+
+t=ln⁡(1−VF×rA)ln⁡(1+r)
+t=ln(1+r)ln(1−AVF×r​)​
+
+    Explication :
+    Cette formule permet de déterminer le temps nécessaire pour rembourser un prêt ou atteindre un objectif financier en tenant compte du taux d'intérêt.
+
+10. Intérêt simple
+
+    Formule :
+
+I=C0×r×n
+I=C0​×r×n
+
+    Explication :
+    Où :
+        II = Intérêt total
+        C0C0​ = Capital initial
+        rr = Taux d’intérêt
+        nn = Durée de l’investissement
+    Usage : Pour calculer l’intérêt gagné ou payé sur un capital investi à intérêt simple.
+
+11. Intérêt composé
+
+    Formule :
+
+VF=C0×(1+rm)n×m
+VF=C0​×(1+mr​)n×m
+
+    Explication :
+    Où :
+        mm = Nombre de périodes de capitalisation par an
+        nn = Nombre d'années
+        C0C0​ = Capital initial
+        rr = Taux d'intérêt annuel
+    Usage : Utilisée pour calculer l'intérêt composé, où les intérêts gagnés sont réinvestis à chaque période de calcul.
+
+12. Échéance d'un emprunt avec amortissement constant
+
+    Formule :
+
+E=C0n+C×r
+E=nC0​​+C×r
+
+    Explication :
+    Où :
+        EE = Montant de l’échéance
+        C0C0​ = Capital initial
+        rr = Taux d’intérêt par période
+        nn = Nombre total de périodes
+    Usage : Calcul de l’échéance constante pour un prêt où le capital est amorti de manière régulière.
+
+13. Taux proportionnel (pour l'équivalence de deux taux)
+
+    Formule :
+
+rp=rnominalm
+rp​=mrnominal​​
+
+    Explication :
+    Où mm représente le nombre de périodes dans l’année (par exemple 12 pour des taux mensuels).
+
+14. Taux équivalent (conversion entre taux)
+
+    Formule :
+
+rannuel=(1+rp)m−1
+r
+L’automatisation des Soldes Intermédiaires de Gestion (SIG) peut grandement faciliter l'analyse financière d'une entreprise en fournissant des indicateurs clés sur sa performance à différentes étapes de son exploitation. Les SIG permettent de décomposer et d'analyser le compte de résultat en plusieurs niveaux.
+Principales étapes des Soldes Intermédiaires de Gestion à automatiser
+
+    Marge commerciale
+        Formule :
+    Marge commerciale=Ventes de marchandises−Couˆt d’achat des marchandises vendues
+    Marge commerciale=Ventes de marchandises−Couˆt d’achat des marchandises vendues
+        Explication : La marge commerciale est la différence entre les ventes de marchandises et leur coût d'achat (incluant les variations de stocks). Elle est pertinente pour les entreprises qui achètent et revendent des marchandises sans transformation.
+
+    Production de l’exercice
+        Formule :
+    Production de l’exercice=Production vendue+Production stockeˊe+Production immobiliseˊe
+    Production de l’exercice=Production vendue+Production stockeˊe+Production immobiliseˊe
+        Explication : La production de l'exercice concerne les entreprises qui produisent des biens ou services. Elle inclut la production vendue, stockée (variations de stocks), et immobilisée (travaux effectués par l'entreprise pour elle-même).
+
+    Valeur ajoutée (VA)
+        Formule :
+    Valeur ajouteˊe=Marge commerciale+Production de l’exercice−Consommations en provenance de tiers
+    Valeur ajouteˊe=Marge commerciale+Production de l’exercice−Consommations en provenance de tiers
+        Explication : La valeur ajoutée mesure la richesse créée par l'entreprise. Elle se calcule en ajoutant la marge commerciale et la production de l’exercice, puis en déduisant les consommations externes (achats de matières premières, services extérieurs).
+
+    Excédent Brut d’Exploitation (EBE)
+        Formule :
+    EBE=Valeur ajouteˊe+Subventions d’exploitation−Impoˆts et taxes−Charges de personnel
+    EBE=Valeur ajouteˊe+Subventions d’exploitation−Impoˆts et taxes−Charges de personnel
+        Explication : L'EBE permet de mesurer la performance économique de l'entreprise avant la prise en compte des amortissements et provisions. C'est un indicateur clé de la rentabilité d’exploitation.
+
+    Résultat d’exploitation
+        Formule :
+    Reˊsultat d’exploitation=EBE+Reprises sur amortissements et provisions−Dotations aux amortissements et provisions+Autres produits d’exploitation−Autres charges d’exploitation
+    Reˊsultat d’exploitation=EBE+Reprises sur amortissements et provisions−Dotations aux amortissements et provisions+Autres produits d’exploitation−Autres charges d’exploitation
+        Explication : Ce solde montre la performance de l’activité de l'entreprise après prise en compte des amortissements et provisions. Il donne une idée plus complète de la rentabilité opérationnelle.
+
+    Résultat courant avant impôt
+        Formule :
+    Reˊsultat courant avant impoˆt=Reˊsultat d’exploitation+Reˊsultat financier
+    Reˊsultat courant avant impoˆt=Reˊsultat d’exploitation+Reˊsultat financier
+        Explication : Ce solde prend en compte le résultat financier, qui inclut les produits financiers (intérêts perçus, dividendes) et les charges financières (intérêts d'emprunt, pertes financières).
+
+    Résultat exceptionnel
+        Formule :
+    Reˊsultat exceptionnel=Produits exceptionnels−Charges exceptionnelles
+    Reˊsultat exceptionnel=Produits exceptionnels−Charges exceptionnelles
+        Explication : Il reflète les opérations non récurrentes de l'entreprise (par exemple, des gains ou des pertes issus de la vente d’actifs).
+
+    Résultat net avant impôt
+        Formule :
+    Reˊsultat net avant impoˆt=Reˊsultat courant avant impoˆt+Reˊsultat exceptionnel
+    Reˊsultat net avant impoˆt=Reˊsultat courant avant impoˆt+Reˊsultat exceptionnel
+        Explication : Il montre le résultat global de l’entreprise avant impôt, en incluant les résultats de l’exploitation, financiers, et exceptionnels.
+
+    Résultat net
+        Formule :
+    Reˊsultat net=Reˊsultat net avant impoˆt−Impoˆt sur les beˊneˊfices
+    Reˊsultat net=Reˊsultat net avant impoˆt−Impoˆt sur les beˊneˊfices
+        Explication : Le résultat net montre le bénéfice ou la perte finale de l'entreprise après paiement des impôts. C'est un indicateur clé pour mesurer la rentabilité globale de l'entreprise.
+
+Liste des comptes utilisés pour les SIG (selon SYSCOHADA)
+
+Voici les comptes typiquement utilisés dans les SIG :
+
+    Ventes de marchandises : Compte 701
+    Achats de marchandises : Compte 601
+    Production vendue : Compte 701 à 707
+    Production stockée : Compte 713
+    Production immobilisée : Compte 721
+    Consommations en provenance de tiers : Comptes 601 à 607 (achats de matières premières, services extérieurs)
+    Subventions d’exploitation : Compte 741
+    Impôts et taxes : Compte 63
+    Charges de personnel : Compte 641
+    Amortissements et provisions : Comptes 681 et 686
+    Produits financiers : Compte 76
+    Charges financières : Compte 66
+    Produits exceptionnels : Compte 77
+    Charges exceptionnelles : Compte 67
+    Impôts sur les bénéfices : Compte 69
+
+Automatisation des SIG
+
+Automatiser les SIG consiste à créer un système qui effectue ces calculs à partir des données comptables. L'outil doit être capable d'extraire les montants des comptes pertinents pour chaque calcul et de générer automatiquement les résultats pour chaque niveau des SIG. Cela pourrait être réalisé par :
+
+    Un script SQL pour extraire les données des comptes depuis la base de données.
+    Un formulaire pour l’insertion des données et une interface utilisateur pour afficher les résultats.
+    Un algorithme qui effectue les calculs de manière dynamique, mis à jour en temps réel lorsque de nouvelles données sont insérées.
+
+Exemples d’automatisation des calculs SIG en SQL
+
+Voici un exemple d’extraction et de calcul en SQL pour la marge commerciale :
+
+sql
+
+SELECT
+    (SUM(vente_marchandise) - SUM(achat_marchandise)) AS marge_commerciale
+FROM
+    comptes
+WHERE
+    compte_numero IN (701, 601);
+
+Et pour la valeur ajoutée :
+
+sql
+
+SELECT
+    (marge_commerciale + production_exercice - consommations_provenance_tiers) AS valeur_ajoutee
+FROM
+    comptes;
+
+Conclusion
+
+L’automatisation des Soldes Intermédiaires de Gestion permet d’avoir une vision claire et rapide de la performance d'une entreprise. En combinant des outils tels que des bases de données comptables, des scripts automatisés pour les calculs, et une interface utilisateur conviviale, tu pourrais construire un système complet de gestion comptable intégrant ces formules
+
+
+annuel​=(1+rp​)m−1
+
+    Explication :
+    Cette formule convertit un taux proportionnel en taux annuel ou entre périodes différentes (mensuel, trimestriel, etc.).
+	
+	
+	L’automatisation des ratios de profitabilité, rentabilité, et des flux de trésorerie (cash flow) permet d'obtenir des indicateurs financiers essentiels pour évaluer la performance financière et la gestion des ressources d'une entreprise. Ces ratios et indicateurs permettent de mesurer l'efficacité de l'entreprise à générer des bénéfices et à gérer sa trésorerie. Voici un ensemble de ratios et indicateurs que tu peux automatiser, ainsi que les formules associées.
+1. Ratios de Profitabilité
+
+Ces ratios mesurent la capacité d'une entreprise à générer des bénéfices par rapport à son chiffre d'affaires ou à d'autres agrégats financiers.
+a. Marge brute
+
+    Formule :
+
+Marge brute=Reˊsultat brut d’exploitation (EBE)Chiffre d’affaires×100
+Marge brute=Chiffre d’affairesReˊsultat brut d’exploitation (EBE)​×100
+
+    Explication : Ce ratio mesure la proportion de bénéfice brute générée par rapport au chiffre d’affaires, avant les charges fixes et les charges financières.
+
+b. Marge nette
+
+    Formule :
+
+Marge nette=Reˊsultat netChiffre d’affaires×100
+Marge nette=Chiffre d’affairesReˊsultat net​×100
+
+    Explication : Ce ratio mesure la rentabilité globale après prise en compte de toutes les charges, y compris les impôts. Il exprime le bénéfice net pour chaque unité monétaire de chiffre d’affaires.
+
+c. Marge d'exploitation
+
+    Formule :
+
+Marge d’exploitation=Reˊsultat d’exploitationChiffre d’affaires×100
+Marge d’exploitation=Chiffre d’affairesReˊsultat d’exploitation​×100
+
+    Explication : Ce ratio mesure la part du chiffre d'affaires qui reste après la prise en compte des coûts opérationnels directs et indirects. Il est un bon indicateur de la performance d'exploitation.
+
+2. Ratios de Rentabilité
+
+Ces ratios mesurent la capacité de l’entreprise à générer des rendements pour les actionnaires et les investisseurs par rapport aux ressources mobilisées.
+a. Rentabilité des capitaux propres (Return on Equity - ROE)
+
+    Formule :
+
+ROE=Reˊsultat netCapitaux propres×100
+ROE=Capitaux propresReˊsultat net​×100
+
+    Explication : Ce ratio exprime la rentabilité obtenue par les actionnaires sur les fonds qu’ils ont investis dans l'entreprise.
+
+b. Rentabilité économique (Return on Assets - ROA)
+
+    Formule :
+
+ROA=Reˊsultat d’exploitationTotal des actifs×100
+ROA=Total des actifsReˊsultat d’exploitation​×100
+
+    Explication : Ce ratio mesure la capacité de l’entreprise à générer des profits par rapport aux actifs utilisés. Il montre dans quelle mesure l'entreprise utilise ses actifs pour générer des revenus.
+
+c. Rentabilité des capitaux investis (Return on Investment - ROI)
+
+    Formule :
+
+ROI=Reˊsultat d’exploitationCapitaux investis×100
+ROI=Capitaux investisReˊsultat d’exploitation​×100
+
+    Explication : Le ROI mesure l'efficacité de l'investissement par rapport au rendement généré. Il exprime combien chaque unité de capital investi génère en termes de résultat d'exploitation.
+
+3. Ratios de Flux de Trésorerie (Cash Flow)
+
+Les flux de trésorerie (cash flow) mesurent la capacité de l'entreprise à générer des liquidités et à financer ses activités.
+a. Capacité d’autofinancement (CAF)
+
+    Formule :
+
+CAF=Reˊsultat net+Amortissements et provisions−Reprises sur provisions
+CAF=Reˊsultat net+Amortissements et provisions−Reprises sur provisions
+
+    Explication : La capacité d’autofinancement montre la capacité d'une entreprise à générer suffisamment de trésorerie pour financer ses investissements et rembourser ses dettes.
+
+b. Cash-flow opérationnel
+
+    Formule :
+
+Cash-flow opeˊrationnel=EBE+Variation du besoin en fonds de roulement (BFR)
+Cash-flow opeˊrationnel=EBE+Variation du besoin en fonds de roulement (BFR)
+
+    Explication : Le cash-flow opérationnel montre la trésorerie générée par les opérations courantes de l'entreprise, après ajustement des variations de BFR.
+
+c. Cash-flow libre (Free Cash Flow)
+
+    Formule :
+
+Free Cash Flow=Cash-flow opeˊrationnel−Investissements nets
+Free Cash Flow=Cash-flow opeˊrationnel−Investissements nets
+
+    Explication : Le free cash flow représente la trésorerie disponible après que l'entreprise ait couvert ses dépenses d'investissement. Il est utilisé pour évaluer la capacité de l'entreprise à distribuer des dividendes ou à rembourser des dettes.
+
+4. Ratios de Liquidité
+
+Ces ratios mesurent la capacité de l'entreprise à faire face à ses obligations à court terme.
+a. Ratio de liquidité générale
+
+    Formule :
+
+Ratio de liquiditeˊ geˊneˊrale=Actifs circulantsPassifs aˋ court terme
+Ratio de liquiditeˊ geˊneˊrale=Passifs aˋ court termeActifs circulants​
+
+    Explication : Ce ratio mesure la capacité de l'entreprise à couvrir ses dettes à court terme avec ses actifs circulants (stocks, créances clients, trésorerie, etc.).
+
+b. Ratio de liquidité immédiate
+
+    Formule :
+
+Ratio de liquiditeˊ immeˊdiate=TreˊsoreriePassifs aˋ court terme
+Ratio de liquiditeˊ immeˊdiate=Passifs aˋ court termeTreˊsorerie​
+
+    Explication : Ce ratio évalue la capacité de l'entreprise à rembourser ses dettes à court terme uniquement avec sa trésorerie disponible, sans tenir compte des stocks ou des créances.
+
+Exemple d’automatisation des ratios en SQL
+
+Pour automatiser ces calculs, voici quelques exemples de requêtes SQL que tu pourrais utiliser pour extraire et calculer les ratios à partir des données financières stockées dans une base de données.
+a. Marge brute
+
+sql
+
+SELECT 
+    (SUM(resultat_brut_exploitation) / SUM(chiffre_affaires)) * 100 AS marge_brute
+FROM 
+    comptes;
+
+b. Rentabilité des capitaux propres (ROE)
+
+sql
+
+SELECT 
+    (SUM(resultat_net) / SUM(capitaux_propres)) * 100 AS rentabilite_capitaux_propres
+FROM 
+    comptes;
+
+c. Capacité d'autofinancement (CAF)
+
+sql
+
+SELECT 
+    (SUM(resultat_net) + SUM(amortissements) - SUM(reprises_provisions)) AS capacite_autofinancement
+FROM 
+    comptes;
+
+Conclusion
+
+L’automatisation des ratios de profitabilité, rentabilité, et cash-flow permet de disposer d'outils puissants pour évaluer la performance financière d'une entreprise. En utilisant une base de données comptable et des scripts automatisés, il est possible de calculer ces ratios de man

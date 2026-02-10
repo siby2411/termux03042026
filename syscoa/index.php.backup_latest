@@ -1,0 +1,61 @@
+<?php
+// Fix for module parameter - VERSION 3.0 (COMPLETE FIX)
+$module = 'dashboard';
+if (isset($_GET['module'])) {
+    $raw = $_GET['module'];
+    
+    // Handle array case
+    if (is_array($raw)) {
+        error_log("SYSCOHADA DEBUG: Module parameter is array");
+        if (count($raw) > 0) {
+            $module = is_string($raw[0]) ? $raw[0] : 'dashboard';
+        }
+    } 
+    // Handle string case
+    elseif (is_string($raw)) {
+        $module = $raw;
+    }
+    // Handle other cases
+    else {
+        $module = 'dashboard';
+    }
+}
+
+// FORCE string type
+settype($module, 'string');
+
+// Page d'accueil SYSCOHADA
+require_once 'config.php';
+check_login();
+
+// DO NOT REASSIGN $module HERE - COMMENT THIS OUT IF IT EXISTS
+// $module = $_GET['module'] ?? 'dashboard';
+
+$submodule = $_GET['submodule'] ?? '';
+
+// Inclure le header
+include 'includes/header.php';
+
+// Contenu principal
+$page_file = "pages/$module.php";
+
+// SAFE FILE CHECK - ensure $module is string
+$module_for_file = is_string($module) ? $module : 'dashboard';
+$page_file = "pages/$module_for_file.php";
+
+if (file_exists($page_file)) {
+    include $page_file;
+} else {
+    echo '<div class="alert alert-danger">';
+    echo '<h4><i class="fas fa-exclamation-triangle"></i> Module non disponible</h4>';
+    
+    // SAFE OUTPUT - ensure we're passing a string to htmlspecialchars
+    $safe_module = is_string($module) ? $module : 'inconnu';
+    echo '<p>Le module <strong>' . htmlspecialchars($safe_module) . '</strong> n\'est pas encore implémenté.</p>';
+    
+    echo '<a href="?module=dashboard" class="btn btn-primary">Retour au tableau de bord</a>';
+    echo '</div>';
+}
+
+// Inclure le footer
+include 'includes/footer.php';

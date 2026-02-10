@@ -1,0 +1,53 @@
+/* Custom Styles for Gestion Prévisionnelle */
+
+:root {
+    --sidebar-width: 200px; /* Retour à 200px pour un bon équilibre */
+    --primary-color: #007bff;
+    --dark-bg: #212529; 
+}
+
+/* ... (conservez le début du CSS) ... */
+
+/* Mode Desktop (Largeur > 768px) */
+@media (min-width: 768px) {
+    #sidebar-wrapper {
+        margin-left: 0;
+    }
+
+    /* Le conteneur de page DOIT commencer après la sidebar */
+    #page-content-wrapper {
+        min-width: 0;
+        /* La largeur prend tout l'écran moins la largeur de la sidebar */
+        width: calc(100vw - var(--sidebar-width)); 
+        /* La marge déplace le contenu pour commencer après la sidebar */
+        margin-left: var(--sidebar-width); 
+    }
+
+    #wrapper.toggled #sidebar-wrapper {
+        margin-left: -var(--sidebar-width);
+    }
+
+    #wrapper.toggled #page-content-wrapper {
+        margin-left: 0;
+        min-width: 100vw;
+    }
+}
+
+/* Nouveau style pour les tableaux de rapport */
+.table-rapport th {
+    background-color: #495057; /* Gris foncé */
+    color: white;
+    font-weight: bold;
+}
+.table-rapport tr:nth-child(even) {
+    background-color: #f2f2f2; /* Alternance de couleurs */
+}
+.table-rapport td {
+    vertical-align: middle;
+}
+
+/* Styles pour les alertes de segmentation */
+.alerte-rouge {
+    font-weight: bold;
+    color: #dc3545; /* Rouge Bootstrap */
+}

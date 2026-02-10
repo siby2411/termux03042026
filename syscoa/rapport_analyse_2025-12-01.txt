@@ -1,0 +1,13 @@
+RAPPORT D'ANALYSE FINANCIÈRE - 01/12/2025 04:15:20
+
+LIQUIDITE:
+  - liquidite_generale: 0 (critique)
+  - liquidite_reduite: 0 (critique)
+
+SOLVABILITE:
+  - autonomie_financiere: 0 (critique)
+  - endettement_global: 0 (excellent)
+
+RENTABILITE:
+  - rentabilite_capitaux_propres: 0 (critique)
+

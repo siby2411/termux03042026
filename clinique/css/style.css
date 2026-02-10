@@ -1,0 +1,181 @@
+/* Styles de base */
+:root {
+    --primary-blue: #1e3a8a;
+    --secondary-blue: #3b82f6;
+    --light-blue: #dbeafe;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+}
+
+/* Login Page */
+.login-body {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.login-container {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    overflow: hidden;
+    width: 100%;
+    max-width: 400px;
+}
+
+.login-header {
+    background: var(--primary-blue);
+    color: white;
+    padding: 2rem;
+    text-align: center;
+}
+
+.login-header h1 {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+/* Table Improvements */
+.table th {
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: #374151;
+    border-top: none;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(59, 130, 246, 0.05);
+}
+
+/* Card Improvements */
+.card {
+    border: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 1.5rem;
+    border-radius: 10px;
+}
+
+.card-header {
+    background-color: white;
+    border-bottom: 1px solid #e5e7eb;
+    font-weight: 600;
+    border-radius: 10px 10px 0 0 !important;
+}
+
+/* Button Improvements */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background: var(--secondary-blue);
+    border-color: var(--secondary-blue);
+}
+
+.btn-primary:hover {
+    background: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+
+/* Badges */
+.badge-status {
+    font-size: 0.75em;
+    padding: 0.35em 0.65em;
+}
+
+.stat-card {
+    border-left: 4px solid #3b82f6;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+}
+
+.btn-action {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        z-index: 1000;
+        transform: translateX(-100%);
+        transition: transform 0.3s;
+    }
+    
+    .sidebar.show {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+}
+
+/* Animation */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Styles pour les boutons d'action */
+.btn-action {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.btn-action:hover {
+    transform: translateY(-1px);
+}
+
+/* Cartes de statistiques */
+.stat-card {
+    border-left: 4px solid;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+/* Badges de rôle */
+.badge-role-medecin { background-color: #3b82f6; }
+.badge-role-infirmier { background-color: #10b981; }
+.badge-role-secretaire { background-color: #06b6d4; }
+.badge-role-comptable { background-color: #f59e0b; }
+.badge-role-admin { background-color: #ef4444; }
+
+/* Table responsive */
+.table-responsive {
+    border-radius: 8px;
+}
+
+.table th {
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: #374151;
+    border-top: none;
+}
+
+/* Animation des lignes */
+.table-hover tbody tr {
+    transition: background-color 0.2s;
+}

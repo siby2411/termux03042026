@@ -1,0 +1,49 @@
+
+Comment intégrer les opérations diverses ci après 
+
+mysql> select * from operation_diverse ;
++----+----------------+------------------------------------------------------+----------+---------------+--------+
+| id | date_operation | description                                          | montant  | numero_compte | statut |
++----+----------------+------------------------------------------------------+----------+---------------+--------+
+|  6 | 2024-10-15     | Achat d’un véhicule                                  | 20000.00 | 2181          | debit  |
+|  7 | 2024-10-16     | Acquisition d’un brevet                              | 10000.00 | 205           | debit  |
+|  8 | 2024-10-17     | Dotation aux amortissements - Véhicule               |  3000.00 | 6811          | debit  |
+|  9 | 2024-10-18     | Provision pour risques futurs                        |  5000.00 | 6871          | debit  |
+| 10 | 2024-10-19     | Assurance payée d’avance                             |  1200.00 | 486           | debit  |
+| 11 | 2024-10-20     | Provision pour dépréciation d’un brevet              |  1500.00 | 6875          | debit  |
+| 12 | 2024-10-20     | Assurance payée d’avance pour l’année suivante       |  1500.00 | 486           | debit  |
+| 13 | 2024-10-15     | Recette de loyer                                     |  1500.00 | 411000        | credit |
+| 14 | 2024-10-15     | Paiement fournisseur pour achat matériel             |  5000.00 | 404000        | credit |
+| 15 | 2024-10-15     | Créance client pour prestation de services           |  3500.00 | 411000        | credit |
+| 16 | 2024-10-14     | Paiement d’une avance sur contrat                    |  2000.00 | 419000        | credit |
+| 17 | 2024-10-13     | Encaissement d’une facture client                    |  2500.00 | 512000        | credit |
+| 18 | 2024-10-12     | Recettes liées à une vente d’immobilisation          |  4500.00 | 775000        | credit |
++----+----------------+------------------------------------------------------+----------+---------------+--------+
+13 rows in set (0.02 sec)
+
+mysql>
+
+
+Dans ce bilan ci après 
+
+Bilan d'Ouverture pour l'Exercice 2024
+Actifs
+Libellé	Montant	Sous-Type
+Terrains	2000000.00	immobilisations
+Bâtiments	3000000.00	immobilisations
+Matériel et outillage	1500000.00	immobilisations
+Stocks de marchandises	600000.00	circulant
+Créances clients	350000.00	circulant
+Disponibilités (Caisse)	100000.00	circulant
+Passifs
+Libellé	Montant	Sous-Type
+Capital social	5000000.00	capitaux_propres
+Réserves	800000.00	capitaux_propres
+Dettes fournisseurs	250000.00	dettes
+Emprunts bancaires	1000000.00	dettes
+
+
+Les actifs doivent être insérer dans dans la rubrique actif du bilan 
+Il en est de même pour les passifs 
+
+

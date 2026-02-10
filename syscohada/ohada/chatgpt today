@@ -1,0 +1,171 @@
+
+Merci de me proposer la même procédure pour exporter comptes_ohada au format xlsx avec tous les attributs de la table comptes_ohada le fichier sera un script php mysql identique a 
+
+
+<?php
+
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+// Inclure le fichier autoload de PhpSpreadsheet (Composer ou via un chemin local)
+require 'vendor/autoload.php';
+
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+
+// Informations de connexion à la base de données
+$host = 'localhost'; // Nom d'hôte du serveur MySQL
+$dbname = 'ohada'; // Nom de la base de données
+$username = 'root'; // Nom d'utilisateur MySQL (root sans mot de passe)
+$password = '123'; // Mot de passe
+
+// Chemin vers lequel le fichier XLSX sera exporté (modifier selon vos besoins)
+$xlsx_file = '/data/data/com.termux/files/home/storage/shared/comptes_ohada.xlsx';
+
+try {
+    // Connexion à la base de données
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Requête pour sélectionner les données de la table comptes_ohada
+    $sql = "SELECT * FROM comptes_ohada";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute();
+    
+    // Créer un nouveau fichier Excel
+    $spreadsheet = new Spreadsheet();
+    $sheet = $spreadsheet->getActiveSheet();
+
+    // Définir l'en-tête des colonnes
+    $sheet->setCellValue('A1', 'id');
+    $sheet->setCellValue('B1', 'num_compte');
+    $sheet->setCellValue('C1', 'intitule');
+    $sheet->setCellValue('D1', 'sous_classe_id');
+    $sheet->setCellValue('E1', 'description');
+
+    // Remplir le fichier Excel avec les données de la table
+    $rowIndex = 2; // Lignes de données commencent à la deuxième ligne (1ère ligne pour les en-têtes)
+    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $sheet->setCellValue('A' . $rowIndex, $row['id']);
+        $sheet->setCellValue('B' . $rowIndex, $row['num_compte']);
+        $sheet->setCellValue('C' . $rowIndex, $row['intitule']);
+        $sheet->setCellValue('D' . $rowIndex, $row['sous_classe_id']);
+        $sheet->setCellValue('E' . $rowIndex, $row['description']);
+        $rowIndex++;
+    }
+
+    // Écrire le fichier Excel sur le disque
+    $writer = new Xlsx($spreadsheet);
+    $writer->save($xlsx_file);
+
+    echo "Les comptes OHADA ont été exportés dans le fichier $xlsx_file";
+
+} catch (PDOException $e) {
+    // Gestion des erreurs de la base de données
+    echo "Erreur : " . $e->getMessage();
+} catch (Exception $e) {
+    // Gestion des erreurs liées à PhpSpreadsheet
+    echo "Erreur lors de l'exportation du fichier Excel : " . $e->getMessage();
+}
+?>
+
+
+
+
+
+
+mysql> describe comptes_ohada ;
++----------------+--------------+------+-----+---------+----------------+
+| Field          | Type         | Null | Key | Default | Extra          |
++----------------+--------------+------+-----+---------+----------------+
+| id             | int          | NO   | PRI | NULL    | auto_increment |
+| num_compte     | varchar(20)  | NO   |     | NULL    |                |
+| intitule       | varchar(255) | NO   |     | NULL    |                |
+| sous_classe_id | int          | YES  | MUL | NULL    |                |
+| description    | text         | YES  |     | NULL    |                |
++----------------+--------------+------+-----+---------+----------------+
+5 rows in set (0.07 sec)
+
+mysql>
+
+
+
+Deuxième question
+
+Merci de vous baser sur cette liste 
+
+ Sous-Classes OHADA 	Numéro de la Sous-Classe	
+
+ les numéros de compte ont des correspondances avec les intutiles de la sous classes ohada 
+
+1	101	 Capital social
+2	102	 Primes d?émission
+3	201	 Immobilisations incorporelles
+4	202	 Immobilisations corporelles
+5	203	 Immobilisations financières
+6	204	 Amortissements des immobilisations
+7	301	 Stocks de marchandises
+8	302 	Stocks de produits finis
+9	401	 Clients
+10	402 	Fournisseurs
+11	501 	Banques
+12	502 	 Caisse
+13	601 	Charges d?exploitation
+14	602 	Charges financières
+15	701	 Produits d?exploitation
+16	702	 Produits financiers
+6500	650	  Frais financiers
+6600	660	 Charges d'intérêts
+6610	661	 Intérêts sur dettes fournisseurs
+6620	662	  Pertes de change
+7040	704 	Revenus financiers divers
+Merci de me baser sur mysql> describe classes_ohada ;
++-----------------+------------------------+------+-----+---------+----------------+
+| Field           | Type                   | Null | Key | Default | Extra          |
++-----------------+------------------------+------+-----+---------+----------------+
+| id              | int                    | NO   | PRI | NULL    | auto_increment |
+| num_classe      | varchar(10)            | NO   |     | NULL    |                |
+| intitule_classe | varchar(255)           | NO   |     | NULL    |                |
+| statut          | enum('actif','passif') | NO   |     | NULL    |                |
++-----------------+------------------------+------+-----+---------+----------------+
+4 rows in set (0.03 sec)
+
+mysql>
+
+mysql> describe   sous_classes_ohada  ;
++----------------------+--------------+------+-----+---------+----------------+
+| Field                | Type         | Null | Key | Default | Extra          |
++----------------------+--------------+------+-----+---------+----------------+
+| id                   | int          | NO   | PRI | NULL    | auto_increment |
+| num_sous_classe      | varchar(10)  | NO   |     | NULL    |                |
+| intitule_sous_classe | varchar(255) | NO   |     | NULL    |                |
+| classe_id            | int          | YES  | MUL | NULL    |                |
++----------------------+--------------+------+-----+---------+----------------+
+4 rows in set (0.01 sec)
+
+
+mysql>
+
+Mètre a jour  intutiles dans la classe  comptes_ohada ; en fonction des données. Des tables 
+
+
+Quiestion 3
+
+Merci de me proposer des modèles d'écriture comptables sous Excel conformes aux syscohada pour un achat vente encaissement décaissement 
+
+Merci de me proposer un modèle de bilan comptable sous Excel conforme au syscohada 
+
+Merci de me proposer un modèle de fichier Excel pour le enregistrement Amortissement avec écriture comptable 
+
+Merci de me proposer une méthode pour comprendre les charges constatées d'avance syscohada 
+
+
+Merci de me proposer une méthode pour comprendre la régularisation des charges du passif avec syscohada 
+
+
+
+
+
+

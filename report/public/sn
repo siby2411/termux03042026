@@ -1,0 +1,71 @@
+<?php
+session_start();
+require __DIR__ . '/../config/config.php'; // chemin correct vers config.php
+
+// Récupération des immobilisations avec la société associée
+try {
+    $stmt = $pdo->query("
+        SELECT i.immo_id, s.nom_societe, i.designation, i.valeur_origine, i.date_acquisition, i.mode_amort, i.taux
+        FROM IMMOBILISATIONS i
+        LEFT JOIN SOCIETES s ON i.societe_id = s.societe_id
+        ORDER BY i.immo_id DESC
+    ");
+    $immobilisations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    die("Erreur récupération immobilisations : " . $e->getMessage());
+}
+?>
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Liste des Immobilisations</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body { background: #f0f2f5; font-family: 'Segoe UI', sans-serif; padding: 30px; }
+.card { padding: 2rem; border-radius: 1rem; box-shadow: 0 0 20px rgba(0,0,0,0.1); background: #fff; }
+.table th, .table td { vertical-align: middle; }
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h3 class="text-center mb-4">Liste des Immobilisations</h3>
+
+    <?php if (empty($immobilisations)): ?>
+        <div class="alert alert-warning">Aucune immobilisation trouvée.</div>
+    <?php else: ?>
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Société</th>
+                    <th>Intitulé</th>
+                    <th>Valeur</th>
+                    <th>Date acquisition</th>
+                    <th>Mode amortissement</th>
+                    <th>Taux (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($immobilisations as $i): ?>
+                    <tr>
+                        <td><?= htmlspecialchars($i['immo_id']) ?></td>
+                        <td><?= htmlspecialchars($i['nom_societe'] ?? '-') ?></td>
+                        <td><?= htmlspecialchars($i['designation']) ?></td>
+                        <td><?= number_format($i['valeur_origine'], 2, '.', ' ') ?></td>
+                        <td><?= htmlspecialchars($i['date_acquisition']) ?></td>
+                        <td><?= htmlspecialchars($i['mode_amort']) ?></td>
+                        <td><?= htmlspecialchars($i['taux']) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

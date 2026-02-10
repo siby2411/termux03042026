@@ -1,0 +1,86 @@
+### 1. **Modèles d'Écritures Comptables SYSCOHADA sous Excel : Achat, Vente, Encaissement, Décaissement**
+
+#### Achat (Fournisseur)
+| **Date**  | **Libellé**                    | **Compte Débit** | **Compte Crédit** | **Montant (CFA)** |
+|-----------|---------------------------------|------------------|-------------------|-------------------|
+| 01/09/24  | Achat de marchandises           | 601000           | 401000            | 1 000 000         |
+| 01/09/24  | TVA récupérable sur les achats  | 445660           |                   | 180 000           |
+| 01/09/24  | Dettes fournisseurs             |                  | 401000            | 1 180 000         |
+
+#### Vente (Client)
+| **Date**  | **Libellé**                    | **Compte Débit** | **Compte Crédit** | **Montant (CFA)** |
+|-----------|---------------------------------|------------------|-------------------|-------------------|
+| 05/09/24  | Vente de marchandises           | 411000           | 701000            | 2 000 000         |
+| 05/09/24  | TVA collectée                   | 445710           |                   | 360 000           |
+| 05/09/24  | Créances clients                |                  | 411000            | 2 360 000         |
+
+#### Encaissement (Client)
+| **Date**  | **Libellé**                    | **Compte Débit** | **Compte Crédit** | **Montant (CFA)** |
+|-----------|---------------------------------|------------------|-------------------|-------------------|
+| 10/09/24  | Encaissement client             | 512000           | 411000            | 2 360 000         |
+
+#### Décaissement (Fournisseur)
+| **Date**  | **Libellé**                    | **Compte Débit** | **Compte Crédit** | **Montant (CFA)** |
+|-----------|---------------------------------|------------------|-------------------|-------------------|
+| 12/09/24  | Paiement fournisseur            | 401000           | 512000            | 1 180 000         |
+
+### 2. **Modèle de Bilan Comptable SYSCOHADA sous Excel**
+
+| **Rubriques**                    | **Montant (CFA)** |
+|-----------------------------------|-------------------|
+| **ACTIF**                         |                   |
+| Immobilisations corporelles       | 5 000 000         |
+| Immobilisations incorporelles     | 1 000 000         |
+| Stocks                            | 2 000 000         |
+| Créances clients                  | 2 360 000         |
+| Disponibilités                    | 2 000 000         |
+| **Total Actif**                   | 12 360 000        |
+| **PASSIF**                        |                   |
+| Capital social                    | 5 000 000         |
+| Réserves                          | 1 000 000         |
+| Dettes fournisseurs               | 1 180 000         |
+| Dettes fiscales et sociales       | 360 000           |
+| **Total Passif**                  | 12 360 000        |
+
+### 3. **Modèle d'Amortissement avec Écriture Comptable sous Excel**
+
+#### Tableau d'Amortissement
+| **Date**  | **Immobilisation**             | **Montant d'origine (CFA)** | **Durée (ans)** | **Amortissement annuel (CFA)** | **Valeur nette (CFA)** |
+|-----------|--------------------------------|-----------------------------|-----------------|-------------------------------|------------------------|
+| 01/01/24  | Machine industrielle           | 5 000 000                   | 5               | 1 000 000                     | 4 000 000              |
+
+#### Écriture Comptable Amortissement
+| **Date**  | **Libellé**                    | **Compte Débit** | **Compte Crédit** | **Montant (CFA)** |
+|-----------|---------------------------------|------------------|-------------------|-------------------|
+| 31/12/24  | Dotation aux amortissements     | 681100           | 281100            | 1 000 000         |
+
+### 4. **Méthode pour Comprendre les Charges Constatées d'Avance (CCA) avec le SYSCOHADA**
+
+Les **Charges Constatées d'Avance (CCA)** représentent des charges payées d'avance sur des périodes ultérieures. Elles sont comptabilisées dans un compte d'attente pour être affectées à la bonne période.
+
+#### Exemple :
+Vous payez un loyer d'un an (12 mois) à l'avance, soit 1 200 000 CFA, le 01/09/24. Seuls 4 mois (de septembre à décembre) correspondent à l'exercice comptable en cours.
+
+#### Écriture initiale lors du paiement du loyer :
+| **Date**  | **Libellé**                     | **Compte Débit** | **Compte Crédit** | **Montant (CFA)** |
+|-----------|----------------------------------|------------------|-------------------|-------------------|
+| 01/09/24  | Loyer payé d'avance              | 613200           | 512000            | 1 200 000         |
+
+#### Comptabilisation des CCA à la clôture de l'exercice (pour 8 mois) :
+| **Date**  | **Libellé**                     | **Compte Débit** | **Compte Crédit** | **Montant (CFA)** |
+|-----------|----------------------------------|------------------|-------------------|-------------------|
+| 31/12/24  | Charges constatées d'avance (CCA)| 486000           | 613200            | 800 000           |
+
+### 5. **Méthode pour Comprendre la Régularisation des Charges du Passif avec le SYSCOHADA**
+
+Les **Charges à Payer (CAP)** sont des charges déjà consommées mais non encore payées. Elles sont enregistrées en fin d'exercice pour refléter correctement les charges dues.
+
+#### Exemple :
+Si vous recevez une facture d'électricité de 300 000 CFA à payer en janvier de l'année suivante, mais qui concerne l'année en cours, vous devez constater cette charge dans l'exercice courant.
+
+#### Écriture de régularisation des charges à payer :
+| **Date**  | **Libellé**                     | **Compte Débit** | **Compte Crédit** | **Montant (CFA)** |
+|-----------|----------------------------------|------------------|-------------------|-------------------|
+| 31/12/24  | Charges à payer (électricité)    | 613300           | 448600            | 300 000           |
+
+Cette écriture permet d’enregistrer une dette pour la charge déjà consommée mais non encore payée à la date de clôture.

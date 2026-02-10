@@ -1,0 +1,138 @@
+ 
+CLASSE 1 : COMPTES DE RESSOURCES DURABLES
+COMPTE 101 : Capital social
+COMPTE 102 : Capital par dotation
+COMPTE 103 : Capital personnel
+COMPTE 104 : Compte de l'exploitant
+COMPTE 105 : Primes liées aux capitaux propres
+COMPTE 106 : Ecarts de réévaluation
+COMPTE 109 : Apporteurs, capital souscrit, non appelé
+COMPTE 11 : Réserves
+COMPTE 12 : Report à nouveau
+COMPTE 13 : Résultat net de l'exercice
+COMPTE 14 : Subventions d'investissement
+COMPTE 15 : Provisions réglementées et fonds assimilés
+COMPTE 16 : Emprunts et dettes assimilées
+COMPTE 17 : Dettes de location acquisition
+COMPTE 18 : Dettes liées à des participations et comptes de liaison des établissements et sociétés en participation
+COMPTE 19 : Provisions pour risques et charges
+
+CLASSE 2 : COMPTES D'ACTIF IMMOBILISÉ
+
+COMPTE 21 : Immobilisations incorporelles
+COMPTE 22 : Terrains
+COMPTE 23 : Bâtiments, installations techniques et agencements
+COMPTE 24 : Matériel, Mobilier et Actifs biologiques
+COMPTE 25 : Avances et acomptes versés sur immobilisations
+COMPTE 26 : Titres de participation
+COMPTE 27 : Autres immobilisations financières
+COMPTE 28 : Amortissements
+COMPTE 29 : Dépréciations
+CLASSE 3 : COMPTES DE STOCKS
+COMPTE 31 : Marchandises
+COMPTE 32 : Matières premières et fournitures liées
+COMPTE 33 : Autres approvisionnements
+COMPTE 34 : Produits en cours
+COMPTE 35 : Services en cours
+COMPTE 36 : Produits finis
+COMPTE 37 : Produits intermédiaires et résiduels
+COMPTE 38 : Stocks en cours de route, en consignation ou en dépôt
+COMPTE 39 : Dépréciations des stocks et encours de production
+
+CLASSE 4 : COMPTES DE TIERS
+
+COMPTE 40 : Fournisseurs et comptes rattachés
+COMPTE 41 : Clients et comptes rattachés
+COMPTE 42 : Personnel
+COMPTE 43 : Organismes sociaux
+COMPTE 44 : Etat et Collectivités publiques
+COMPTE 45 : Organismes internationaux
+COMPTE 46 : Apporteurs, Associés et Groupe
+COMPTE 47 : Débiteurs et créditeurs divers
+COMPTE 48 : Créances et dettes hors activités ordinaires
+COMPTE 49 : Dépréciations et provisions pour risques à court terme (Tiers)
+
+CLASSE 5 : COMPTES DE TRÉSORERIE
+
+
+COMPTE 50 : Titres de placement
+COMPTE 51 : Valeurs à encaisser
+COMPTE 52 : Banques
+COMPTE 53 : Etablissements financiers et assimilés
+COMPTE 54 : Instruments de trésorerie
+COMPTE 55 : Instruments de monnaie électronique
+COMPTE 56 : Banques, crédits de trésorerie et d'escompte
+COMPTE 57 : Caisse
+COMPTE 58 : Régies d'avances, accréditifs et virements internes
+COMPTE 59 : Dépréciations et provisions pour risques à court terme (Trésorerie)
+
+CLASSE 6 : COMPTES DE CHARGES DES ACTIVITÉS ORDINAIRES
+
+COMPTE 60 : (sauf 603) Achats
+COMPTE 603 : Variations des stocks de biens achetés
+COMPTE 61 : Transports
+COMPTE 62 : Services extérieurs
+COMPTE 63 : Autres services extérieurs
+COMPTE 64 : Impôts et taxes
+COMPTE 65 : Autres charges (sauf 659)
+COMPTE 659 : Charges pour dépréciations et provisions pour risques a court
+COMPTE 66 : Charges de personnel
+COMPTE 67 : Frais financiers et charges assimilées
+COMPTE 68 : Dotations aux amortissements
+COMPTE 69 : Dotations aux provisions et aux dépréciations
+
+CLASSE 7 : COMPTES DE PRODUITS DES ACTIVITÉS ORDINAIRES
+
+COMPTE 70 : Ventes
+COMPTE 71 : Subventions d'exploitation
+COMPTE 72 : Production immobilisée
+COMPTE 73 : Variations des stocks de biens et services produits
+COMPTE 75 : Autres produits (sauf compte 759)
+COMPTE 759 : Reprises de charges pour dépréciations et provisions pour risques à court terme d'exploitation
+COMPTE 77 : Revenus financiers et produits assimilés
+COMPTE 78 : Transferts de charges
+COMPTE 79 : Reprises de provisions, dépréciations et autres
+CLASSE 8 : COMPTES DE RESSOURCES DURABLES
+COMPTE 81 : Valeurs comptables des cessions d'immobilisations
+COMPTE 82 : Produits des cessions d'immobilisations
+COMPTE 83 : Charges hors activités ordinaires
+COMPTE 84 : Produits hors activités ordinaires
+COMPTE 85 : Dotations hors activités ordinaires
+COMPTE 86 : Reprises hors activités ordinaires
+COMPTE 87 : Participation des travailleurs
+COMPTE 88 : Subventions d'équilibre
+COMPTE 89 : Impôts sur le résultat
+
+CLASSE 9 : COMPTES DES ENGAGEMENTS HORS BILAN ET COMPTES DE LA COMPTABILITÉ ANALYTIQUE DE GESTION
+
+COMPTE 9011 : Crédits confirmés obtenus
+COMPTE 9012 : Emprunts restant à encaisser
+COMPTE 9013 : Facilités de financement renouvelables
+COMPTE 9014 : Facilités d'émission
+COMPTE 9018 : Autres engagements de financement obtenus
+COMPTE 9021 : Avals obtenus
+COMPTE 9022 : Cautions, garanties obtenues
+COMPTE 9023 : Hypothèques obtenues
+COMPTE 9024 : Effets endossés par des tiers
+COMPTE 9028 : Autres garanties obtenues
+COMPTE 9031 : Achats de marchandises à terme
+COMPTE 9032 : Achats à terme de devises
+COMPTE 9032 : Commandes fermes des clients
+COMPTE 9033 : Autres engagements réciproques
+COMPTE 9041 : Abandons de créances conditionnels
+COMPTE 9043 : Ventes avec clause de réserve de propriété
+COMPTE 9048 : Divers engagements obtenus
+COMPTE 9051 : Crédits accordés non décaissés
+COMPTE 9058 : Autres engagements de financement accordés
+COMPTE 9061 : Avals accordés
+COMPTE 9062 : Cautions, garanties accordées
+COMPTE 9063 : Hypothèques accordées
+COMPTE 9064 : Effets endossés par l'entité
+COMPTE 9068 : Autres garanties accordées
+COMPTE 9071 : Ventes de marchandises à terme
+COMPTE 9072 : Ventes à terme de devises
+COMPTE 9073 : Commandes fermes aux fournisseurs
+COMPTE 9078 : Autres engagements réciproques
+COMPTE 9081 : Annulations conditionnelles de dettes
+COMPTE 9083 : Achats avec clause de réserve de propriété
+COMPTE 9088 : Divers engagements accordés

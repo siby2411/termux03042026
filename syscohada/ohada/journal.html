@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulaire Journal</title>
+    <!-- Lien vers Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4 text-center">Ajouter une Opération au Journal</h2>
+        <form method="POST" action="add_journal.php" class="row g-3">
+            <div class="col-md-6">
+                <label for="date_operation" class="form-label">Date :</label>
+                <input type="date" class="form-control" name="date_operation" id="date_operation" required>
+            </div>
+            
+            <div class="col-md-6">
+                <label for="description" class="form-label">Description :</label>
+                <input type="text" class="form-control" name="description" id="description" placeholder="Description de l'opération" required>
+            </div>
+
+            <div class="col-md-6">
+                <label for="montant" class="form-label">Montant :</label>
+                <input type="number" step="0.01" class="form-control" name="montant" id="montant" placeholder="Montant" required>
+            </div>
+
+            <div class="col-md-6">
+                <label for="statut" class="form-label">Statut (Débit/Crédit) :</label>
+                <select name="statut" id="statut" class="form-select" required>
+                    <option value="debit">Débit</option>
+                    <option value="credit">Crédit</option>
+                </select>
+            </div>
+
+            <div class="col-md-12">
+                <label for="type_table" class="form-label">Type de journal :</label>
+                <select name="type_table" id="type_table" class="form-select" required>
+                    <option value="journal_achats">Achat</option>
+                    <option value="journal_ventes">Vente</option>
+                    <option value="journal_caisse">Caisse</option>
+                    <option value="journal_clients">Client</option> <!-- Ajout de l'option Journal Clients -->
+                    <option value="journal_banque">Banque</option>
+                    <option value="journal_fournisseurs">Fournisseur</option>
+                </select>
+            </div>
+
+            <div class="col-12 text-center mt-4">
+                <button type="submit" class="btn btn-primary">Ajouter</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Lien vers Bootstrap JS (facultatif pour certaines fonctionnalités) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
