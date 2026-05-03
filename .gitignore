@@ -1,0 +1,30 @@
+# Fichiers sensibles
+*.log
+*.sql
+config_whatsapp.php
+config_twilio.php
+.env
+*.key
+*.pem
+
+# Dossiers temporaires
+tmp/
+temp/
+cache/
+logs/
+
+# Dossiers d'upload (images)
+uploads/
+qrcodes/
+
+# Fichiers de session
+sess_*
+*.session
+
+# Fichiers de base de données exportés
+*.sql
+*.dump
+
+# Fichiers système
+.DS_Store
+Thumbs.db
