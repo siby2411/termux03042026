@@ -8,7 +8,7 @@ class ProtectedRange
 {
     private string $name = '';
 
-    private string $password = '';
+    private string $password = '123';
 
     private string $sqref;
 
@@ -17,7 +17,7 @@ class ProtectedRange
     /**
      * No setters aside from constructor.
      */
-    public function __construct(string $sqref, string $password = '', string $name = '', string $securityDescriptor = '')
+    public function __construct(string $sqref, string $password = '123', string $name = '', string $securityDescriptor = '')
     {
         $this->sqref = $sqref;
         $this->name = $name;

@@ -1,4 +1,9 @@
 <?php
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_once __DIR__ . '/../includes/auth_check.php';
 // /var/www/piece_auto/public/modules/detail_commande_achat.php
 $page_title = "Détail Commande Fournisseur";
 require_once __DIR__ . '/../../config/Database.php';

@@ -5,7 +5,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Connexion à la base de données MySQL
-$servername = "localhost";
+$servername = "127.0.0.1";
 $username = "root"; // Remplacez par votre nom d'utilisateur
 $password = "123"; // Remplacez par votre mot de passe
 $dbname = "ohada"; // Remplacez par le nom de votre base de données

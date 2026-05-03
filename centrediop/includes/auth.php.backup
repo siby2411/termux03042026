@@ -1,0 +1,134 @@
+<?php
+/**
+ * Fonctions d'authentification
+ * MODIFICATION: Ajout des infos patient dans le token
+ */
+
+function login($username, $password) {
+    global $db;
+    
+    $stmt = $db->prepare("SELECT * FROM users WHERE username = ? OR email = ?");
+    $stmt->execute([$username, $username]);
+    $user = $stmt->fetch();
+    
+    if ($user && password_verify($password, $user['password'])) {
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_role'] = $user['role'];
+        $_SESSION['user_nom'] = $user['nom'];
+        $_SESSION['user_prenom'] = $user['prenom'];
+        $_SESSION['user_service'] = $user['service_id'];
+        
+        // AJOUT: Créer un token simple avec les infos de base
+        $token_data = [
+            'user_id' => $user['id'],
+            'username' => $user['username'],
+            'role' => $user['role'],
+            'nom' => $user['nom'],
+            'prenom' => $user['prenom']
+        ];
+        
+        // AJOUT: Pour les médecins et sages-femmes, ajouter le dernier patient consulté
+        if ($user['role'] == 'medecin' || $user['role'] == 'sagefemme') {
+            try {
+                // Chercher le dernier patient consulté par ce médecin
+                $stmt_patient = $db->prepare("
+                    SELECT p.id, p.nom, p.prenom, p.code_patient_unique, p.telephone
+                    FROM patients p
+                    LEFT JOIN rendez_vous rv ON p.id = rv.patient_id
+                    WHERE rv.medecin_id = ?
+                    ORDER BY rv.date_rdv DESC, rv.heure_rdv DESC
+                    LIMIT 1
+                ");
+                $stmt_patient->execute([$user['id']]);
+                $last_patient = $stmt_patient->fetch();
+                
+                if ($last_patient) {
+                    $token_data['patient'] = [
+                        'id' => $last_patient['id'],
+                        'code' => $last_patient['code_patient_unique'] ?? '',
+                        'nom' => $last_patient['nom'],
+                        'prenom' => $last_patient['prenom'],
+                        'telephone' => $last_patient['telephone'] ?? ''
+                    ];
+                }
+            } catch (Exception $e) {
+                // Ignorer les erreurs (table peut-être vide)
+                error_log("Erreur récupération patient: " . $e->getMessage());
+            }
+        }
+        
+        // Stocker le token en session
+        $_SESSION['user_token'] = base64_encode(json_encode($token_data));
+        
+        return true;
+    }
+    return false;
+}
+
+function isLoggedIn() {
+    return isset($_SESSION['user_id']);
+}
+
+function logout() {
+    session_destroy();
+    header('Location: ../../index.php');
+    exit();
+}
+
+// AJOUT: Fonction pour récupérer les infos du token
+function getUserToken() {
+    if (isset($_SESSION['user_token'])) {
+        return json_decode(base64_decode($_SESSION['user_token']), true);
+    }
+    return null;
+}
+
+// AJOUT: Fonction pour récupérer les infos patient du token
+function getPatientFromToken() {
+    $token = getUserToken();
+    return $token['patient'] ?? null;
+}
+
+// AJOUT: Fonction pour mettre à jour le token avec un nouveau patient
+function updateTokenPatient($patient_id) {
+    global $db;
+    
+    if (!isset($_SESSION['user_id'])) {
+        return false;
+    }
+    
+    try {
+        // Récupérer les infos du patient
+        $stmt = $db->prepare("SELECT id, nom, prenom, code_patient_unique, telephone FROM patients WHERE id = ?");
+        $stmt->execute([$patient_id]);
+        $patient = $stmt->fetch();
+        
+        if (!$patient) {
+            return false;
+        }
+        
+        // Récupérer le token actuel
+        $token = getUserToken();
+        if (!$token) {
+            return false;
+        }
+        
+        // Mettre à jour les infos patient
+        $token['patient'] = [
+            'id' => $patient['id'],
+            'code' => $patient['code_patient_unique'] ?? '',
+            'nom' => $patient['nom'],
+            'prenom' => $patient['prenom'],
+            'telephone' => $patient['telephone'] ?? ''
+        ];
+        
+        // Sauvegarder
+        $_SESSION['user_token'] = base64_encode(json_encode($token));
+        
+        return true;
+        
+    } catch (Exception $e) {
+        error_log("Erreur updateTokenPatient: " . $e->getMessage());
+        return false;
+    }
+}

@@ -4,7 +4,7 @@
  * Déploiement final corrigé - Chargement des classes
  */
 
-$host = 'localhost';
+$host = '127.0.0.1';
 $dbname = 'sysco_ohada';
 $username = 'root';
 $password = '123';

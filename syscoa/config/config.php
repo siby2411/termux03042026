@@ -9,7 +9,7 @@ define('APP_YEAR', date('Y'));
 $config = [
     // Base de données
     'database' => [
-        'host' => 'localhost',
+        'host' => '127.0.0.1',
         'name' => 'sysco_ohada',
         'user' => 'root',
         'pass' => '123',

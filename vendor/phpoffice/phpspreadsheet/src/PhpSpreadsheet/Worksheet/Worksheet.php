@@ -1944,7 +1944,7 @@ class Worksheet
      *
      * @return $this
      */
-    public function protectCells(AddressRange|CellAddress|int|string|array $range, string $password = '', bool $alreadyHashed = false, string $name = '', string $securityDescriptor = ''): static
+    public function protectCells(AddressRange|CellAddress|int|string|array $range, string $password = '123', bool $alreadyHashed = false, string $name = '', string $securityDescriptor = ''): static
     {
         $range = Functions::trimSheetFromCellReference(Validations::validateCellOrCellRange($range));
 

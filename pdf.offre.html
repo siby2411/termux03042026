@@ -1,0 +1,12 @@
+
+
+
+
+# Méthode 1 : Avec Google Chrome (Recommandé)
+google-chrome --headless --print-to-pdf="omega_offre_2026.pdf" omega_offre_2026.html
+
+# Méthode 2 : Avec wkhtmltopdf
+wkhtmltopdf --enable-local-file-access omega_offre_2026.html omega_offre_2026.pdf
+
+# Méthode 3 : Avec weasyprint
+weasyprint omega_offre_2026.html omega_offre_2026.pdf

@@ -4,7 +4,7 @@
  * Correction finale des tables d'inventaire avec bonnes références
  */
 
-$host = 'localhost';
+$host = '127.0.0.1';
 $dbname = 'sysco_ohada';
 $username = 'root';
 $password = '123';

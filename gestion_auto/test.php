@@ -4,7 +4,7 @@ echo "<p>PHP fonctionne</p>";
 
 // Test de base de données
 try {
-    $pdo = new PDO("mysql:host=localhost;dbname=gestion_auto", "root", "123");
+    $pdo = new PDO("mysql:host=127.0.0.1;dbname=gestion_auto", "root", "");
     echo "<p style='color: green;'>✓ Connexion DB réussie</p>";
 } catch (Exception $e) {
     echo "<p style='color: red;'>✗ Erreur DB: " . $e->getMessage() . "</p>";

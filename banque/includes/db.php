@@ -4,9 +4,9 @@
  */
 
 // --- Configuration ---
-define('DB_SERVER', 'localhost');
+define('DB_SERVER', '127.0.0.1');
 define('DB_USERNAME', 'root');
-define('DB_PASSWORD', '123');
+define('DB_PASSWORD', '');
 define('DB_NAME', 'banque');
 
 // --- Tentative de connexion à MariaDB/MySQL ---

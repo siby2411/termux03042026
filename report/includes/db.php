@@ -1,13 +1,19 @@
 <?php
-$host = 'localhost';
-$dbname = 'synthesepro_db';  // on utilise la même BDD existante
+$host = '127.0.0.1';
+$dbname = 'reporting_db';
 $user = 'root';
-$pass = '123';
-$charset = 'utf8mb4';
+$pass = ''; 
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=$charset", $user, $pass);
+    // Connexion ultra-minimaliste (sans charset dans le DSN)
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $user, $pass);
+    
+    // On définit l'encodage via une commande SQL après la connexion
+    $pdo->exec("SET NAMES 'utf8'");
+    
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $conn = $pdo; 
 } catch(PDOException $e) {
-    die("Erreur DB : " . $e->getMessage());
+    // Message d'erreur propre pour le diagnostic
+    die("❌ ERREUR DE CONNEXION : " . $e->getMessage());
 }

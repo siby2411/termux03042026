@@ -1,0 +1,196 @@
+<?php
+/**
+ * Fonctions utilitaires pour l'application
+ */
+
+/**
+ * Vérifie si l'utilisateur est connecté
+ */
+function isLoggedIn() {
+    return isset($_SESSION['user_id']);
+}
+
+/**
+ * Redirige vers la page de connexion si non connecté
+ */
+function requireLogin() {
+    if (!isLoggedIn()) {
+        header('Location: /index.php');
+        exit();
+    }
+}
+
+/**
+ * Récupère la file d'attente pour un service
+ */
+function getQueueForService($service_id) {
+    global $pdo;
+    
+    $stmt = $pdo->prepare("
+        SELECT q.*, 
+               p.id as patient_id, 
+               p.first_name, 
+               p.last_name, 
+               p.date_naissance as birth_date,
+               p.phone,
+               p.address
+        FROM queue q
+        JOIN patients p ON q.patient_id = p.id
+        WHERE q.service_id = ? AND q.status = 'waiting'
+        ORDER BY q.priority DESC, q.created_at ASC
+    ");
+    $stmt->execute([$service_id]);
+    return $stmt->fetchAll();
+}
+
+/**
+ * Récupère les consultations d'un médecin
+ */
+function getDoctorConsultations($doctor_id) {
+    global $pdo;
+    
+    $stmt = $pdo->prepare("
+        SELECT c.*, 
+               p.first_name, 
+               p.last_name, 
+               p.date_naissance as birth_date,
+               p.phone,
+               s.name as service_name
+        FROM consultations c
+        JOIN patients p ON c.patient_id = p.id
+        JOIN services s ON c.service_id = s.id
+        WHERE c.doctor_id = ?
+        ORDER BY c.consultation_date DESC
+    ");
+    $stmt->execute([$doctor_id]);
+    return $stmt->fetchAll();
+}
+
+/**
+ * Récupère les patients récents
+ */
+function getRecentPatients($limit = 10) {
+    global $pdo;
+    
+    $stmt = $pdo->prepare("
+        SELECT id, first_name, last_name, date_naissance as birth_date, phone, address, created_at
+        FROM patients
+        ORDER BY created_at DESC
+        LIMIT ?
+    ");
+    $stmt->execute([$limit]);
+    return $stmt->fetchAll();
+}
+
+/**
+ * Récupère les statistiques du tableau de bord
+ */
+function getDashboardStats($service_id = null) {
+    global $pdo;
+    
+    $stats = [];
+    
+    // Patients aujourd'hui
+    if ($service_id) {
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) as count
+            FROM queue
+            WHERE service_id = ? AND DATE(created_at) = CURDATE()
+        ");
+        $stmt->execute([$service_id]);
+    } else {
+        $stmt = $pdo->query("
+            SELECT COUNT(*) as count
+            FROM queue
+            WHERE DATE(created_at) = CURDATE()
+        ");
+    }
+    $stats['today_patients'] = $stmt->fetch()['count'];
+    
+    // En attente
+    if ($service_id) {
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) as count
+            FROM queue
+            WHERE service_id = ? AND status = 'waiting'
+        ");
+        $stmt->execute([$service_id]);
+    } else {
+        $stmt = $pdo->query("
+            SELECT COUNT(*) as count
+            FROM queue
+            WHERE status = 'waiting'
+        ");
+    }
+    $stats['waiting'] = $stmt->fetch()['count'];
+    
+    // Consultations aujourd'hui
+    if ($service_id) {
+        $stmt = $pdo->prepare("
+            SELECT COUNT(*) as count
+            FROM consultations
+            WHERE service_id = ? AND DATE(consultation_date) = CURDATE()
+        ");
+        $stmt->execute([$service_id]);
+    } else {
+        $stmt = $pdo->query("
+            SELECT COUNT(*) as count
+            FROM consultations
+            WHERE DATE(consultation_date) = CURDATE()
+        ");
+    }
+    $stats['today_consultations'] = $stmt->fetch()['count'];
+    
+    return $stats;
+}
+
+/**
+ * Ajoute un patient à la file d'attente
+ */
+function addToQueue($patient_id, $service_id, $priority = 1) {
+    global $pdo;
+    
+    $stmt = $pdo->prepare("
+        INSERT INTO queue (patient_id, service_id, priority, status)
+        VALUES (?, ?, ?, 'waiting')
+    ");
+    return $stmt->execute([$patient_id, $service_id, $priority]);
+}
+
+/**
+ * Récupère les services
+ */
+function getServices() {
+    global $pdo;
+    
+    $stmt = $pdo->query("SELECT id, name, description FROM services ORDER BY name");
+    return $stmt->fetchAll();
+}
+
+/**
+ * Récupère un utilisateur par son ID
+ */
+function getUserById($user_id) {
+    global $pdo;
+    
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE id = ?");
+    $stmt->execute([$user_id]);
+    return $stmt->fetch();
+}
+
+/**
+ * Récupère le service d'un utilisateur
+ */
+function getUserService($user_id) {
+    global $pdo;
+    
+    $stmt = $pdo->prepare("
+        SELECT s.* 
+        FROM services s
+        JOIN users u ON u.service_id = s.id
+        WHERE u.id = ?
+    ");
+    $stmt->execute([$user_id]);
+    return $stmt->fetch();
+}
+?>

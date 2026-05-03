@@ -1,5 +1,5 @@
 <?php
-$conn = new mysqli("localhost", "root", "123", "ecole");
+$conn = new mysqli("127.0.0.1", "root", "", "ecole");
 $filiere_id = intval($_GET['filiere_id']);
 
 $result = $conn->query("SELECT id, nom_matiere, code_matiere FROM matieres WHERE filiere_id = $filiere_id ORDER BY nom_matiere");

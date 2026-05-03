@@ -1,6 +1,6 @@
 <?php
 // Connexion à la base de données
-$host = 'localhost';
+$host = '127.0.0.1';
 $db   = 'geo';
 $user = 'root'; // À adapter
 $pass = '123';     // À adapter

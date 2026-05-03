@@ -12,7 +12,7 @@
         
         <?php
         // Connexion à la base de données MySQL
-        $host = 'localhost';
+        $host = '127.0.0.1';
         $dbname = 'ohada';
         $user = 'root';
         $password = '123';

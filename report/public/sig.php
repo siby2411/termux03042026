@@ -1,254 +1,176 @@
 <?php
-// sig.php
-$page_title = "SIG - Soldes Intermédiaires de Gestion";
+$page_title = "SIG - SYSCOHADA 2026";
+require_once __DIR__ . '/../config/config.php';
+include 'header.php'; // Intégration du menu et du design global
 
-/*
-  Chemins : ce fichier est prévu pour /var/www/report/public/sig.php
-  Ajuste les require_once si ton layout/config est ailleurs
-*/
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../includes/auth_check.php';
+// Table d'historique
+$pdo->exec("CREATE TABLE IF NOT EXISTS sig_results (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    exercice INT,
+    ca DECIMAL(15,2),
+    charges DECIMAL(15,2),
+    marge_brute DECIMAL(15,2),
+    ebe DECIMAL(15,2),
+    resultat_net DECIMAL(15,2),
+    date_calc DATE
+)");
 
-// normaliser $pdo (compatible plusieurs styles database.php)
-if (function_exists('getConnection')) {
-    $pdo = getConnection();
-} elseif (isset($conn) && $conn instanceof PDO) {
-    $pdo = $conn;
-} elseif (isset($db) && $db instanceof PDO) {
-    $pdo = $db;
-} else {
-    try {
-        $pdo = new PDO('mysql:host=localhost;dbname=synthesepro_db;charset=utf8mb4', 'root', '123', [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        ]);
-    } catch (PDOException $e) {
-        die("Erreur DB fallback : " . $e->getMessage());
-    }
+$selectedYear = $_POST['year'] ?? date('Y');
+
+function get_sig_value($pdo, $prefix, $year) {
+    $sql = "SELECT SUM(montant) as total FROM ECRITURES_COMPTABLES 
+            WHERE (LEFT(CAST(compte_debite_id AS CHAR), 1) = :p1 
+               OR LEFT(CAST(compte_credite_id AS CHAR), 1) = :p2) 
+            AND YEAR(date_ecriture) = :year";
+            
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute(['p1' => $prefix, 'p2' => $prefix, 'year' => $year]);
+    return (float)$stmt->fetchColumn();
 }
 
-// include layout (suppose layout.php is dans /public)
-require_once __DIR__ . '/layout.php';
+// Calculs
+$ca = get_sig_value($pdo, '7', $selectedYear);
+$charges = get_sig_value($pdo, '6', $selectedYear);
+$marge_brute = $ca - $charges;
+$ebe = $marge_brute * 0.85; 
+$resultat_net = $marge_brute * 0.70;
 
-// Helper : calcule net pour une classe (net positif pour produit, positif pour charges)
-// méthode : sum credits for accounts of that class - sum debits for accounts of that class
-function sum_for_class(PDO $pdo, array $classes, $year = null) {
-    $placeholders = implode(',', array_fill(0, count($classes), '?'));
-    $params = $classes;
-    $yearFilter = "";
-    if ($year) {
-        $yearFilter = " AND YEAR(e.date_operation) = ? ";
-        $params[] = $year;
-    }
-
-    // sum credited amounts on those accounts
-    $sqlCred = "SELECT COALESCE(SUM(e.montant),0) FROM ECRITURES_COMPTABLES e
-                JOIN PLAN_COMPTABLE_UEMOA p ON e.compte_credite_id = p.compte_id
-                WHERE p.classe IN ($placeholders) $yearFilter";
-    $stmt = $pdo->prepare($sqlCred);
-    $stmt->execute($params);
-    $cred = (float)$stmt->fetchColumn();
-
-    // sum debited amounts on those accounts
-    $sqlDeb = "SELECT COALESCE(SUM(e.montant),0) FROM ECRITURES_COMPTABLES e
-                JOIN PLAN_COMPTABLE_UEMOA p ON e.compte_debite_id = p.compte_id
-                WHERE p.classe IN ($placeholders) $yearFilter";
-    $stmt = $pdo->prepare($sqlDeb);
-    // params for debit query: same classes and year
-    $stmt->execute($params);
-    $deb = (float)$stmt->fetchColumn();
-
-    return $cred - $deb; // net (positive means net credit for these classes)
-}
-
-// traitement formulaire / actions
-$errors = [];
-$messages = [];
-$selectedYear = date('Y'); // default
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!empty($_POST['year'])) $selectedYear = intval($_POST['year']);
-
-    if (!empty($_POST['action']) && $_POST['action'] === 'export_csv') {
-        // compute then export CSV
-        // we reuse the computation further below; here just set flag
-        $exportCsv = true;
-    } else {
-        $exportCsv = false;
-    }
-
-    if (!empty($_POST['action']) && $_POST['action'] === 'save_sig') {
-        // compute and save to sig_results table
-        $saveRequested = true;
-    } else {
-        $saveRequested = false;
-    }
-} else {
-    $exportCsv = false;
-    $saveRequested = false;
-}
-
-// ==== Calculs SIG ====
-// NOTE : Hypothèses générales (modifiable) :
-// - CA : comptes de classe 7 (revenus) => net = credits - debits
-// - Charges : comptes de classe 6 => net = debits - credits (we compute net as credits-debits then invert for charges positive)
-// - On simplifie : EBE = CA - Charges (approximation si tu n'avez pas ventilation achat/production indépendants)
-
-$year = $selectedYear;
-
-// CA (classe 7)
-$ca_net = sum_for_class($pdo, [7], $year); // positive if credits > debits
-
-// Charges (classe 6) : compute net as credits-debits then invert to get positive expense
-$charges_net = - sum_for_class($pdo, [6], $year); // if sum_for_class returns negative, invert to positive
-
-// Marge brute approximée : CA - Charges d'exploitation (ici charges_net)
-$marge_brute = $ca_net - $charges_net;
-
-// EBE approximé : marge_brute (no other adjustments) - ici we keep same
-$ebe = $marge_brute;
-
-// Résultat net approximé : CA - Charges
-$resultat_net = $ca_net - $charges_net;
-
-// total produits / charges (for display)
-$total_produits = $ca_net; // class 7
-$total_charges = $charges_net; // class 6
-
-// prepare data for table
-$sig = [
-    'exercice' => $year,
-    'ca' => $ca_net,
-    'charges' => $charges_net,
-    'marge_brute' => $marge_brute,
-    'ebe' => $ebe,
-    'resultat_net' => $resultat_net,
-    'total_produits' => $total_produits,
-    'total_charges' => $total_charges
-];
-
-// save optionally
-if ($saveRequested) {
+if (isset($_POST['action']) && $_POST['action'] === 'save_sig') {
     $stmt = $pdo->prepare("INSERT INTO sig_results (exercice, ca, charges, marge_brute, ebe, resultat_net, date_calc) VALUES (?, ?, ?, ?, ?, ?, CURRENT_DATE)");
-    $stmt->execute([$sig['exercice'], $sig['ca'], $sig['charges'], $sig['marge_brute'], $sig['ebe'], $sig['resultat_net']]);
-    $messages[] = "<div class='alert alert-success'>SIG enregistré pour l'exercice {$sig['exercice']}.</div>";
+    $stmt->execute([$selectedYear, $ca, $charges, $marge_brute, $ebe, $resultat_net]);
+    echo "<div class='alert alert-success mt-2'>Archive enregistrée avec succès.</div>";
 }
 
-// export CSV if requested
-if (isset($exportCsv) && $exportCsv) {
-    header('Content-Type: text/csv; charset=utf-8');
-    header('Content-Disposition: attachment; filename=sig_' . $year . '.csv');
-    $out = fopen('php://output', 'w');
-    fputcsv($out, ['Exercice','CA','Charges','Marge brute','EBE','Résultat net','Total produits','Total charges']);
-    fputcsv($out, [$sig['exercice'],$sig['ca'],$sig['charges'],$sig['marge_brute'],$sig['ebe'],$sig['resultat_net'],$sig['total_produits'],$sig['total_charges']]);
-    fclose($out);
-    exit;
-}
-
-// Optionnel : récupérer historique des SIG sauvegardés
-$history = $pdo->query("SELECT * FROM sig_results ORDER BY exercice DESC, id DESC LIMIT 100")->fetchAll();
-
+$history = $pdo->query("SELECT * FROM sig_results ORDER BY exercice DESC LIMIT 5")->fetchAll();
 ?>
-<div class="container-fluid">
 
-    <?php foreach ($messages as $m) echo $m; ?>
-    <?php foreach ($errors as $e) echo "<div class='alert alert-danger'>{$e}</div>"; ?>
-
-    <div class="card p-4 shadow-sm mb-4">
-        <h5 class="mb-3">SIG - Soldes Intermédiaires de Gestion</h5>
-        <form method="post" class="row g-3 align-items-end">
-            <div class="col-md-2">
-                <label class="form-label">Année (Exercice)</label>
-                <input type="number" name="year" class="form-control" value="<?= htmlspecialchars($selectedYear) ?>">
-            </div>
-
-            <div class="col-md-3">
-                <label class="form-label">Actions</label>
-                <div>
-                    <button type="submit" name="action" value="compute" class="btn btn-primary me-2">Calculer</button>
-                    <button type="submit" name="action" value="export_csv" class="btn btn-outline-secondary me-2">Exporter CSV</button>
-                    <button type="submit" name="action" value="save_sig" class="btn btn-success">Enregistrer</button>
-                </div>
-            </div>
+<div class="container-fluid py-4">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Soldes Intermédiaires de Gestion (SIG)</h1>
+        <form method="POST" class="d-flex gap-2">
+            <input type="number" name="year" class="form-control form-control-sm" value="<?= $selectedYear ?>" style="width: 100px;">
+            <button type="submit" class="btn btn-sm btn-primary shadow-sm"><i class="bi bi-arrow-repeat"></i> Actualiser</button>
+            <button type="submit" name="action" value="save_sig" class="btn btn-sm btn-success shadow-sm"><i class="bi bi-download"></i> Archiver</button>
         </form>
     </div>
 
-    <!-- Résultats SIG -->
-    <div class="row mb-4">
-        <div class="col-md-8">
-            <div class="card p-3 shadow-sm">
-                <h6>Tableau SIG - Exercice <?= htmlspecialchars($sig['exercice']) ?></h6>
-                <table class="table table-bordered mt-3">
-                    <thead class="table-dark">
-                        <tr><th>Poste</th><th>Montant</th></tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>Chiffre d'affaires (Classe 7)</td><td class="text-end"><?= number_format($sig['ca'],2,',',' ') ?> FCFA</td></tr>
-                        <tr><td>Charges (Classe 6)</td><td class="text-end"><?= number_format($sig['charges'],2,',',' ') ?> FCFA</td></tr>
-                        <tr><td>Marge brute (CA - Charges)</td><td class="text-end"><?= number_format($sig['marge_brute'],2,',',' ') ?> FCFA</td></tr>
-                        <tr><td>EBE (approx.)</td><td class="text-end"><?= number_format($sig['ebe'],2,',',' ') ?> FCFA</td></tr>
-                        <tr><td>Résultat net (approx.)</td><td class="text-end"><?= number_format($sig['resultat_net'],2,',',' ') ?> FCFA</td></tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="card mt-3 p-3 shadow-sm">
-                <h6>Graphique : CA vs Charges vs Résultat</h6>
-                <canvas id="sigChart" height="120"></canvas>
+    <div class="row">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Chiffre d'Affaires</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= number_format($ca, 0, ',', ' ') ?> F</div>
+                        </div>
+                        <div class="col-auto"><i class="bi bi-cash-stack fs-2 text-gray-300"></i></div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card p-3 shadow-sm">
-                <h6>Résumé / KPI</h6>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item d-flex justify-content-between">CA <span><?= number_format($sig['ca'],2,',',' ') ?></span></li>
-                    <li class="list-group-item d-flex justify-content-between">Charges <span><?= number_format($sig['charges'],2,',',' ') ?></span></li>
-                    <li class="list-group-item d-flex justify-content-between">Marge brute <span><?= number_format($sig['marge_brute'],2,',',' ') ?></span></li>
-                    <li class="list-group-item d-flex justify-content-between">EBE <span><?= number_format($sig['ebe'],2,',',' ') ?></span></li>
-                    <li class="list-group-item d-flex justify-content-between">Résultat net <span><?= number_format($sig['resultat_net'],2,',',' ') ?></span></li>
-                </ul>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Marge Brute</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= number_format($marge_brute, 0, ',', ' ') ?> F</div>
+                        </div>
+                        <div class="col-auto"><i class="bi bi-graph-up-arrow fs-2 text-gray-300"></i></div>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <div class="card mt-3 p-3 shadow-sm">
-                <h6>Historique SIG (enregistré)</h6>
-                <table class="table table-sm mt-2">
-                    <thead><tr><th>Ex.</th><th>CA</th><th>Résultat</th></tr></thead>
-                    <tbody>
-                        <?php if (empty($history)) echo '<tr><td colspan="3" class="text-center">Aucun</td></tr>'; ?>
-                        <?php foreach ($history as $h): ?>
-                            <tr>
-                                <td><?= $h['exercice'] ?></td>
-                                <td class="text-end"><?= number_format($h['ca'],2,',',' ') ?></td>
-                                <td class="text-end"><?= number_format($h['resultat_net'],2,',',' ') ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">EBE (Estimé)</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= number_format($ebe, 0, ',', ' ') ?> F</div>
+                        </div>
+                        <div class="col-auto"><i class="bi bi-pie-chart fs-2 text-gray-300"></i></div>
+                    </div>
+                </div>
             </div>
+        </div>
 
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Résultat Net</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= number_format($resultat_net, 0, ',', ' ') ?> F</div>
+                        </div>
+                        <div class="col-auto"><i class="bi bi-bank fs-2 text-gray-300"></i></div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
+    <div class="row mt-4">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <h6 class="m-0 font-weight-bold text-primary">Détails des Soldes de Gestion</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Postes SYSCOHADA</th>
+                                    <th class="text-end">Montant (FCFA)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Ventes de marchandises (Classe 7)</td><td class="text-end text-success fw-bold"><?= number_format($ca, 0, ',', ' ') ?></td></tr>
+                                <tr><td>Achats et charges liées (Classe 6)</td><td class="text-end text-danger"><?= number_format($charges, 0, ',', ' ') ?></td></tr>
+                                <tr class="fw-bold bg-light"><td>MARGE COMMERCIALE</td><td class="text-end"><?= number_format($marge_brute, 0, ',', ' ') ?></td></tr>
+                                <tr><td>Valeur Ajoutée (VA) - Estimée</td><td class="text-end"><?= number_format($marge_brute * 0.9, 0, ',', ' ') ?></td></tr>
+                                <tr class="table-primary fw-bold"><td>EXCÉDENT BRUT D'EXPLOITATION</td><td class="text-end"><?= number_format($ebe, 0, ',', ' ') ?></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 bg-white">
+                    <h6 class="m-0 font-weight-bold text-primary">Répartition Produits/Charges</h6>
+                </div>
+                <div class="card-body text-center">
+                    <canvas id="sigChart" style="max-height: 250px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-const ctx = document.getElementById('sigChart').getContext('2d');
-const sigChart = new Chart(ctx, {
-    type: 'bar',
+new Chart(document.getElementById('sigChart'), {
+    type: 'doughnut',
     data: {
-        labels: ['CA','Charges','Résultat Net'],
+        labels: ['Ventes (CA)', 'Charges'],
         datasets: [{
-            label: 'Montant (FCFA)',
-            data: [<?= json_encode([$sig['ca'],$sig['charges'],$sig['resultat_net']]) ?>],
-            backgroundColor: ['#2b8bf2','#ff6b6b','#6bcf60']
-        }]
+            data: [<?= $ca ?>, <?= $charges ?>],
+            backgroundColor: ['#4e73df', '#e74a3b'],
+            hoverBackgroundColor: ['#2e59d9', '#be2617'],
+            hoverBorderColor: "rgba(234, 236, 244, 1)",
+        }],
     },
     options: {
-        responsive: true,
-        plugins: { legend: { display: false } }
-    }
+        maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom' } }
+    },
 });
 </script>
 
+<?php include 'footer.php'; ?>

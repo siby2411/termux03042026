@@ -1,4 +1,9 @@
 <?php
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_once __DIR__ . '/../includes/auth_check.php';
 // /var/www/piece_auto/public/modules/documentation.php
 // Page de référence et de documentation des fonctionnalités de l'ERP Pièces Auto.
 

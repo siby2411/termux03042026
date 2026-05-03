@@ -1,0 +1,771 @@
+<?php
+session_start();
+require_once '../../config/database.php';
+require_once '../../includes/auth.php';
+
+if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'caissier') {
+    header('Location: /login.php');
+    exit();
+}
+
+$pdo = getPDO();
+$message = '';
+$error = '';
+$token_info = null;
+$selected_patient = null;
+
+// Récupérer tous les départements/services avec leurs informations complètes
+$departements = $pdo->query("
+    SELECT DISTINCT 
+        s.id, 
+        s.name, 
+        s.prix_consultation,
+        b.nom as batiment_nom,
+        n.nom as niveau_nom,
+        za.nom as zone_attente,
+        sa.numero_salle,
+        sa.instructions_acces,
+        sa.code_couleur,
+        COUNT(DISTINCT sa.id) as nb_salles,
+        (SELECT COUNT(*) FROM file_attente WHERE service_id = s.id AND statut = 'en_attente') as en_attente
+    FROM services s
+    JOIN salles sa ON s.id = sa.service_id
+    JOIN batiments b ON sa.batiment_id = b.id
+    JOIN niveaux n ON sa.niveau_id = n.id
+    JOIN zones_attente za ON sa.zone_attente_id = za.id
+    WHERE s.name NOT IN ('Caisse', 'Accueil/Triage')
+    GROUP BY s.id
+    ORDER BY s.name
+")->fetchAll();
+
+// Statistiques des consultations par département aujourd'hui
+$stats_dept = $pdo->query("
+    SELECT 
+        s.name as departement,
+        COUNT(c.id) as nb_consultations,
+        COALESCE(SUM(ca.prix_applique), 0) as total_recettes
+    FROM services s
+    LEFT JOIN consultations c ON s.id = c.service_id AND DATE(c.date_consultation) = CURDATE()
+    LEFT JOIN consultation_actes ca ON c.id = ca.consultation_id
+    WHERE s.name NOT IN ('Caisse', 'Accueil/Triage')
+    GROUP BY s.id
+    ORDER BY nb_consultations DESC
+")->fetchAll();
+
+// Recherche de patient
+if (isset($_GET['search'])) {
+    $search = '%' . $_GET['search'] . '%';
+    $stmt = $pdo->prepare("
+        SELECT * FROM patients 
+        WHERE prenom LIKE ? OR nom LIKE ? OR telephone LIKE ? OR numero_patient LIKE ?
+        ORDER BY created_at DESC
+    ");
+    $stmt->execute([$search, $search, $search, $search]);
+    $search_result = $stmt->fetchAll();
+}
+
+// Si un patient est sélectionné
+if (isset($_GET['patient_id'])) {
+    $stmt = $pdo->prepare("SELECT * FROM patients WHERE id = ?");
+    $stmt->execute([$_GET['patient_id']]);
+    $selected_patient = $stmt->fetch();
+}
+
+// Enregistrement nouveau patient
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['new_patient'])) {
+    $numero = 'PAT-' . date('Ymd') . '-' . str_pad(rand(1, 9999), 4, '0', STR_PAD_LEFT);
+    
+    try {
+        $pdo->beginTransaction();
+        
+        $stmt = $pdo->prepare("
+            INSERT INTO patients (numero_patient, prenom, nom, date_naissance, sexe, telephone, adresse) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->execute([
+            $numero,
+            $_POST['prenom'],
+            $_POST['nom'],
+            $_POST['date_naissance'],
+            $_POST['sexe'],
+            $_POST['telephone'],
+            $_POST['adresse'] ?? null
+        ]);
+        $patient_id = $pdo->lastInsertId();
+        
+        // Créer le dossier médical
+        $pdo->prepare("INSERT INTO dossiers_medicaux (patient_id) VALUES (?)")->execute([$patient_id]);
+        
+        $pdo->commit();
+        
+        // Rediriger vers le même patient sélectionné
+        header("Location: index.php?patient_id=$patient_id");
+        exit();
+        
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        $error = "Erreur: " . $e->getMessage();
+    }
+}
+
+// Génération de token et paiement automatique
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['generate_token'])) {
+    try {
+        $pdo->beginTransaction();
+        
+        $patient_id = $_POST['patient_id'];
+        $service_id = $_POST['service_id'];
+        $mode_paiement = $_POST['mode_paiement'];
+        
+        // Récupérer les informations du patient
+        $stmt = $pdo->prepare("SELECT prenom, nom, date_naissance FROM patients WHERE id = ?");
+        $stmt->execute([$patient_id]);
+        $patient = $stmt->fetch();
+        
+        // Calculer la priorité (senior si âge > 60)
+        $age = date('Y') - date('Y', strtotime($patient['date_naissance']));
+        $priorite = ($age >= 60) ? 'senior' : 'normal';
+        
+        // Récupérer les informations du service et de la salle
+        $stmt = $pdo->prepare("
+            SELECT 
+                s.id as service_id,
+                s.name as service_nom,
+                s.prix_consultation,
+                sa.numero_salle,
+                b.nom as batiment_nom,
+                n.nom as niveau_nom,
+                za.nom as zone_attente,
+                sa.instructions_acces
+            FROM services s
+            JOIN salles sa ON s.id = sa.service_id
+            JOIN batiments b ON sa.batiment_id = b.id
+            JOIN niveaux n ON sa.niveau_id = n.id
+            JOIN zones_attente za ON sa.zone_attente_id = za.id
+            WHERE s.id = ?
+            LIMIT 1
+        ");
+        $stmt->execute([$service_id]);
+        $service_info = $stmt->fetch();
+        
+        // Générer token unique
+        $token = 'TKN' . date('His') . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
+        
+        // Insérer dans file_attente
+        $stmt = $pdo->prepare("
+            INSERT INTO file_attente (
+                token, patient_id, service_id, departement, priorite, 
+                salle, salle_numero, etage, batiment_nom, niveau_nom, 
+                zone_attente, instructions, statut, cree_a
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'en_attente', NOW())
+        ");
+        $stmt->execute([
+            $token,
+            $patient_id,
+            $service_id,
+            $service_info['service_nom'],
+            $priorite,
+            $service_info['numero_salle'],
+            $service_info['numero_salle'],
+            $service_info['niveau_nom'],
+            $service_info['batiment_nom'],
+            $service_info['niveau_nom'],
+            $service_info['zone_attente'],
+            $service_info['instructions_acces']
+        ]);
+        
+        $file_id = $pdo->lastInsertId();
+        
+        // Créer la facture automatiquement avec le prix du service
+        $numero_facture = 'FACT-' . date('Ymd') . '-' . str_pad($file_id, 4, '0', STR_PAD_LEFT);
+        
+        $stmt = $pdo->prepare("
+            INSERT INTO paiements (
+                numero_facture, patient_id, caissier_id, 
+                montant_total, montant_paye, mode_paiement, statut
+            ) VALUES (?, ?, ?, ?, ?, ?, 'paye')
+        ");
+        $stmt->execute([
+            $numero_facture,
+            $patient_id,
+            $_SESSION['user_id'],
+            $service_info['prix_consultation'],
+            $service_info['prix_consultation'], // Paiement automatique du montant total
+            $mode_paiement
+        ]);
+        
+        $pdo->commit();
+        
+        // Préparer les informations pour l'affichage du ticket
+        $token_info = [
+            'token' => $token,
+            'patient' => $patient['prenom'] . ' ' . $patient['nom'],
+            'service' => $service_info['service_nom'],
+            'prix' => $service_info['prix_consultation'],
+            'priorite' => $priorite,
+            'age' => $age,
+            'salle' => $service_info['numero_salle'],
+            'batiment' => $service_info['batiment_nom'],
+            'niveau' => $service_info['niveau_nom'],
+            'zone' => $service_info['zone_attente'],
+            'instructions' => $service_info['instructions_acces'],
+            'date' => date('d/m/Y'),
+            'heure' => date('H:i'),
+            'facture' => $numero_facture,
+            'mode' => $mode_paiement
+        ];
+        
+        $message = "✅ Patient enregistré, paiement automatique de " . number_format($service_info['prix_consultation'], 0, ',', ' ') . " FCFA effectué !";
+        
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        $error = "❌ Erreur: " . $e->getMessage();
+    }
+}
+
+// Récupérer la file d'attente
+$queue = $pdo->query("
+    SELECT f.*, p.prenom, p.nom
+    FROM file_attente f
+    JOIN patients p ON f.patient_id = p.id
+    WHERE f.statut = 'en_attente'
+    ORDER BY FIELD(f.priorite, 'urgence', 'senior', 'normal'), f.cree_a ASC
+    LIMIT 20
+")->fetchAll();
+
+// Récupérer les états de caisse
+$caissier_stats = $pdo->prepare("
+    SELECT 
+        COUNT(*) as total_paiements,
+        SUM(montant_total) as total_recettes,
+        DATE(date_paiement) as jour
+    FROM paiements
+    WHERE caissier_id = ? AND DATE(date_paiement) = CURDATE()
+    GROUP BY DATE(date_paiement)
+");
+$caissier_stats->execute([$_SESSION['user_id']]);
+$stats = $caissier_stats->fetch();
+
+$derniers_paiements = $pdo->prepare("
+    SELECT p.*, pat.prenom, pat.nom
+    FROM paiements p
+    JOIN patients pat ON p.patient_id = pat.id
+    WHERE p.caissier_id = ?
+    ORDER BY p.date_paiement DESC
+    LIMIT 5
+");
+$derniers_paiements->execute([$_SESSION['user_id']]);
+$recent_payments = $derniers_paiements->fetchAll();
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caisse - Centre Mamadou Diop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        @media print {
+            .no-print, .sidebar, .btn, .dashboard-card:not(#ticket) {
+                display: none !important;
+            }
+            #ticket {
+                display: block !important;
+                background: white !important;
+                color: black !important;
+                padding: 20px;
+                font-size: 12pt;
+                width: 80mm;
+                margin: 0 auto;
+            }
+            .ticket-number {
+                font-size: 24pt;
+            }
+        }
+        
+        .ticket-print {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: slideDown 0.5s;
+        }
+        .ticket-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            letter-spacing: 3px;
+            text-align: center;
+            font-family: monospace;
+        }
+        .geo-info {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+            font-size: 1.1em;
+            border-left: 4px solid rgba(255,255,255,0.5);
+        }
+        .geo-icon {
+            width: 25px;
+            text-align: center;
+            margin-right: 10px;
+        }
+        @keyframes slideDown {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .queue-item {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            transition: transform 0.2s;
+        }
+        .queue-item.senior {
+            border-left-color: #f39c12;
+            background: #fff3cd;
+        }
+        .queue-item:hover {
+            transform: translateX(5px);
+        }
+        .service-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .stat-dept-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-left: 4px solid;
+            transition: all 0.3s;
+        }
+        .stat-dept-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .departement-select {
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 1.1em;
+            transition: all 0.3s;
+        }
+        .departement-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+            outline: none;
+        }
+        .prix-affichage {
+            background: #e8f5e9;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2e7d32;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar (non imprimable) -->
+            <div class="col-md-2 p-0 no-print">
+                <div class="sidebar">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-hospital fa-3x mb-2"></i>
+                        <h5>Centre Mamadou Diop</h5>
+                        <small>Caissier</small>
+                    </div>
+                    <ul class="sidebar-menu">
+                        <li><a href="index.php" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+                        <li><a href="etat_caisse.php"><i class="fas fa-chart-line"></i> État de caisse</a></li>
+                        <li><a href="liste_patients.php"><i class="fas fa-users"></i> Liste patients</a></li>
+                        <li><a href="stats_departements.php"><i class="fas fa-chart-pie"></i> Stats départements</a></li>
+                        <li><a href="/logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 p-4">
+                <h2 class="mb-4 no-print"><i class="fas fa-cash-register"></i> Espace Caisse</h2>
+                
+                <?php if ($message): ?>
+                <div class="alert alert-success alert-dismissible fade show no-print"><?= $message ?></div>
+                <?php endif; ?>
+                
+                <?php if ($error): ?>
+                <div class="alert alert-danger alert-dismissible fade show no-print"><?= $error ?></div>
+                <?php endif; ?>
+                
+                <?php if ($token_info): ?>
+                <!-- Ticket imprimable -->
+                <div class="ticket-print" id="ticket">
+                    <div class="text-center mb-3">
+                        <i class="fas fa-hospital fa-3x"></i>
+                        <h3>Centre Mamadou Diop</h3>
+                        <p>Dakar - Sénégal</p>
+                        <hr style="border-top: 2px dashed white;">
+                    </div>
+                    
+                    <div class="ticket-number"><?= $token_info['token'] ?></div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-5">Patient:</div>
+                        <div class="col-7 text-end"><strong><?= $token_info['patient'] ?></strong></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-5">Âge:</div>
+                        <div class="col-7 text-end"><strong><?= $token_info['age'] ?> ans</strong></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-5">Département:</div>
+                        <div class="col-7 text-end"><strong><?= $token_info['service'] ?></strong></div>
+                    </div>
+                    
+                    <hr style="border-top: 2px dashed white;">
+                    
+                    <div class="geo-info">
+                        <div class="row mb-2">
+                            <div class="col-2"><i class="fas fa-building geo-icon"></i></div>
+                            <div class="col-10"><strong>Bâtiment:</strong> <?= $token_info['batiment'] ?></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-2"><i class="fas fa-layer-group geo-icon"></i></div>
+                            <div class="col-10"><strong>Niveau:</strong> <?= $token_info['niveau'] ?></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-2"><i class="fas fa-door-open geo-icon"></i></div>
+                            <div class="col-10"><strong>Salle:</strong> <?= $token_info['salle'] ?></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-2"><i class="fas fa-chair geo-icon"></i></div>
+                            <div class="col-10"><strong>Zone d'attente:</strong> <?= $token_info['zone'] ?></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="row">
+                            <div class="col-6">Montant consultation:</div>
+                            <div class="col-6 text-end"><?= number_format($token_info['prix'], 0, ',', ' ') ?> FCFA</div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">Mode de paiement:</div>
+                            <div class="col-6 text-end"><?= $token_info['mode'] ?></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6">N° Facture:</div>
+                            <div class="col-6 text-end"><small><?= $token_info['facture'] ?></small></div>
+                        </div>
+                    </div>
+                    
+                    <hr style="border-top: 2px dashed white;">
+                    
+                    <div class="text-center mt-3">
+                        <span class="badge <?= $token_info['priorite'] == 'senior' ? 'bg-warning' : 'bg-info' ?>" style="font-size: 1.1em; padding: 8px 20px;">
+                            <?= $token_info['priorite'] == 'senior' ? '👴 PRIORITÉ SENIOR' : '👤 Consultation normale' ?>
+                        </span>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <small>Date: <?= $token_info['date'] ?> à <?= $token_info['heure'] ?></small><br>
+                        <small><i class="fas fa-info-circle"></i> <?= $token_info['instructions'] ?></small>
+                    </div>
+                    
+                    <div class="text-center mt-4 no-print">
+                        <button onclick="window.print()" class="btn btn-light">
+                            <i class="fas fa-print"></i> Imprimer le ticket
+                        </button>
+                        <button onclick="location.href='index.php'" class="btn btn-secondary">
+                            <i class="fas fa-redo"></i> Nouveau patient
+                        </button>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if (!$token_info): ?>
+                <!-- Statistiques des consultations par département -->
+                <div class="row mb-4 no-print">
+                    <div class="col-12">
+                        <div class="dashboard-card">
+                            <h5 class="mb-3"><i class="fas fa-chart-bar"></i> Consultations du jour par département</h5>
+                            <div class="row">
+                                <?php foreach ($stats_dept as $stat): ?>
+                                <div class="col-md-3 mb-2">
+                                    <div class="stat-dept-card" style="border-left-color: <?= 
+                                        $stat['departement'] == 'Pédiatrie' ? '#e74c3c' : 
+                                        ($stat['departement'] == 'Cardiologie' ? '#34495e' : 
+                                        ($stat['departement'] == 'Gynécologie' ? '#9b59b6' : '#3498db')) ?>">
+                                        <div class="d-flex justify-content-between">
+                                            <strong><?= $stat['departement'] ?></strong>
+                                            <span class="badge bg-info"><?= $stat['nb_consultations'] ?></span>
+                                        </div>
+                                        <small><?= number_format($stat['total_recettes'] ?? 0, 0, ',', ' ') ?> FCFA</small>
+                                    </div>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <!-- Colonne gauche : Nouveau patient et recherche -->
+                    <div class="col-md-4">
+                        <div class="dashboard-card no-print">
+                            <h5 class="mb-3"><i class="fas fa-user-plus"></i> Nouveau patient</h5>
+                            <form method="POST">
+                                <input type="hidden" name="new_patient" value="1">
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <input type="text" name="prenom" class="form-control" placeholder="Prénom *" required>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <input type="text" name="nom" class="form-control" placeholder="Nom *" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <input type="date" name="date_naissance" class="form-control" required>
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <select name="sexe" class="form-control" required>
+                                            <option value="">Sexe *</option>
+                                            <option value="M">Masculin</option>
+                                            <option value="F">Féminin</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <input type="text" name="telephone" class="form-control" placeholder="Téléphone *" required>
+                                </div>
+                                <div class="mb-2">
+                                    <textarea name="adresse" class="form-control" placeholder="Adresse" rows="2"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Enregistrer</button>
+                            </form>
+                        </div>
+                        
+                        <div class="dashboard-card mt-3 no-print">
+                            <h5 class="mb-3"><i class="fas fa-search"></i> Rechercher patient</h5>
+                            <form method="GET">
+                                <div class="input-group">
+                                    <input type="text" name="search" class="form-control" placeholder="Nom, prénom ou téléphone">
+                                    <button type="submit" class="btn btn-info">Rechercher</button>
+                                </div>
+                            </form>
+                            
+                            <?php if (isset($search_result) && !empty($search_result)): ?>
+                            <div class="mt-3" style="max-height: 300px; overflow-y: auto;">
+                                <h6>Résultats:</h6>
+                                <?php foreach ($search_result as $p): ?>
+                                <div class="border p-2 mb-2">
+                                    <strong><?= $p['prenom'] ?> <?= $p['nom'] ?></strong><br>
+                                    <small><?= $p['numero_patient'] ?></small><br>
+                                    <a href="?patient_id=<?= $p['id'] ?>" class="btn btn-sm btn-success w-100 mt-2">
+                                        Sélectionner
+                                    </a>
+                                </div>
+                                <?php endforeach; ?>
+                            </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <!-- Colonne milieu : Formulaire de paiement avec département -->
+                    <div class="col-md-4">
+                        <?php if ($selected_patient): ?>
+                        <div class="dashboard-card no-print">
+                            <h5 class="mb-3">
+                                <i class="fas fa-user"></i> Patient sélectionné
+                                <span class="badge bg-info float-end"><?= $selected_patient['code_patient_unique'] ?></span>
+                            </h5>
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <p class="mb-1"><strong><?= $selected_patient['prenom'] ?> <?= $selected_patient['nom'] ?></strong></p>
+                                    <p class="mb-1"><i class="fas fa-phone"></i> <?= $selected_patient['telephone'] ?></p>
+                                    <p class="mb-0"><i class="fas fa-calendar"></i> <?= date('d/m/Y', strtotime($selected_patient['date_naissance'])) ?></p>
+                                </div>
+                            </div>
+                            
+                            <form method="POST" id="tokenForm">
+                                <input type="hidden" name="generate_token" value="1">
+                                <input type="hidden" name="patient_id" value="<?= $selected_patient['id'] ?>">
+                                
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Département / Service</label>
+                                    <select name="service_id" class="form-control departement-select" required onchange="updateServiceInfo(this)">
+                                        <option value="">-- Sélectionnez un département --</option>
+                                        <?php foreach ($departements as $d): ?>
+                                        <option value="<?= $d['id'] ?>" 
+                                                data-prix="<?= $d['prix_consultation'] ?>"
+                                                data-batiment="<?= $d['batiment_nom'] ?>"
+                                                data-niveau="<?= $d['niveau_nom'] ?>"
+                                                data-salle="<?= $d['numero_salle'] ?>"
+                                                data-zone="<?= $d['zone_attente'] ?>"
+                                                data-couleur="<?= $d['code_couleur'] ?>"
+                                                data-attente="<?= $d['en_attente'] ?>">
+                                            <?= $d['name'] ?> - <?= number_format($d['prix_consultation'], 0, ',', ' ') ?> FCFA
+                                            <?php if ($d['en_attente'] > 0): ?>
+                                            (<?= $d['en_attente'] ?> en attente)
+                                            <?php endif; ?>
+                                        </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                                
+                                <div id="serviceInfo" class="mb-4 p-3" style="display: none; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #667eea;">
+                                    <div class="row">
+                                        <div class="col-12 mb-2" id="infoBatiment"><i class="fas fa-building me-2"></i></div>
+                                        <div class="col-12 mb-2" id="infoNiveau"><i class="fas fa-layer-group me-2"></i></div>
+                                        <div class="col-12 mb-2" id="infoSalle"><i class="fas fa-door-open me-2"></i></div>
+                                        <div class="col-12 mb-2" id="infoZone"><i class="fas fa-chair me-2"></i></div>
+                                        <div class="col-12" id="infoAttente"><i class="fas fa-clock me-2"></i></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Montant de la consultation</label>
+                                    <div class="prix-affichage" id="montant_affichage">
+                                        0 FCFA
+                                    </div>
+                                    <small class="text-muted">Ce montant sera automatiquement déduit</small>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold">Mode de paiement</label>
+                                    <select name="mode_paiement" class="form-control" required>
+                                        <option value="especes">💵 Espèces</option>
+                                        <option value="carte">💳 Carte bancaire</option>
+                                        <option value="mobile_money">📱 Mobile Money (Orange Money, Wave)</option>
+                                        <option value="assurance">🏥 Assurance</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i> Le paiement de <?= number_format($d['prix_consultation'] ?? 5000, 0, ',', ' ') ?> FCFA sera automatiquement enregistré.
+                                </div>
+                                
+                                <button type="submit" class="btn btn-success btn-lg w-100">
+                                    <i class="fas fa-check-circle"></i> Valider le paiement et générer le ticket
+                                </button>
+                            </form>
+                        </div>
+                        <?php else: ?>
+                        <div class="alert alert-info no-print">
+                            <i class="fas fa-info-circle"></i> Recherchez et sélectionnez un patient pour commencer
+                        </div>
+                        <?php endif; ?>
+                        
+                        <!-- État de caisse rapide -->
+                        <div class="dashboard-card mt-3 no-print">
+                            <h5 class="mb-3"><i class="fas fa-chart-line"></i> État de caisse du jour</h5>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <h3><?= $stats['total_paiements'] ?? 0 ?></h3>
+                                    <small>Paiements</small>
+                                </div>
+                                <div class="col-6">
+                                    <h3><?= number_format($stats['total_recettes'] ?? 0, 0, ',', ' ') ?></h3>
+                                    <small>FCFA</small>
+                                </div>
+                            </div>
+                            <a href="etat_caisse.php" class="btn btn-sm btn-info w-100 mt-2">Voir détails</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Colonne droite : File d'attente -->
+                    <div class="col-md-4">
+                        <div class="dashboard-card no-print">
+                            <h5 class="mb-3"><i class="fas fa-clock"></i> File d'attente <span class="badge bg-secondary"><?= count($queue) ?></span></h5>
+                            <div style="max-height: 400px; overflow-y: auto;">
+                                <?php if (empty($queue)): ?>
+                                    <p class="text-muted">Aucun patient en attente</p>
+                                <?php else: ?>
+                                    <?php foreach ($queue as $q): ?>
+                                    <div class="queue-item <?= $q['priorite'] ?>">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <strong><?= $q['token'] ?></strong>
+                                                <span class="badge <?= $q['priorite'] == 'senior' ? 'bg-warning' : 'bg-info' ?> ms-2">
+                                                    <?= $q['priorite'] ?>
+                                                </span>
+                                            </div>
+                                            <small><?= date('H:i', strtotime($q['cree_a'])) ?></small>
+                                        </div>
+                                        <div><?= $q['prenom'] ?> <?= $q['nom'] ?></div>
+                                        <small class="text-muted">
+                                            <i class="fas fa-building"></i> <?= $q['departement'] ?? 'Service' ?> - Salle <?= $q['salle'] ?? 1 ?>
+                                        </small>
+                                    </div>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+                        
+                        <!-- Derniers paiements -->
+                        <div class="dashboard-card mt-3 no-print">
+                            <h5 class="mb-3"><i class="fas fa-history"></i> Derniers paiements</h5>
+                            <?php foreach ($recent_payments as $p): ?>
+                            <div class="border p-2 mb-2">
+                                <div class="d-flex justify-content-between">
+                                    <strong><?= $p['prenom'] ?> <?= $p['nom'] ?></strong>
+                                    <span class="badge bg-success"><?= number_format($p['montant_total'], 0, ',', ' ') ?> FCFA</span>
+                                </div>
+                                <small><?= date('d/m/Y H:i', strtotime($p['date_paiement'])) ?></small>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    function updateServiceInfo(select) {
+        const selected = select.options[select.selectedIndex];
+        const prix = selected.dataset.prix || 0;
+        const batiment = selected.dataset.batiment || '';
+        const niveau = selected.dataset.niveau || '';
+        const salle = selected.dataset.salle || '';
+        const zone = selected.dataset.zone || '';
+        const attente = selected.dataset.attente || 0;
+        
+        // Mettre à jour l'affichage du montant
+        document.getElementById('montant_affichage').innerHTML = new Intl.NumberFormat('fr-FR').format(prix) + ' FCFA';
+        
+        if (batiment) {
+            document.getElementById('infoBatiment').innerHTML = '<i class="fas fa-building me-2"></i> Bâtiment: ' + batiment;
+            document.getElementById('infoNiveau').innerHTML = '<i class="fas fa-layer-group me-2"></i> Niveau: ' + niveau;
+            document.getElementById('infoSalle').innerHTML = '<i class="fas fa-door-open me-2"></i> Salle: ' + salle;
+            document.getElementById('infoZone').innerHTML = '<i class="fas fa-chair me-2"></i> Zone: ' + zone;
+            document.getElementById('infoAttente').innerHTML = '<i class="fas fa-clock me-2"></i> Patients en attente: ' + attente;
+            
+            document.getElementById('serviceInfo').style.display = 'block';
+        } else {
+            document.getElementById('serviceInfo').style.display = 'none';
+            document.getElementById('montant_affichage').innerHTML = '0 FCFA';
+        }
+    }
+    
+    // Actualisation automatique toutes les 30 secondes
+    <?php if (!$token_info): ?>
+    setTimeout(() => location.reload(), 30000);
+    <?php endif; ?>
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OMEGA INFORMATIQUE CONSULTING - Offre de Services 2026</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ed 100%);
+            color: #1a2a3a;
+            line-height: 1.5;
+        }
+        
+        /* En-tête stylisé */
+        .header {
+            background: linear-gradient(135deg, #0a2647 0%, #1a3a5c 50%, #0a2647 100%);
+            color: white;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header::before {
+            content: "Ω";
+            font-size: 18rem;
+            position: absolute;
+            right: -5rem;
+            top: -5rem;
+            opacity: 0.08;
+            font-family: serif;
+        }
+        
+        .header::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #f39c12, #e74c3c, #2ecc71, #3498db);
+        }
+        
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+        
+        .logo span {
+            color: #f39c12;
+        }
+        
+        .slogan {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 0.5rem;
+        }
+        
+        .badge-2026 {
+            background: #f39c12;
+            color: #0a2647;
+            padding: 0.25rem 1rem;
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-block;
+        }
+        
+        /* Navigation */
+        .nav {
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            padding: 1rem;
+            justify-content: center;
+        }
+        
+        .nav-link {
+            background: #f0f2f5;
+            padding: 0.5rem 1rem;
+            border-radius: 30px;
+            text-decoration: none;
+            color: #1a2a3a;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            background: #0a2647;
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* Sections */
+        .section {
+            background: white;
+            margin: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+            overflow: hidden;
+            page-break-inside: avoid;
+        }
+        
+        .section-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 1.5rem 2rem;
+            border-bottom: 3px solid #f39c12;
+        }
+        
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #0a2647;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .section-icon {
+            font-size: 2rem;
+        }
+        
+        .section-subtitle {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        
+        /* Grille d'applications */
+        .apps-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+            padding: 2rem;
+        }
+        
+        .app-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid #eef2f5;
+            page-break-inside: avoid;
+        }
+        
+        .app-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+        
+        .app-header {
+            background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%);
+            padding: 1.25rem;
+            border-bottom: 2px solid;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .app-icon {
+            font-size: 2.5rem;
+        }
+        
+        .app-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .app-tech {
+            font-size: 0.7rem;
+            color: #6c757d;
+            margin-top: 0.25rem;
+        }
+        
+        .app-body {
+            padding: 1.25rem;
+        }
+        
+        .app-features {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .app-features li {
+            padding: 0.4rem 0;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px dashed #eef2f5;
+        }
+        
+        .app-features li::before {
+            content: "✓";
+            color: #2ecc71;
+            font-weight: bold;
+        }
+        
+        .app-benefits {
+            margin-top: 1rem;
+            background: #f8f9fa;
+            padding: 0.75rem;
+            border-radius: 12px;
+        }
+        
+        .benefit-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            padding: 0.3rem 0;
+        }
+        
+        .benefit-label {
+            font-weight: 600;
+            color: #0a2647;
+        }
+        
+        .benefit-value {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        
+        /* Tableau récapitulatif */
+        .summary-table {
+            padding: 2rem;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        
+        th {
+            background: #0a2647;
+            color: white;
+            padding: 1rem;
+            text-align: left;
+        }
+        
+        td {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #eef2f5;
+        }
+        
+        tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .category-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+        
+        /* Footer */
+        .footer {
+            background: #0a2647;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .social-icon:hover {
+            background: #f39c12;
+            transform: translateY(-3px);
+        }
+        
+        /* Pagination */
+        .page-break {
+            page-break-before: always;
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            .nav {
+                display: none;
+            }
+            .app-card {
+                break-inside: avoid;
+            }
+            .section {
+                break-inside: avoid;
+                margin: 1rem;
+            }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .apps-grid {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+            .section {
+                margin: 1rem;
+            }
+            .section-title {
+                font-size: 1.3rem;
+            }
+        }
+        
+        /* Statistiques */
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            background: white;
+            margin: 2rem;
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .stat-item {
+            flex: 1;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: #0a2647;
+        }
+        
+        .stat-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <!-- HEADER STYLISÉ -->
+    <div class="header">
+        <div style="max-width: 1200px; margin: 0 auto;">
+            <div class="badge-2026">★ OFFICIAL PARTNER 2026 ★</div>
+            <div class="logo">OMEGA <span>INFORMATIQUE</span> CONSULTING</div>
+            <div class="slogan">Solutions Digitales Innovantes pour l'Afrique</div>
+            <div style="margin-top: 1rem;">
+                <div style="font-size: 2rem; font-weight: 700;">Offre de Services 2026</div>
+                <div style="font-size: 1rem; opacity: 0.9;">La Suite Logicielle Complète pour votre Entreprise</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- STATISTIQUES RAPIDES -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-number">42</div>
+            <div class="stat-label">Applications</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">12</div>
+            <div class="stat-label">Secteurs d'Activité</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">24/7</div>
+            <div class="stat-label">Support Technique</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-number">100%</div>
+            <div class="stat-label">Personnalisable</div>
+        </div>
+    </div>
+    
+    <!-- NAVIGATION -->
+    <div class="nav">
+        <div class="nav-links">
+            <a href="#finance" class="nav-link">💰 Finance</a>
+            <a href="#business" class="nav-link">💼 Business</a>
+            <a href="#commerce" class="nav-link">🛍️ Commerce</a>
+            <a href="#medical" class="nav-link">🏥 Médical</a>
+            <a href="#transport" class="nav-link">🚗 Transport</a>
+            <a href="#sport" class="nav-link">⚽ Sport</a>
+            <a href="#education" class="nav-link">🎓 Éducation</a>
+            <a href="#restaurant" class="nav-link">🍕 Restauration</a>
+        </div>
+    </div>
+    
+    <!-- ============================================ -->
+    <!-- SECTION 1 : FINANCE & COMPTABILITÉ -->
+    <!-- ============================================ -->
+    <div id="finance" class="section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="section-icon">💰</span>
+                Pôle Finance & Comptabilité OHADA
+            </div>
+            <div class="section-subtitle">Solutions conformes aux normes SYSCOHADA révisées 2026</div>
+        </div>
+        <div class="apps-grid">
+            <!-- OMEGA Banque -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #2ecc71;">
+                    <span class="app-icon">🏦</span>
+                    <div>
+                        <div class="app-name">OMEGA Banque</div>
+                        <div class="app-tech">PHP 8.3 | MySQL | Bootstrap 5</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Gestion des Crédits et Amortissements</li>
+                        <li>Comptes d'Épargne et Capitalisation</li>
+                        <li>Tableaux de Bord Financiers</li>
+                        <li>Traçabilité et Audit complet</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+35%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">⏱️ Gain de temps:</span><span class="benefit-value">70%</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA SYSCOHADA -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #8e44ad;">
+                    <span class="app-icon">📊</span>
+                    <div>
+                        <div class="app-name">OMEGA SYSCOHADA</div>
+                        <div class="app-tech">PHP 8.3 | MySQL | OHADA Compliant</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Plan Comptable SYSCOHADA Intégré</li>
+                        <li>Bilan, CR, Tableau de Flux de Trésorerie</li>
+                        <li>Gestion des Amortissements et Clôtures</li>
+                        <li>Balance, Grand Livre, Journal Général</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+40%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">✅ Conformité:</span><span class="benefit-value">100% OHADA</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Prévisionnelle -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #1abc9c;">
+                    <span class="app-icon">📅</span>
+                    <div>
+                        <div class="app-name">OMEGA Prévisionnelle</div>
+                        <div class="app-tech">PHP 8.3 | Dashboard KPI</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Budgétisation par postes</li>
+                        <li>Calcul du Point Mort et Analyse Structurelle</li>
+                        <li>Tableau de Bord de Pilotage</li>
+                        <li>Suivi des Flux de Trésorerie</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+25%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">📊 Pilotage:</span><span class="benefit-value">Temps Réel</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Expert Comptable -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #9b59b6;">
+                    <span class="app-icon">📈</span>
+                    <div>
+                        <div class="app-name">OMEGA Expert Comptable</div>
+                        <div class="app-tech">Reporting SYSCOHADA</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>SIG (Soldes Intermédiaires de Gestion)</li>
+                        <li>Contrôle Budgétaire et Ratios</li>
+                        <li>Rapprochement Bancaire Automatisé</li>
+                        <li>Exports Excel/PDF pour Audit</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+30%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">📋 Audit:</span><span class="benefit-value">Traçable</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ============================================ -->
+    <!-- SECTION 2 : BUSINESS & PME -->
+    <!-- ============================================ -->
+    <div id="business" class="section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="section-icon">💼</span>
+                Pôle Business & Gestion d'Entreprise
+            </div>
+            <div class="section-subtitle">Solutions intégrées pour PME et Grandes Entreprises</div>
+        </div>
+        <div class="apps-grid">
+            <!-- OMEGA PME Connect -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #34495e;">
+                    <span class="app-icon">🏢</span>
+                    <div>
+                        <div class="app-name">OMEGA PME Connect</div>
+                        <div class="app-tech">ERP Complet + Intranet</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>CRM Client et Gestion Commerciale</li>
+                        <li>GED (Gestion Électronique de Documents)</li>
+                        <li>Messagerie Interne et Collaboration</li>
+                        <li>RH, Marketing et Reporting Stratégique</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+45%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">🚀 Productivité:</span><span class="benefit-value">+60%</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Pointage QR -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #16a085;">
+                    <span class="app-icon">⏱️</span>
+                    <div>
+                        <div class="app-name">OMEGA Pointage QR</div>
+                        <div class="app-tech">Scan QR Code | Temps Réel</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Génération de QR Codes uniques</li>
+                        <li>Scan via Webcam ou Mobile</li>
+                        <li>Horodatage automatique</li>
+                        <li>Rapports de présence détaillés</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+20%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">⏱️ Gain:</span><span class="benefit-value">90% temps saisie</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Pressing -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #3498db;">
+                    <span class="app-icon">👔</span>
+                    <div>
+                        <div class="app-name">OMEGA Pressing</div>
+                        <div class="app-tech">Gestion Nettoyage à Sec</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Enregistrement des Commandes</li>
+                        <li>Suivi Clients et Fidélisation</li>
+                        <li>Facturation et Encaissement</li>
+                        <li>Rapports Financiers</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+30%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">📊 Visibilité:</span><span class="benefit-value">Totale</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Hôtel -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #f39c12;">
+                    <span class="app-icon">🏨</span>
+                    <div>
+                        <div class="app-name">OMEGA Hôtel</div>
+                        <div class="app-tech">PMS Hôtelier Complet</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Gestion des Réservations</li>
+                        <li>Attribution des Chambres</li>
+                        <li>Facturation et Check-in/out</li>
+                        <li>Statistiques d'Occupation</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+25%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">📈 Taux occup.:</span><span class="benefit-value">Optimisé</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Gestion Immobilière -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #16a085;">
+                    <span class="app-icon">🏠</span>
+                    <div>
+                        <div class="app-name">OMEGA Gestion Immobilière</div>
+                        <div class="app-tech">Gestion de Biens</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Suivi des Locataires et Baux</li>
+                        <li>Gestion des Loyers et Quittances</li>
+                        <li>Maintenance et Interventions</li>
+                        <li>Tableau de Bord Patrimonial</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+20%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">🏆 Rentabilité:</span><span class="benefit-value">Améliorée</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Portail -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #2c3e50;">
+                    <span class="app-icon">🚪</span>
+                    <div>
+                        <div class="app-name">OMEGA Portail</div>
+                        <div class="app-tech">Marketplace B2B/B2C</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Traçabilité Fournisseurs-Clients</li>
+                        <li>Gestion de Commandes</li>
+                        <li>Catalogue Dynamique</li>
+                        <li>Suivi Transactionnel Complet</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+50%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">🌐 Visibilité:</span><span class="benefit-value">Nationale</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Génie Civil -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #d35400;">
+                    <span class="app-icon">🏗️</span>
+                    <div>
+                        <div class="app-name">OMEGA Génie Civil</div>
+                        <div class="app-tech">Gestion BTP</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Suivi de Chantiers</li>
+                        <li>Gestion des Matériaux</li>
+                        <li>Planification des Tâches</li>
+                        <li>Budgétisation Projet</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+35%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">📅 Délais:</span><span class="benefit-value">Maîtrisés</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Agence Voyage -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #1abc9c;">
+                    <span class="app-icon">✈️</span>
+                    <div>
+                        <div class="app-name">OMEGA Agence Voyage</div>
+                        <div class="app-tech">Réservations Tourisme</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Gestion des Circuits et Forfaits</li>
+                        <li>Réservations en Ligne</li>
+                        <li>Facturation et Paiements</li>
+                        <li>Suivi Clients et Historique</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+30%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">📊 Résas:</span><span class="benefit-value">Centralisées</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Annuaire -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #7f8c8d;">
+                    <span class="app-icon">📇</span>
+                    <div>
+                        <div class="app-name">OMEGA Annuaire</div>
+                        <div class="app-tech">Base de Contacts Pro</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Annuaire d'Entreprises</li>
+                        <li>Recherche Multicritères</li>
+                        <li>Fiches de Contact Détaillées</li>
+                        <li>Export des Données</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+15%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">📞 Réseautage:</span><span class="benefit-value">Optimisé</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ============================================ -->
+    <!-- SECTION 3 : COMMERCE & DISTRIBUTION -->
+    <!-- ============================================ -->
+    <div id="commerce" class="section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="section-icon">🛍️</span>
+                Pôle Commerce & Distribution
+            </div>
+            <div class="section-subtitle">Solutions pour la vente, le stock et la logistique</div>
+        </div>
+        <div class="apps-grid">
+            <!-- OMEGA Commerciale -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #e67e22;">
+                    <span class="app-icon">📦</span>
+                    <div>
+                        <div class="app-name">OMEGA Commerciale</div>
+                        <div class="app-tech">Gestion Commerciale</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Achats et Approvisionnement</li>
+                        <li>Ventes et Facturation</li>
+                        <li>Gestion des Stocks en Temps Réel</li>
+                        <li>Rapports de Ventes Détaillés</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+40%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">📦 Stock:</span><span class="benefit-value">Optimisé</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA E-commerce -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #f39c12;">
+                    <span class="app-icon">🛒</span>
+                    <div>
+                        <div class="app-name">OMEGA E-commerce</div>
+                        <div class="app-tech">Plateforme de Vente en Ligne</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Catalogue Produits Complet</li>
+                        <li>Panier et Paiement Sécurisé</li>
+                        <li>Gestion des Commandes</li>
+                        <li>Suivi des Livraisons</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+55%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">🌐 Online:</span><span class="benefit-value">24/7</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Pièces Auto Pro -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #d35400;">
+                    <span class="app-icon">🔧</span>
+                    <div>
+                        <div class="app-name">OMEGA Pièces Auto Pro</div>
+                        <div class="app-tech">Distribution Automobile</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Prévisions IA de Stock</li>
+                        <li>Traçabilité par Numéro VIN</li>
+                        <li>Gestion des Achats et Fournisseurs</li>
+                        <li>Analyse des Pannes récurrentes</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+35%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">🤖 IA:</span><span class="benefit-value">Prédictive</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Charcuterie POS -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #e74c3c;">
+                    <span class="app-icon">🥩</span>
+                    <div>
+                        <div class="app-name">OMEGA Charcuterie POS</div>
+                        <div class="app-tech">Point de Vente Spécialisé</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Suivi des DLC (Dates Limites)</li>
+                        <li>Interface Caisse POS Fluide</li>
+                        <li>Gestion des Promotions</li>
+                        <li>Alertes Stock Critique</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+30%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">🥩 Péremption:</span><span class="benefit-value">-50%</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Librairie -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #8e44ad;">
+                    <span class="app-icon">📚</span>
+                    <div>
+                        <div class="app-name">OMEGA Librairie</div>
+                        <div class="app-tech">Gestion de Librairie</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Catalogue par Catégories</li>
+                        <li>Gestion des Auteurs et Éditeurs</li>
+                        <li>Ventes et Facturation</li>
+                        <li>Inventaire et Réassort</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+25%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">📖 Stock:</span><span class="benefit-value">Maîtrisé</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Couture Sénégal -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #e74c3c;">
+                    <span class="app-icon">👗</span>
+                    <div>
+                        <div class="app-name">OMEGA Couture Sénégal</div>
+                        <div class="app-tech">Mode et Création</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Gestion des Commandes de Couture</li>
+                        <li>Suivi des Tissus et Matières</li>
+                        <li>Planning des Artisans</li>
+                        <li>Facturation Client</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+30%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">✂️ Production:</span><span class="benefit-value">Organisée</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Parfumerie -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #6c5ce7;">
+                    <span class="app-icon">🧴</span>
+                    <div>
+                        <div class="app-name">OMEGA Parfumerie</div>
+                        <div class="app-tech">Cosmétique de Luxe</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Gestion des Parfums et Cosmétiques</li>
+                        <li>Suivi des Lots et Péremption</li>
+                        <li>Vente en Boutique</li>
+                        <li>Fidélisation Clientèle</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+35%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">💎 Luxe:</span><span class="benefit-value">Traçabilité</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ============================================ -->
+    <!-- SECTION 4 : MÉDICAL & SANTÉ -->
+    <!-- ============================================ -->
+    <div id="medical" class="section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="section-icon">🏥</span>
+                Pôle Médical & Santé
+            </div>
+            <div class="section-subtitle">Solutions complètes pour laboratoires, cliniques et cabinets</div>
+        </div>
+        <div class="apps-grid">
+            <!-- OMEGA Labo & Radiologie -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #3498db;">
+                    <span class="app-icon">🔬</span>
+                    <div>
+                        <div class="app-name">OMEGA Labo & Radiologie</div>
+                        <div class="app-tech">LIMS + RIS Intégré</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Gestion des Patients et Rendez-vous</li>
+                        <li>Catalogue d'Analyses et Examens</li>
+                        <li>Génération de Comptes-Rendus PDF</li>
+                        <li>Gestion des Réactifs et Stocks</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+40%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">🩺 Patients/jour:</span><span class="benefit-value">+50%</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Clinique -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #e67e22;">
+                    <span class="app-icon">🏥</span>
+                    <div>
+                        <div class="app-name">OMEGA Clinique</div>
+                        <div class="app-tech">Gestion Hospitalière</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Dossier Patient Unique</li>
+                        <li>Gestion des Consultations</li>
+                        <li>Facturation et Tiers-Payant</li>
+                        <li>Statistiques Médicales</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+35%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">⏱️ Attente:</span><span class="benefit-value">-60%</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Pharmacie Pro -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #1abc9c;">
+                    <span class="app-icon">💊</span>
+                    <div>
+                        <div class="app-name">OMEGA Pharmacie Pro</div>
+                        <div class="app-tech">POS Officine</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Référentiel Médicaments</li>
+                        <li>Suivi des Péremptions (DLC)</li>
+                        <li>Gestion des Ordonnances</li>
+                        <li>Tiers-Payant et Assurances</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+30%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">💊 Sécurité:</span><span class="benefit-value">Totale</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Centre DIOP -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #3498db;">
+                    <span class="app-icon">🏥</span>
+                    <div>
+                        <div class="app-name">OMEGA Centre DIOP</div>
+                        <div class="app-tech">Gestion File d'Attente</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Système de Tokens (File d'Attente)</li>
+                        <li>Multi-caissiers en Parallèle</li>
+                        <li>Synchronisation Caisse-Cabinets</li>
+                        <li>Sauvegarde Automatisée</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+25%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">🎫 Flow:</span><span class="benefit-value">Optimisé</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Analyse Médicale -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #3498db;">
+                    <span class="app-icon">🔬</span>
+                    <div>
+                        <div class="app-name">OMEGA Analyse Médicale</div>
+                        <div class="app-tech">Laboratoire d'Analyses</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Gestion des Prélèvements</li>
+                        <li>Saisie des Résultats</li>
+                        <li>Génération de Rapports</li>
+                        <li>Archivage Numérique</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+35%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">🧪 Capacité:</span><span class="benefit-value">+70%</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Cabinet Radiologie -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #9b59b6;">
+                    <span class="app-icon">🩻</span>
+                    <div>
+                        <div class="app-name">OMEGA Cabinet Radiologie</div>
+                        <div class="app-tech">RIS Complet</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Gestion des Examens par Salle</li>
+                        <li>Interprétation et CR Médicaux</li>
+                        <li>Suivi des Équipements</li>
+                        <li>Statistiques par Type d'Examen</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+30%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">📸 Imagerie:</span><span class="benefit-value">Centralisée</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Revendeur Médical -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #e67e22;">
+                    <span class="app-icon">🩺</span>
+                    <div>
+                        <div class="app-name">OMEGA Revendeur Médical</div>
+                        <div class="app-tech">Distribution Médicale</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Gestion des Matériels Médicaux</li>
+                        <li>Suivi des Commandes</li>
+                        <li>Gestion des Garanties</li>
+                        <li>SAV et Maintenance</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+25%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">📦 Logistique:</span><span class="benefit-value">Optimisée</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ============================================ -->
+    <!-- SECTION 5 : TRANSPORT & MOBILITÉ -->
+    <!-- ============================================ -->
+    <div id="transport" class="section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="section-icon">🚗</span>
+                Pôle Transport & Mobilité
+            </div>
+            <div class="section-subtitle">Solutions pour la gestion de flotte et logistique</div>
+        </div>
+        <div class="apps-grid">
+            <!-- OMEGA Auto -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #e74c3c;">
+                    <span class="app-icon">🚗</span>
+                    <div>
+                        <div class="app-name">OMEGA Auto</div>
+                        <div class="app-tech">Location de Véhicules</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Gestion Complète du Parc</li>
+                        <li>Contrats de Location</li>
+                        <li>Suivi des Paiements</li>
+                        <li>Diaporama des Véhicules</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+40%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">🚙 Taux occup.:</span><span class="benefit-value">Optimisé</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Transit -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #2980b9;">
+                    <span class="app-icon">🚛</span>
+                    <div>
+                        <div class="app-name">OMEGA Transit</div>
+                        <div class="app-tech">Logistique et Transit</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Gestion des Expéditions</li>
+                        <li>Suivi des Colis et Traçabilité</li>
+                        <li>Gestion des Tournées</li>
+                        <li>Facturation Transport</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+30%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">📦 Livraison:</span><span class="benefit-value">Temps Réel</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Scooter -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #0984e3;">
+                    <span class="app-icon">🛵</span>
+                    <div>
+                        <div class="app-name">OMEGA Scooter</div>
+                        <div class="app-tech">Location de Scooters</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Gestion de Flotte 2 Roues</li>
+                        <li>Location à la Demande</li>
+                        <li>Suivi des Maintenances</li>
+                        <li>Application Mobile</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+35%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">🛵 Mobilité:</span><span class="benefit-value">Urbaine</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ============================================ -->
+    <!-- SECTION 6 : SPORT & FITNESS -->
+    <!-- ============================================ -->
+    <div id="sport" class="section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="section-icon">⚽</span>
+                Pôle Sport & Fitness
+            </div>
+            <div class="section-subtitle">Solutions pour clubs sportifs et centres de fitness</div>
+        </div>
+        <div class="apps-grid">
+            <!-- OMEGA Football Academy -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #2ecc71;">
+                    <span class="app-icon">⚽</span>
+                    <div>
+                        <div class="app-name">OMEGA Football Academy</div>
+                        <div class="app-tech">Centre de Formation</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Recrutement et Scouting Digital</li>
+                        <li>Suivi des Performances</li>
+                        <li>Gestion des Infrastructures</li>
+                        <li>Planning Entraînements</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+30%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">⚽ Talents:</span><span class="benefit-value">Détectés</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Fitness -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #00b894;">
+                    <span class="app-icon">🏋️</span>
+                    <div>
+                        <div class="app-name">OMEGA Fitness</div>
+                        <div class="app-tech">Salle de Sport</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Gestion des Abonnements</li>
+                        <li>Suivi des Présences</li>
+                        <li>Planning des Cours Collectifs</li>
+                        <li>Coaching Personnalisé</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+35%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">💪 Fidélisation:</span><span class="benefit-value">+50%</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ============================================ -->
+    <!-- SECTION 7 : ÉDUCATION -->
+    <!-- ============================================ -->
+    <div id="education" class="section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="section-icon">🎓</span>
+                Pôle Éducation
+            </div>
+            <div class="section-subtitle">Solutions pour écoles, centres de formation et universités</div>
+        </div>
+        <div class="apps-grid">
+            <!-- OMEGA École -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #1abc9c;">
+                    <span class="app-icon">🎓</span>
+                    <div>
+                        <div class="app-name">OMEGA École</div>
+                        <div class="app-tech">Gestion Scolaire</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Inscription et Scolarité</li>
+                        <li>Gestion des Notes et Bulletins</li>
+                        <li>Emplois du Temps</li>
+                        <li>Suivi des Paiements</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+25%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">📚 Administration:</span><span class="benefit-value">-60%</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ============================================ -->
+    <!-- SECTION 8 : RESTAURATION -->
+    <!-- ============================================ -->
+    <div id="restaurant" class="section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="section-icon">🍕</span>
+                Pôle Restauration
+            </div>
+            <div class="section-subtitle">Solutions pour restaurants, pizzérias et services de livraison</div>
+        </div>
+        <div class="apps-grid">
+            <!-- OMEGA Restauration -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #27ae60;">
+                    <span class="app-icon">🍽️</span>
+                    <div>
+                        <div class="app-name">OMEGA Restauration</div>
+                        <div class="app-tech">Gestion Restaurant</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Gestion des Tables et Salles</li>
+                        <li>Commandes et Facturation</li>
+                        <li>Gestion des Stocks Cuisine</li>
+                        <li>Suivi des Serveurs</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+30%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">🍽️ Service:</span><span class="benefit-value">Fluide</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- OMEGA Pizzeria -->
+            <div class="app-card">
+                <div class="app-header" style="border-bottom-color: #e17055;">
+                    <span class="app-icon">🍕</span>
+                    <div>
+                        <div class="app-name">OMEGA Pizzeria</div>
+                        <div class="app-tech">Commandes et Livraison</div>
+                    </div>
+                </div>
+                <div class="app-body">
+                    <ul class="app-features">
+                        <li>Commandes en Ligne</li>
+                        <li>Gestion des Livreurs</li>
+                        <li>Suivi des Commandes en Temps Réel</li>
+                        <li>Promotions et Fidélisation</li>
+                    </ul>
+                    <div class="app-benefits">
+                        <div class="benefit-item"><span class="benefit-label">🎯 ROI Estimé:</span><span class="benefit-value">+35%</span></div>
+                        <div class="benefit-item"><span class="benefit-label">🍕 Livraisons:</span><span class="benefit-value">+50%</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ============================================ -->
+    <!-- TABLEAU RÉCAPITULATIF -->
+    <!-- ============================================ -->
+    <div class="section">
+        <div class="section-header">
+            <div class="section-title">
+                <span class="section-icon">📊</span>
+                Récapitulatif Complet des Applications
+            </div>
+            <div class="section-subtitle">42 applications réparties en 8 pôles d'activité</div>
+        </div>
+        <div class="summary-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Application</th>
+                        <th>Catégorie</th>
+                        <th>Port</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>OMEGA Ingénierie</td><td><span class="category-badge" style="background:#e8f4fd;">💰 Finance</span></td><td>8094</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Banque</td><td><span class="category-badge" style="background:#e8f4fd;">💰 Finance</span></td><td>8095</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA SYSCOHADA</td><td><span class="category-badge" style="background:#e8f4fd;">💰 Finance</span></td><td>8096</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA SYSCOA</td><td><span class="category-badge" style="background:#e8f4fd;">💰 Finance</span></td><td>8097</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Gestion Prévisionnelle</td><td><span class="category-badge" style="background:#e8f4fd;">💰 Finance</span></td><td>8098</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA PME Connect</td><td><span class="category-badge" style="background:#e8f4fd;">💼 Business</span></td><td>8100</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Commerciale</td><td><span class="category-badge" style="background:#e8f4fd;">🛍️ Commerce</span></td><td>8101</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA E-commerce</td><td><span class="category-badge" style="background:#e8f4fd;">🛍️ Commerce</span></td><td>8102</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Gestion E-Commerciale</td><td><span class="category-badge" style="background:#e8f4fd;">🛍️ Commerce</span></td><td>8103</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Restauration</td><td><span class="category-badge" style="background:#e8f4fd;">🍕 Restauration</span></td><td>8104</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Auto</td><td><span class="category-badge" style="background:#e8f4fd;">🚗 Transport</span></td><td>8110</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Gestion Auto</td><td><span class="category-badge" style="background:#e8f4fd;">🚗 Transport</span></td><td>8111</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Pièces Auto Pro</td><td><span class="category-badge" style="background:#e8f4fd;">🛍️ Commerce</span></td><td>8112</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Pointage QR</td><td><span class="category-badge" style="background:#e8f4fd;">💼 Business</span></td><td>8093</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA École</td><td><span class="category-badge" style="background:#e8f4fd;">🎓 Éducation</span></td><td>8091</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Pressing</td><td><span class="category-badge" style="background:#e8f4fd;">💼 Business</span></td><td>8092</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Clinique</td><td><span class="category-badge" style="background:#e8f4fd;">🏥 Médical</span></td><td>8120</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Report</td><td><span class="category-badge" style="background:#e8f4fd;">💰 Finance</span></td><td>8130</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Reporting</td><td><span class="category-badge" style="background:#e8f4fd;">💰 Finance</span></td><td>8131</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Synthèse Pro</td><td><span class="category-badge" style="background:#e8f4fd;">💰 Finance</span></td><td>8132</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Centre DIOP</td><td><span class="category-badge" style="background:#e8f4fd;">🏥 Médical</span></td><td>8140</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Charcuterie POS</td><td><span class="category-badge" style="background:#e8f4fd;">🛍️ Commerce</span></td><td>8141</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Football Academy</td><td><span class="category-badge" style="background:#e8f4fd;">⚽ Sport</span></td><td>8142</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Librairie</td><td><span class="category-badge" style="background:#e8f4fd;">🛍️ Commerce</span></td><td>8143</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Pharmacie Pro</td><td><span class="category-badge" style="background:#e8f4fd;">🏥 Médical</span></td><td>8144</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Revendeur Médical</td><td><span class="category-badge" style="background:#e8f4fd;">🏥 Médical</span></td><td>8145</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Analyse Médicale</td><td><span class="category-badge" style="background:#e8f4fd;">🏥 Médical</span></td><td>8150</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Hôtel</td><td><span class="category-badge" style="background:#e8f4fd;">💼 Business</span></td><td>8151</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Cabinet Radiologie</td><td><span class="category-badge" style="background:#e8f4fd;">🏥 Médical</span></td><td>8153</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Gestion Immobilière</td><td><span class="category-badge" style="background:#e8f4fd;">💼 Business</span></td><td>8154</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Portail</td><td><span class="category-badge" style="background:#e8f4fd;">💼 Business</span></td><td>8152</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Couture Sénégal</td><td><span class="category-badge" style="background:#e8f4fd;">🛍️ Commerce</span></td><td>8155</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Génie Civil</td><td><span class="category-badge" style="background:#e8f4fd;">💼 Business</span></td><td>8156</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Transit</td><td><span class="category-badge" style="background:#e8f4fd;">🚗 Transport</span></td><td>8157</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Agence Voyage</td><td><span class="category-badge" style="background:#e8f4fd;">💼 Business</span></td><td>8158</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Annuaire</td><td><span class="category-badge" style="background:#e8f4fd;">💼 Business</span></td><td>8159</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Fitness</td><td><span class="category-badge" style="background:#e8f4fd;">⚽ Sport</span></td><td>8160</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Pizzeria</td><td><span class="category-badge" style="background:#e8f4fd;">🍕 Restauration</span></td><td>8161</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Scooter</td><td><span class="category-badge" style="background:#e8f4fd;">🚗 Transport</span></td><td>8162</td><td>✅ Disponible</td></tr>
+                    <tr><td>OMEGA Parfumerie</td><td><span class="category-badge" style="background:#e8f4fd;">🛍️ Commerce</span></td><td>8163</td><td>✅ Disponible</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- FOOTER -->
+    <div class="footer">
+        <div class="social-links">
+            <div class="social-icon">🌐</div>
+            <div class="social-icon">📧</div>
+            <div class="social-icon">📱</div>
+            <div class="social-icon">💼</div>
+        </div>
+        <p><strong>OMEGA INFORMATIQUE CONSULTING</strong><br>
+        Dakar, Sénégal | Tél: +221 XX XXX XX XX | Email: contact@omega-consulting.sn</p>
+        <p style="font-size: 0.8rem; opacity: 0.7;">Suite Logicielle OCS 2026 - Tous droits réservés</p>
+        <p style="font-size: 0.7rem; margin-top: 1rem;">*Offre valable dans le cadre du déploiement OMEGA SUITE 2026</p>
+    </div>
+    
+    <script>
+        // Smooth scroll pour la navigation
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if(target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

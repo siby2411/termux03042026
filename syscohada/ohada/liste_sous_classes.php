@@ -1,6 +1,6 @@
 <?php
 // Connexion à la base de données
-$host = 'localhost';
+$host = '127.0.0.1';
 $dbname = 'ohada'; // Remplacez par le nom de votre base de données
 $username = 'root'; // Remplacez par votre utilisateur
 $password = '123'; // Remplacez par votre mot de passe

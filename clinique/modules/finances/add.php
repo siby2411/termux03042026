@@ -2,91 +2,88 @@
 include '../../includes/header.php';
 include '../../config/database.php';
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $database = new Database();
-    $db = $database->getConnection();
-    
-    try {
-        // Générer numéro de facture
-        $query = "SELECT COUNT(*) as count FROM factures WHERE YEAR(date_facture) = YEAR(CURDATE())";
-        $stmt = $db->prepare($query);
-        $stmt->execute();
-        $count = $stmt->fetch(PDO::FETCH_ASSOC)['count'] + 1;
-        $numero_facture = 'FACT-' . date('Y') . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
-        
-        // Gérer la consultation (peut être NULL)
-        $id_consultation = !empty($_POST['id_consultation']) ? $_POST['id_consultation'] : null;
-        
-        // Commencer une transaction
-        $db->beginTransaction();
-        
-        // Insérer la facture
-        $query = "INSERT INTO factures (numero_facture, id_patient, id_consultation, montant_total, statut, mode_paiement, notes) 
-                  VALUES (:numero_facture, :id_patient, :id_consultation, :montant_total, :statut, :mode_paiement, :notes)";
-        
-        $stmt = $db->prepare($query);
-        $montant_total = floatval($_POST['montant_total']);
-        
-        $stmt->bindParam(':numero_facture', $numero_facture);
-        $stmt->bindParam(':id_patient', $_POST['id_patient']);
-        $stmt->bindParam(':id_consultation', $id_consultation);
-        $stmt->bindParam(':montant_total', $montant_total);
-        $stmt->bindParam(':statut', $_POST['statut']);
-        $stmt->bindParam(':mode_paiement', $_POST['mode_paiement']);
-        $stmt->bindParam(':notes', $_POST['notes']);
-        
-        $stmt->execute();
-        $facture_id = $db->lastInsertId();
-        
-        // Insérer les lignes de facture
-        if (isset($_POST['designation']) && is_array($_POST['designation'])) {
-            $query = "INSERT INTO lignes_facture (id_facture, designation, quantite, prix_unitaire) 
-                      VALUES (:id_facture, :designation, :quantite, :prix_unitaire)";
-            $stmt = $db->prepare($query);
-            
-            for ($i = 0; $i < count($_POST['designation']); $i++) {
-                if (!empty($_POST['designation'][$i])) {
-                    $quantite = floatval($_POST['quantite'][$i]);
-                    $prix_unitaire = floatval($_POST['prix_unitaire'][$i]);
-                    
-                    $stmt->bindParam(':id_facture', $facture_id);
-                    $stmt->bindParam(':designation', $_POST['designation'][$i]);
-                    $stmt->bindParam(':quantite', $quantite);
-                    $stmt->bindParam(':prix_unitaire', $prix_unitaire);
-                    $stmt->execute();
-                }
-            }
-        }
-        
-        $db->commit();
-        
-        header("Location: list.php?success=Facture créée avec succès");
-        exit();
-        
-    } catch (Exception $e) {
-        $db->rollBack();
-        $error = "Erreur lors de la création de la facture: " . $e->getMessage();
-    }
-}
-
 $database = new Database();
 $db = $database->getConnection();
 
-// Récupérer les patients
-$query = "SELECT id, code_patient, nom, prenom FROM patients ORDER BY nom, prenom";
-$stmt = $db->prepare($query);
-$stmt->execute();
-$patients = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Récupérer les consultations (uniquement celles sans facture)
-$query = "SELECT c.id, p.nom, p.prenom, c.date_consultation 
-          FROM consultations c 
-          JOIN patients p ON c.id_patient = p.id 
-          LEFT JOIN factures f ON c.id = f.id_consultation 
-          WHERE f.id IS NULL 
-          ORDER BY c.date_consultation DESC";
-$stmt = $db->prepare($query);
-$stmt->execute();
-$consultations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Récupération des patients pour le sélecteur
+$patients = $db->query("SELECT id, nom, prenom, code_patient FROM patients")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+            <h4 class="mb-0"><i class="bi bi-receipt"></i> Créer une nouvelle facture</h4>
+        </div>
+        <div class="card-body">
+            <form action="process_add.php" method="POST">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Sélectionner le Patient</label>
+                        <select name="id_patient" class="form-select" required>
+                            <?php foreach($patients as $p): ?>
+                                <option value="<?= $p['id'] ?>"><?= $p['code_patient'] ?> - <?= $p['nom'] ?> <?= $p['prenom'] ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Statut</label>
+                        <select name="statut" class="form-select">
+                            <option value="impayee">Impayée</option>
+                            <option value="payee">Payée</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Mode de Paiement</label>
+                        <select name="mode_paiement" class="form-select">
+                            <option value="especes">Espèces</option>
+                            <option value="carte">Carte Bancaire</option>
+                            <option value="virement">Virement / Mobile Money</option>
+                        </select>
+                    </div>
+                </div>
+
+                <h5 class="mt-4 mb-3">Détails des prestations</h5>
+                <table class="table table-bordered" id="itemsTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Désignation</th>
+                            <th width="100">Quantité</th>
+                            <th width="200">Prix Unitaire (FCFA)</th>
+                            <th width="50"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><input type="text" name="designation[]" class="form-control" placeholder="Ex: Consultation Générale" required></td>
+                            <td><input type="number" name="quantite[]" class="form-control" value="1" required></td>
+                            <td><input type="number" name="prix_unitaire[]" class="form-control" placeholder="Montant" required></td>
+                            <td><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()"><i class="bi bi-trash"></i></button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="addRow()">
+                    <i class="bi bi-plus-circle"></i> Ajouter une ligne
+                </button>
+
+                <div class="mt-4 text-end">
+                    <a href="list.php" class="btn btn-light">Annuler</a>
+                    <button type="submit" class="btn btn-success">Générer la Facture</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function addRow() {
+    const row = `<tr>
+        <td><input type="text" name="designation[]" class="form-control" required></td>
+        <td><input type="number" name="quantite[]" class="form-control" value="1" required></td>
+        <td><input type="number" name="prix_unitaire[]" class="form-control" required></td>
+        <td><button type="button" class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()"><i class="bi bi-trash"></i></button></td>
+    </tr>`;
+    document.querySelector('#itemsTable tbody').insertAdjacentHTML('beforeend', row);
+}
+</script>
+
+<?php include '../../includes/footer.php'; ?>

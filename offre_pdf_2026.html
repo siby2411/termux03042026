@@ -1,0 +1,62 @@
+cd /root/shared/htdocs/apachewsl2026
+
+# Sauvegardez le HTML dans un fichier
+cat > omega_offre_2026.html << 'EOF'
+[COLLER LE CODE HTML COMPLET ICI]
+EOF
+
+# Générer le PDF avec Chrome (recommandé)
+google-chrome --headless --disable-gpu --print-to-pdf=omega_offre_2026.pdf omega_offre_2026.html
+
+# Ou avec wkhtmltopdf si disponible
+wkhtmltopdf --enable-local-file-access --page-size A4 --orientation portrait omega_offre_2026.html omega_offre_2026.pdf
+
+# Installation de wkhtmltopdf si nécessaire
+apt-get update && apt-get install -y wkhtmltopdf
+
+# Génération directe
+wkhtmltopdf --page-size A4 --margin-top 15mm --margin-bottom 15mm --margin-left 10mm --margin-right 10mm http://localhost:8080 omega_offre_2026.pdf
+
+
+
+php -r "file_put_contents('omega_offre_2026.pdf', file_get_contents('https://html2pdf.app/?url=http://localhost:8080'));"
+cd /root/shared/htdocs/apachewsl2026
+
+# Sauvegardez le HTML dans un fichier
+cat > omega_offre_2026.html << 'EOF'
+[COLLER LE CODE HTML COMPLET ICI]
+EOF
+
+# Générer le PDF avec Chrome (recommandé)
+google-chrome --headless --disable-gpu --print-to-pdf=omega_offre_2026.pdf omega_offre_2026.html
+
+# Ou avec wkhtmltopdf si disponible
+wkhtmltopdf --enable-local-file-access --page-size A4 --orientation portrait omega_offre_2026.html omega_offre_2026.pdf
+
+# Installation de wkhtmltopdf si nécessaire
+apt-get update && apt-get install -y wkhtmltopdf
+
+# Génération directe
+wkhtmltopdf --page-size A4 --margin-top 15mm --margin-bottom 15mm --margin-left 10mm --margin-right 10mm http://localhost:8080 omega_offre_2026.pdf
+
+
+
+php -r "file_put_contents('omega_offre_2026.pdf', file_get_contents('https://html2pdf.app/?url=http://localhost:8080'));"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

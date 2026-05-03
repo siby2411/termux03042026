@@ -1,66 +1,81 @@
 <?php
-// include 'includes/auth_check.php'; // À créer pour vérifier la session
+include 'includes/auth_check.php';
+include 'includes/db.php';
 include 'includes/header.php';
+
+// Diagnostic Data
+$nb_retards = $pdo->query("SELECT COUNT(*) FROM commandes WHERE etat = 'validee' AND date_commande < DATE_SUB(NOW(), INTERVAL 48 HOUR)")->fetchColumn();
+$nb_msg = $pdo->query("SELECT COUNT(*) FROM messages WHERE service_dest_id = ".$_SESSION['service_id']." AND lu = 0")->fetchColumn();
 ?>
 
-<div class="row mb-4">
-    <div class="col-md-12">
-        <h2 class="fw-bold text-dark">Tableau de Pilotage</h2>
-        <p class="text-muted">Vue d'ensemble des activités de la PME.</p>
-    </div>
-</div>
-
-<div class="row g-4">
-    <div class="col-md-4">
-        <div class="card h-100 card-dashboard border-primary">
-            <div class="card-body text-center">
-                <i class="fas fa-file-invoice-dollar fa-3x text-primary mb-3"></i>
-                <h5 class="card-title">Facturation & Commandes</h5>
-                <p class="card-text">Suivi des devis, bons de commande et factures clients.</p>
-                <a href="facturation.php" class="btn btn-primary">Gérer</a>
-            </div>
-            <div class="card-footer bg-transparent border-primary">
-                <small class="text-muted">État financier en direct</small>
-            </div>
-        </div>
+<div class="container-fluid px-4">
+    <div class="row mb-4">
+        <?php if($nb_retards > 0): ?>
+            <div class="col-md-6"><div class="alert alert-warning border-0 shadow-sm mb-0"><i class="fas fa-exclamation-circle"></i> <?= $nb_retards ?> facturations en retard !</div></div>
+        <?php endif; ?>
+        <?php if($nb_msg > 0): ?>
+            <div class="col-md-6"><div class="alert alert-info border-0 shadow-sm mb-0"><i class="fas fa-envelope"></i> <?= $nb_msg ?> nouveau(x) message(s) service.</div></div>
+        <?php endif; ?>
     </div>
 
-    <div class="col-md-4">
-        <div class="card h-100 card-dashboard border-success">
-            <div class="card-body text-center">
-                <i class="fas fa-boxes fa-3x text-success mb-3"></i>
-                <h5 class="card-title">Logistique & Stock</h5>
-                <p class="card-text">Gestion des entrées/sorties et alertes de stock.</p>
-                <a href="stock.php" class="btn btn-success">Accéder</a>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card h-100 card-dashboard border-warning">
-            <div class="card-body text-center">
-                <i class="fas fa-cloud-upload-alt fa-3x text-warning mb-3"></i>
-                <h5 class="card-title">Partage Documents</h5>
-                <p class="card-text">Uploads et partage de fichiers entre services (Marketing, RH...).</p>
-                <a href="documents.php" class="btn btn-warning text-dark">Mes Fichiers</a>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-6">
-        <div class="card h-100 card-dashboard border-info">
-            <div class="card-body d-flex align-items-center">
-                <div class="me-3">
-                     <i class="fas fa-users-cog fa-3x text-info"></i>
+<?php if ($alerte_stock > 0): ?>     <div class='alert alert-danger border-0 shadow-sm mb-4 animate__animated animate__pulse animate__infinite'>         <i class='fas fa-exclamation-triangle me-2'></i> <strong>Rupture imminente :</strong> <?= $alerte_stock ?> produit(s) sous le seuil d'alerte. Les messages ont été envoyés aux Achats.     </div> <?php endif; ?>
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100 p-3 text-center">
+                        <i class="fas fa-file-signature fa-3x text-warning mb-2"></i>
+                        <h5>Devis & Propositions</h5>
+                        <div class="btn-group mt-auto">
+                            <a href="creer_devis.php" class="btn btn-sm btn-outline-warning">Créer</a>
+                            <a href="liste_devis.php" class="btn btn-sm btn-warning">Gérer</a>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <h5 class="card-title">Administration & RH</h5>
-                    <p class="card-text mb-0">Gestion des collaborateurs, rôles et permissions d'accès.</p>
-                    <a href="admin_users.php" class="btn btn-sm btn-outline-info mt-2">Administrer</a>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm h-100 p-3 text-center">
+                        <i class="fas fa-shopping-cart fa-3x text-primary mb-2"></i>
+                        <h5>Commandes Intelligentes</h5>
+                        <div class="btn-group mt-auto">
+                            <a href="creer_commande.php" class="btn btn-sm btn-primary">Nouvelle</a>
+                            <a href="logistique.php" class="btn btn-sm btn-outline-primary">Suivi</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="card border-0 shadow-sm bg-dark text-white p-4">
+                        <div class="d-flex justify-content-between align-items-center">
+<?php if($_SESSION['user_role'] == 'direction'): ?>
+                            <div><h4 class="mb-0">Business Intelligence</h4><p class="small opacity-50">Analyses et KPI en temps réel</p></div>
+                            <a href="reporting.php" class="btn btn-light">Ouvrir Analytics</a>
+                        <?php endif; ?>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <div class="col-md-4">
+            <div class="list-group shadow-sm border-0">
+                <div class="list-group-item bg-light fw-bold border-0">Services Collaboratifs</div>
+                <a href="messagerie.php" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                    <div><i class="fas fa-comments me-2 text-primary"></i> Messagerie Interne</div>
+                    <span class="badge bg-primary rounded-pill"><?= $nb_msg ?></span>
+                </a>
+                <a href="documents.php" class="list-group-item list-group-item-action">
+                    <i class="fas fa-folder-open me-2 text-info"></i> Documents Partagés
+                </a>
+                <a href="clients.php" class="list-group-item list-group-item-action">
+                    <i class="fas fa-users me-2 text-success"></i> Portefeuille Clients
+                </a>
+                <a href="stock.php" class="list-group-item list-group-item-action">
+                    <i class="fas fa-boxes me-2 text-secondary"></i> Stock & Inventaire
+                </a>
+                <a href="admin_users.php" class="list-group-item list-group-item-action border-top mt-2 text-muted">
+                    <i class="fas fa-user-shield me-2"></i> Administration RH
+                </a>
+            </div>
+        </div>
     </div>
 </div>
-
 <?php include 'includes/footer.php'; ?>

@@ -1,0 +1,775 @@
+<?php
+session_start();
+require_once '../../config/database.php';
+require_once '../../includes/auth.php';
+
+if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'medecin') {
+    header('Location: /login.php');
+    exit();
+}
+
+$pdo = getPDO();
+$medecin_id = $_SESSION['user_id'];
+
+// Récupérer les informations patient du token
+$patient_token = getPatientFromToken();
+
+// Récupérer les informations du médecin et ses salles d'affectation du jour
+$stmt = $pdo->prepare("
+    SELECT
+        u.*,
+        s.name as service_nom,
+        s.prix_consultation,
+        GROUP_CONCAT(DISTINCT CONCAT(sa.numero_salle, ' (', sa.etage, ') - ',
+                    DATE_FORMAT(ms.heure_debut, '%H:%i'), ' à ',
+                    DATE_FORMAT(ms.heure_fin, '%H:%i')) SEPARATOR ' | ') as salles_aujourdhui,
+        COUNT(DISTINCT ms.salle_id) as nb_salles,
+        MIN(ms.heure_debut) as debut_service,
+        MAX(ms.heure_fin) as fin_service
+    FROM users u
+    JOIN services s ON u.service_id = s.id
+    LEFT JOIN medecin_salles ms ON u.id = ms.medecin_id AND ms.date_affectation = CURDATE()
+    LEFT JOIN salles sa ON ms.salle_id = sa.id
+    WHERE u.id = ?
+    GROUP BY u.id
+");
+$stmt->execute([$medecin_id]);
+$medecin = $stmt->fetch();
+
+// Déterminer la salle active selon l'heure
+$current_hour = (int)date('H');
+$salle_active = 1;
+$prochaine_salle = null;
+
+// Récupérer les horaires détaillés
+$horaires = $pdo->prepare("
+    SELECT 
+        sa.numero_salle,
+        sa.etage,
+        b.nom as batiment,
+        n.nom as niveau,
+        ms.heure_debut,
+        ms.heure_fin,
+        CASE WHEN TIME(NOW()) BETWEEN ms.heure_debut AND ms.heure_fin THEN 1 ELSE 0 END as est_active
+    FROM medecin_salles ms
+    JOIN salles sa ON ms.salle_id = sa.id
+    JOIN batiments b ON sa.batiment_id = b.id
+    JOIN niveaux n ON sa.niveau_id = n.id
+    WHERE ms.medecin_id = ? AND ms.date_affectation = CURDATE()
+    ORDER BY ms.heure_debut
+");
+$horaires->execute([$medecin_id]);
+$horaires = $horaires->fetchAll();
+
+foreach ($horaires as $h) {
+    if ($h['est_active']) {
+        $salle_active = $h['numero_salle'];
+    }
+}
+
+// Récupérer la file d'attente du service avec les informations de salle
+$queue = $pdo->prepare("
+    SELECT 
+        f.*,
+        p.prenom,
+        p.nom,
+        p.code_patient_unique,
+        p.date_naissance,
+        p.telephone,
+        p.id as patient_id,
+        TIMESTAMPDIFF(YEAR, p.date_naissance, CURDATE()) as age,
+        TIMESTAMPDIFF(MINUTE, f.cree_a, NOW()) as temps_attente,
+        CASE 
+            WHEN TIMESTAMPDIFF(MINUTE, f.cree_a, NOW()) > 30 THEN 'long'
+            WHEN TIMESTAMPDIFF(MINUTE, f.cree_a, NOW()) > 15 THEN 'moyen'
+            ELSE 'court'
+        END as niveau_attente
+    FROM file_attente f
+    JOIN patients p ON f.patient_id = p.id
+    WHERE f.service_id = ? AND f.statut = 'en_attente'
+    ORDER BY 
+        FIELD(f.priorite, 'urgence', 'senior', 'normal'),
+        f.cree_a ASC
+");
+$queue->execute([$medecin['service_id']]);
+$waiting_patients = $queue->fetchAll();
+
+// Statistiques d'attente
+$stats_attente = [
+    'total' => count($waiting_patients),
+    'seniors' => count(array_filter($waiting_patients, fn($p) => $p['priorite'] == 'senior')),
+    'urgences' => count(array_filter($waiting_patients, fn($p) => $p['priorite'] == 'urgence')),
+    'temps_moyen' => $waiting_patients ? array_sum(array_column($waiting_patients, 'temps_attente')) / count($waiting_patients) : 0
+];
+
+// Récupérer les rendez-vous du jour
+$today_rdv = $pdo->prepare("
+    SELECT 
+        r.*,
+        p.id as patient_id,
+        p.prenom,
+        p.nom,
+        p.code_patient_unique,
+        p.telephone,
+        TIMESTAMPDIFF(YEAR, p.date_naissance, CURDATE()) as age,
+        TIMESTAMPDIFF(MINUTE, CONCAT(r.date_rdv, ' ', r.heure_rdv), NOW()) as temps_restant
+    FROM rendez_vous r
+    JOIN patients p ON r.patient_id = p.id
+    WHERE r.service_id = ? 
+        AND r.date_rdv = CURDATE()
+        AND r.statut IN ('programme', 'confirme')
+    ORDER BY r.heure_rdv ASC
+");
+$today_rdv->execute([$medecin['service_id']]);
+$today_rdv = $today_rdv->fetchAll();
+
+// Récupérer les rendez-vous futurs
+$future_rdv = $pdo->prepare("
+    SELECT 
+        r.*,
+        p.prenom,
+        p.nom,
+        p.code_patient_unique,
+        p.telephone,
+        DATEDIFF(r.date_rdv, CURDATE()) as jours_restants
+    FROM rendez_vous r
+    JOIN patients p ON r.patient_id = p.id
+    WHERE r.service_id = ? 
+        AND r.date_rdv > CURDATE()
+        AND r.statut = 'programme'
+    ORDER BY r.date_rdv ASC, r.heure_rdv ASC
+    LIMIT 10
+");
+$future_rdv->execute([$medecin['service_id']]);
+$future_rdv = $future_rdv->fetchAll();
+
+// Récupérer les consultations du jour
+$today_consults = $pdo->prepare("
+    SELECT 
+        c.*,
+        p.prenom,
+        p.nom,
+        p.code_patient_unique,
+        TIME(c.date_consultation) as heure_consult,
+        TIMESTAMPDIFF(MINUTE, c.date_consultation, NOW()) as duree_consult
+    FROM consultations c
+    JOIN patients p ON c.patient_id = p.id
+    WHERE c.medecin_id = ? AND DATE(c.date_consultation) = CURDATE()
+    ORDER BY c.date_consultation DESC
+");
+$today_consults->execute([$medecin_id]);
+$today_consults = $today_consults->fetchAll();
+
+// Statistiques du jour
+$stats = $pdo->prepare("
+    SELECT 
+        COUNT(DISTINCT f.id) as en_attente,
+        COUNT(DISTINCT r.id) as rdv_aujourdhui,
+        COUNT(DISTINCT c.id) as consultations_faites,
+        COALESCE(AVG(TIMESTAMPDIFF(MINUTE, c.date_consultation, NOW())), 0) as duree_moyenne
+    FROM file_attente f
+    LEFT JOIN rendez_vous r ON r.service_id = f.service_id AND r.date_rdv = CURDATE()
+    LEFT JOIN consultations c ON c.medecin_id = ? AND DATE(c.date_consultation) = CURDATE()
+    WHERE f.service_id = ? AND f.statut = 'en_attente'
+");
+$stats->execute([$medecin_id, $medecin['service_id']]);
+$daily_stats = $stats->fetch();
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Dr. <?= htmlspecialchars($medecin['prenom'] . ' ' . $medecin['nom']) ?></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { 
+            background: #f0f2f5; 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 15px;
+        }
+        .container-fluid { padding: 20px; }
+        
+        /* En-tête médecin */
+        .header-medecin {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(102,126,234,0.3);
+        }
+        .salle-badge {
+            font-size: 1.1em;
+            background: rgba(255,255,255,0.2);
+            padding: 12px 25px;
+            border-radius: 50px;
+            display: inline-block;
+        }
+        .horaire-info {
+            background: #e8f4fd;
+            border-radius: 8px;
+            padding: 8px 15px;
+            margin-top: 10px;
+            font-size: 0.95em;
+        }
+        .salle-active {
+            background: #2ecc71;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        
+        /* Widget patient */
+        .patient-widget {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(102,126,234,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        .patient-widget::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+        .patient-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .patient-info {
+            display: flex;
+            gap: 15px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .info-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.95em;
+        }
+        .patient-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .patient-actions .btn {
+            flex: 1;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .patient-actions .btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+        
+        /* Cartes de statistiques */
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(102,126,234,0.2);
+            margin-bottom: 20px;
+        }
+        .stats-number {
+            font-size: 2.8em;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+        
+        /* File d'attente */
+        .patient-card {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 4px solid;
+            transition: all 0.3s;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        .patient-card:hover {
+            transform: translateX(8px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .patient-card.urgent { border-left-color: #e74c3c; background: #fef5f5; }
+        .patient-card.senior { border-left-color: #f39c12; background: #fff8e7; }
+        .patient-card.normal { border-left-color: #3498db; }
+        .time-badge {
+            font-size: 0.85em;
+            padding: 4px 10px;
+            border-radius: 20px;
+            background: #f8f9fa;
+        }
+        
+        /* Rendez-vous */
+        .rdv-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 3px solid #2ecc71;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .rdv-card:hover {
+            background: #e8f5e9;
+            transform: translateX(5px);
+        }
+        
+        /* Dashboard card */
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background: white;
+            height: 100vh;
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+        }
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar-menu li {
+            margin-bottom: 10px;
+        }
+        .sidebar-menu a {
+            display: block;
+            padding: 12px 15px;
+            border-radius: 8px;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background: #667eea;
+            color: white;
+        }
+        .sidebar-menu i {
+            margin-right: 10px;
+            width: 20px;
+        }
+        
+        /* Refresh timer */
+        .refresh-timer {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            font-weight: 500;
+        }
+        
+        /* Token badge */
+        .token-badge {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 8px 15px;
+            border-radius: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+            border-left: 4px solid #667eea;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="refresh-timer">
+        <i class="fas fa-sync-alt fa-spin"></i> Actualisation <span id="countdown">30</span>s
+    </div>
+    
+    <div class="token-badge">
+        <i class="fas fa-token text-primary me-2"></i>
+        <?= $patient_token ? 'Patient: ' . htmlspecialchars($patient_token['prenom'] . ' ' . $patient_token['nom']) : 'Aucun patient chargé' ?>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 p-0">
+                <div class="sidebar">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-hospital fa-3x mb-2" style="color: #667eea;"></i>
+                        <h5>Centre Mamadou Diop</h5>
+                        <small><?= htmlspecialchars($medecin['service_nom']) ?></small>
+                    </div>
+                    <ul class="sidebar-menu">
+                        <li><a href="/modules/medical/edition_dossier.php"><i class="fas fa-edit"></i> Édition dossier</a></li>
+                        <li><a href="dashboard.php" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+                        <li><a href="patients.php"><i class="fas fa-users"></i> Mes patients</a></li>
+                        <li><a href="consultations.php"><i class="fas fa-stethoscope"></i> Consultations</a></li>
+                        <li><a href="rendezvous.php"><i class="fas fa-calendar"></i> Rendez-vous</a></li>
+                        <li><a href="planning.php"><i class="fas fa-clock"></i> Mon planning</a></li>
+                        <li><a href="recherche.php"><i class="fas fa-search"></i> Recherche</a></li>
+                        <li><a href="/logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-10 p-4">
+                <!-- En-tête médecin avec informations d'affectation -->
+                <div class="header-medecin">
+                    <div class="row align-items-center">
+                        <div class="col-md-7">
+                            <h2><i class="fas fa-user-md"></i> Dr. <?= htmlspecialchars($medecin['prenom'] . ' ' . $medecin['nom']) ?></h2>
+                            <p class="mb-2">
+                                <i class="fas fa-stethoscope"></i> <?= htmlspecialchars($medecin['service_nom']) ?> | 
+                                <i class="fas fa-door-open"></i> Salles: <?= htmlspecialchars($medecin['salles_aujourdhui'] ?? 'Aucune') ?>
+                            </p>
+                            <div class="horaire-info">
+                                <i class="fas fa-clock"></i> Service: <?= date('H:i', strtotime($medecin['debut_service'])) ?> - <?= date('H:i', strtotime($medecin['fin_service'])) ?>
+                                | <span class="salle-active">Salle active: <?= $salle_active ?></span>
+                            </div>
+                        </div>
+                        <div class="col-md-5 text-end">
+                            <span class="salle-badge">
+                                <i class="fas fa-calendar"></i> <?= date('d/m/Y') ?> | 
+                                <i class="fas fa-clock"></i> <?= date('H:i') ?>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Widget patient du token -->
+                <?php if ($patient_token && isset($patient_token['id'])): ?>
+                <div class="patient-widget">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div style="font-size: 0.9em; opacity: 0.9;">Patient actuellement sélectionné</div>
+                            <div class="patient-name">
+                                <i class="fas fa-user-injured me-2"></i>
+                                <?= htmlspecialchars($patient_token['prenom'] . ' ' . $patient_token['nom']) ?>
+                            </div>
+                            <div class="patient-info">
+                                <span class="info-badge">
+                                    <i class="fas fa-id-card me-1"></i> <?= htmlspecialchars($patient_token['code']) ?>
+                                </span>
+                                <span class="info-badge">
+                                    <i class="fas fa-phone me-1"></i> <?= htmlspecialchars($patient_token['telephone'] ?? 'N/A') ?>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <i class="fas fa-qrcode fa-4x" style="opacity: 0.3;"></i>
+                        </div>
+                    </div>
+                    <div class="patient-actions">
+                        <a href="consultation.php?patient_id=<?= $patient_token['id'] ?>" class="btn">
+                            <i class="fas fa-stethoscope"></i> Consultation
+                        </a>
+                        <a href="ordonnance.php?patient_id=<?= $patient_token['id'] ?>" class="btn">
+                            <i class="fas fa-prescription"></i> Ordonnance
+                        </a>
+                        <a href="dossier.php?patient_id=<?= $patient_token['id'] ?>" class="btn">
+                            <i class="fas fa-folder-open"></i> Dossier
+                        </a>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <!-- Statistiques rapides -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-number"><?= $stats_attente['total'] ?></div>
+                            <div>En attente</div>
+                            <?php if ($stats_attente['seniors'] > 0): ?>
+                                <small>👴 <?= $stats_attente['seniors'] ?> senior(s)</small>
+                            <?php endif; ?>
+                            <?php if ($stats_attente['urgences'] > 0): ?>
+                                <small>🚨 <?= $stats_attente['urgences'] ?> urgence(s)</small>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);">
+                            <div class="stats-number"><?= count($today_rdv) ?></div>
+                            <div>Rendez-vous</div>
+                            <small><?= $daily_stats['rdv_aujourdhui'] ?? 0 ?> confirmés</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                            <div class="stats-number"><?= count($today_consults) ?></div>
+                            <div>Consultations</div>
+                            <small>Dont <?= count(array_filter($today_consults, fn($c) => $c['duree_consult'] > 30)) ?> longues</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);">
+                            <div class="stats-number"><?= round($stats_attente['temps_moyen']) ?> min</div>
+                            <div>Attente moyenne</div>
+                            <small><?= $stats_attente['temps_moyen'] > 30 ? '⚠️ Élevée' : '✅ Normale' ?></small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <!-- File d'attente -->
+                    <div class="col-md-4">
+                        <div class="dashboard-card">
+                            <h5 class="mb-3">
+                                <i class="fas fa-clock"></i> File d'attente 
+                                <span class="badge bg-primary float-end"><?= count($waiting_patients) ?></span>
+                            </h5>
+                            
+                            <?php if (empty($waiting_patients)): ?>
+                                <div class="alert alert-info">Aucun patient en attente</div>
+                            <?php else: ?>
+                                <div style="max-height: 600px; overflow-y: auto;">
+                                    <?php foreach ($waiting_patients as $index => $p): ?>
+                                    <div class="patient-card <?= $p['priorite'] ?>" onclick="chargerPatient(<?= $p['patient_id'] ?>)">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong><?= $index + 1 ?>. <?= htmlspecialchars($p['prenom'] . ' ' . $p['nom']) ?></strong>
+                                                <?php if ($p['priorite'] == 'senior'): ?>
+                                                    <span class="badge bg-warning ms-1">👴 Senior</span>
+                                                <?php endif; ?>
+                                                <?php if ($p['priorite'] == 'urgence'): ?>
+                                                    <span class="badge bg-danger ms-1">🚨 Urgence</span>
+                                                <?php endif; ?>
+                                        <button class="btn btn-sm btn-primary w-100 mt-2" onclick="chargerPatient(<?= $p['patient_id'] ?>)">
+                                            <i class="fas fa-stethoscope"></i> Prendre en consultation
+                                        </button>
+                                            </div>
+                                            <span class="time-badge">
+                                                <?= $p['temps_attente'] ?> min
+                                                <?php if ($p['temps_attente'] > 30): ?>⚠️<?php endif; ?>
+                                            </span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mt-2">
+                                            <div>
+                                                <small><i class="fas fa-id-card"></i> <?= htmlspecialchars($p['code_patient_unique']) ?></small><br>
+                                                <small><i class="fas fa-calendar"></i> <?= $p['age'] ?> ans</small>
+                                            </div>
+                                            <div class="text-end">
+                                                <small><i class="fas fa-clock"></i> <?= date('H:i', strtotime($p['cree_a'])) ?></small>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            <small class="text-muted">
+                                                <i class="fas fa-map-marker-alt"></i> 
+                                                Salle <?= $salle_active ?> | 
+                                                Attente: <?= $p['niveau_attente'] ?>
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <!-- Rendez-vous du jour -->
+                    <div class="col-md-4">
+                        <div class="dashboard-card">
+                            <h5 class="mb-3">
+                                <i class="fas fa-calendar-day"></i> Rendez-vous aujourd'hui 
+                                <span class="badge bg-success float-end"><?= count($today_rdv) ?></span>
+                            </h5>
+                            
+                            <?php if (empty($today_rdv)): ?>
+                                <div class="alert alert-info">Aucun rendez-vous aujourd'hui</div>
+                            <?php else: ?>
+                                <div style="max-height: 350px; overflow-y: auto;">
+                                    <?php 
+                                    $proches = 0;
+                                    foreach ($today_rdv as $r): 
+                                        if ($r['temps_restant'] <= 15 && $r['temps_restant'] > 0) $proches++;
+                                    ?>
+                                    <div class="rdv-card" onclick="chargerPatient(<?= $r['patient_id'] ?>)">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <strong><?= htmlspecialchars($r['prenom'] . ' ' . $r['nom']) ?></strong>
+                                                <?php if ($r['temps_restant'] <= 15 && $r['temps_restant'] > 0): ?>
+                                                    <span class="badge bg-warning ms-2">Imminent</span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <span class="badge bg-info"><?= substr($r['heure_rdv'], 0, 5) ?></span>
+                                        </div>
+                                        <div class="mt-2">
+                                            <small><i class="fas fa-id-card"></i> <?= htmlspecialchars($r['code_patient_unique']) ?></small>
+                                            <small class="ms-3"><i class="fas fa-phone"></i> <?= htmlspecialchars($r['telephone'] ?? 'N/A') ?></small>
+                                        </div>
+                                        <div class="mt-2">
+                                            <small class="text-muted"><?= $r['age'] ?> ans</small>
+                                            <?php if ($r['temps_restant'] > 0): ?>
+                                                <small class="ms-3">Dans <?= $r['temps_restant'] ?> min</small>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
+                                <?php if ($proches > 0): ?>
+                                    <div class="alert alert-warning mt-2 mb-0 py-2">
+                                        <i class="fas fa-exclamation-triangle"></i> <?= $proches ?> rendez-vous imminent(s)
+                                    </div>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <!-- Prochains rendez-vous -->
+                        <div class="dashboard-card mt-3">
+                            <h5 class="mb-3">
+                                <i class="fas fa-calendar-alt"></i> Prochains rendez-vous
+                                <span class="badge bg-info float-end"><?= count($future_rdv) ?></span>
+                            </h5>
+                            
+                            <?php if (empty($future_rdv)): ?>
+                                <div class="alert alert-info">Aucun rendez-vous à venir</div>
+                            <?php else: ?>
+                                <?php foreach ($future_rdv as $r): ?>
+                                <div class="border-bottom pb-2 mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <strong><?= htmlspecialchars($r['prenom'] . ' ' . $r['nom']) ?></strong>
+                                            <?php if ($r['jours_restants'] == 1): ?>
+                                                <span class="badge bg-warning ms-2">Demain</span>
+                                            <?php endif; ?>
+                                        </div>
+                                        <small><?= date('d/m', strtotime($r['date_rdv'])) ?> <?= substr($r['heure_rdv'], 0, 5) ?></small>
+                                    </div>
+                                    <small><?= htmlspecialchars($r['code_patient_unique']) ?></small>
+                                </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <!-- Consultations du jour -->
+                    <div class="col-md-4">
+                        <div class="dashboard-card">
+                            <h5 class="mb-3">
+                                <i class="fas fa-history"></i> Consultations du jour
+                                <span class="badge bg-secondary float-end"><?= count($today_consults) ?></span>
+                            </h5>
+                            
+                            <?php if (empty($today_consults)): ?>
+                                <div class="alert alert-info">Aucune consultation aujourd'hui</div>
+                            <?php else: ?>
+                                <div style="max-height: 350px; overflow-y: auto;">
+                                    <?php foreach ($today_consults as $c): ?>
+                                    <div class="border-bottom pb-2 mb-2">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <strong><?= htmlspecialchars($c['prenom'] . ' ' . $c['nom']) ?></strong>
+                                                <?php if ($c['duree_consult'] > 30): ?>
+                                                    <span class="badge bg-warning ms-2">Longue</span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <small><?= $c['heure_consult'] ?></small>
+                                        </div>
+                                        <small><?= htmlspecialchars($c['code_patient_unique']) ?></small><br>
+                                        <small class="text-muted">Durée: <?= $c['duree_consult'] ?> min</small>
+                                    </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                        
+                        <!-- Actions rapides -->
+                        <div class="dashboard-card mt-3">
+                            <h5 class="mb-3"><i class="fas fa-bolt"></i> Actions rapides</h5>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary" onclick="location.href='recherche.php'">
+                                    <i class="fas fa-search"></i> Rechercher un patient
+                                </button>
+                                <button class="btn btn-success" onclick="location.href='nouveau_rdv.php'">
+                                    <i class="fas fa-calendar-plus"></i> Nouveau rendez-vous
+                                </button>
+                                <button class="btn btn-info" onclick="location.href='planning.php'">
+                                    <i class="fas fa-clock"></i> Voir mon planning
+                                </button>
+                            </div>
+                            
+                            <hr>
+                            <div class="small">
+                                <strong>Indicateurs du jour:</strong><br>
+                                <i class="fas fa-check-circle text-success"></i> <?= round($daily_stats['duree_moyenne']) ?> min/consultation<br>
+                                <i class="fas fa-clock text-warning"></i> <?= $stats_attente['total'] ?> en attente<br>
+                                <i class="fas fa-calendar-check text-info"></i> <?= $daily_stats['consultations_faites'] ?> traitée(s)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+    let countdown = 30;
+    const countdownEl = document.getElementById('countdown');
+    
+    setInterval(() => {
+        countdown--;
+        countdownEl.textContent = countdown;
+        if (countdown <= 0) {
+            location.reload();
+        }
+    }, 1000);
+    
+    function chargerPatient(patientId) {
+        fetch('update_token.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: 'patient_id=' + patientId
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert('Erreur lors du chargement du patient');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur:', error);
+            alert('Erreur de communication');
+        });
+    }
+    </script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

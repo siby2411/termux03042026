@@ -1,4 +1,9 @@
 <?php
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_once __DIR__ . '/../includes/auth_check.php';
 // /var/www/piece_auto/public/modules/reception_achats.php
 // Enregistrement de la réception de pièces d'un fournisseur (augmentation du stock et calcul du CUMP).
 

@@ -76,10 +76,10 @@
 
 <?php
 // Connexion à la base de données
-$host = 'localhost';
+$host = '127.0.0.1';
 $dbname = 'comptabilite';
 $user = 'root';
-$password = '';
+$password = '123';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $user, $password);
@@ -114,10 +114,10 @@ try {
 
 <?php
 // Connexion à la base de données
-$host = 'localhost';
+$host = '127.0.0.1';
 $dbname = 'comptabilite';
 $user = 'root';
-$password = '';
+$password = '123';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname", $user, $password);

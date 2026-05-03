@@ -1,6 +1,6 @@
 <?php
 // Connexion à la base de données
-$conn = new mysqli("localhost", "root", "123", "ohada");
+$conn = new mysqli("127.0.0.1", "root", "", "ohada");
 if ($conn->connect_error) {
     die("Erreur de connexion : " . $conn->connect_error);
 }

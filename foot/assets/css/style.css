@@ -1,0 +1,166 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Orbitron', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    color: #00ffcc;
+    line-height: 1.6;
+}
+
+.banner {
+    background: rgba(0,0,0,0.8);
+    text-align: center;
+    padding: 15px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    border-bottom: 2px solid #00ffcc;
+    box-shadow: 0 0 20px rgba(0,255,204,0.3);
+}
+
+/* Défilement vertical d'images */
+.marquee-container {
+    overflow: hidden;
+    height: 100px;
+    background: #000;
+    position: relative;
+}
+.marquee {
+    position: absolute;
+    width: 100%;
+    animation: scrollVertical 15s linear infinite;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.marquee img {
+    width: 150px;
+    margin: 10px auto;
+    display: block;
+}
+@keyframes scrollVertical {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-50%); }
+}
+
+nav ul {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    background: rgba(0,0,0,0.7);
+    padding: 10px;
+    flex-wrap: wrap;
+}
+nav ul li {
+    margin: 0 10px;
+}
+nav ul li a {
+    color: #00ffcc;
+    text-decoration: none;
+    padding: 5px 10px;
+    transition: 0.3s;
+}
+nav ul li a:hover {
+    background: #00ffcc;
+    color: #000;
+    border-radius: 5px;
+}
+
+main {
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 20px;
+    background: rgba(0,0,0,0.6);
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0,255,204,0.2);
+}
+
+h1, h2, h3 {
+    margin-bottom: 15px;
+    border-left: 4px solid #00ffcc;
+    padding-left: 10px;
+}
+
+.card {
+    background: rgba(0,0,0,0.5);
+    padding: 15px;
+    margin: 10px;
+    border-radius: 8px;
+    text-align: center;
+    display: inline-block;
+    width: 200px;
+}
+.stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 30px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: rgba(0,0,0,0.5);
+}
+th, td {
+    border: 1px solid #00ffcc;
+    padding: 8px;
+    text-align: left;
+}
+th {
+    background: #00ffcc;
+    color: #000;
+}
+
+input, textarea, select, button {
+    background: #111;
+    border: 1px solid #00ffcc;
+    color: #00ffcc;
+    padding: 8px;
+    margin: 5px;
+    border-radius: 4px;
+}
+button {
+    cursor: pointer;
+    background: #00ffcc;
+    color: #000;
+    font-weight: bold;
+}
+button:hover {
+    background: #00ccaa;
+}
+
+.login-bg {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+.login-container {
+    background: rgba(0,0,0,0.8);
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    width: 300px;
+}
+.login-container input {
+    width: 100%;
+    margin: 10px 0;
+}
+.error {
+    color: red;
+}
+.success {
+    color: #00ffcc;
+}
+
+.trainee-card {
+    border: 1px solid #00ffcc;
+    margin: 15px 0;
+    padding: 15px;
+    border-radius: 5px;
+}

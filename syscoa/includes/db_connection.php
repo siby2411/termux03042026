@@ -5,7 +5,7 @@
 function getPDOConnection() {
     try {
         $pdo = new PDO(
-            'mysql:host=localhost;dbname=sysco_ohada;charset=utf8',
+            'mysql:host=127.0.0.1;dbname=sysco_ohada;charset=utf8',
             'root',
             '123',
             [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]

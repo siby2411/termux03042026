@@ -1,0 +1,47 @@
+<?php
+/**
+ * Fonctions d'authentification
+ */
+
+/**
+ * Connecte un utilisateur
+ */
+function login($username, $password) {
+    global $pdo;
+    
+    $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
+    $stmt->execute([$username]);
+    $user = $stmt->fetch();
+    
+    if ($user && password_verify($password, $user['password'])) {
+        $_SESSION['user_id'] = $user['id'];
+        $_SESSION['user_role'] = $user['role'];
+        $_SESSION['user_name'] = $user['nom_complet'] ?? $user['username'];
+        return true;
+    }
+    return false;
+}
+
+/**
+ * Déconnecte un utilisateur
+ */
+function logout() {
+    session_destroy();
+    return true;
+}
+
+/**
+ * Vérifie si l'utilisateur a un rôle spécifique
+ */
+function hasRole($role) {
+    return isset($_SESSION['user_role']) && $_SESSION['user_role'] == $role;
+}
+
+/**
+ * Vérifie si l'utilisateur a l'un des rôles spécifiés
+ */
+function hasAnyRole($roles) {
+    if (!isset($_SESSION['user_role'])) return false;
+    return in_array($_SESSION['user_role'], $roles);
+}
+?>

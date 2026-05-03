@@ -15,7 +15,7 @@
             <select name="classe_id" id="classe" class="form-select" required>
                 <option value="">-- Sélectionner une classe --</option>
                 <?php
-                $conn = new mysqli("localhost", "root", "123", "ecole");
+                $conn = new mysqli("127.0.0.1", "root", "", "ecole");
                 if ($conn->connect_error) die("Erreur: " . $conn->connect_error);
 
                 $res = $conn->query("SELECT id, nom_class FROM classes ORDER BY nom_class");

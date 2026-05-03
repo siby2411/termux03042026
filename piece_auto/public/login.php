@@ -1,74 +1,90 @@
 <?php
-// /var/www/piece_auto/public/login.php
-// Nous incluons le header en premier pour gérer les sessions et le chemin 'app_root'
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
-// CORRECTION: Utiliser '../' pour inclure les dépendances depuis /public
-include '../config/Database.php';
-include '../includes/header.php'; 
+// 1. On s'assure qu'aucune session n'est active avant de configurer le path
+if (session_status() !== PHP_SESSION_NONE) {
+    session_write_close();
+}
 
-// Le header.php gère maintenant la session_start()
+// 2. Configuration du dossier de session pour Termux
+$session_path = '/tmp/php_sessions';
+if (!is_dir($session_path)) { 
+    @mkdir($session_path, 0777, true); 
+}
+session_save_path($session_path);
 
-$message = "";
+// 3. Démarrage propre
+session_start();
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $database = new Database();
-    $db = $database->getConnection();
-    
-    $username = trim($_POST['username'] ?? '');
-    $password = $_POST['password'] ?? '';
-    
-    $query = "SELECT id_utilisateur, nom_utilisateur, mot_de_passe, role FROM UTILISATEURS WHERE nom_utilisateur = :username LIMIT 0,1";
-    $stmt = $db->prepare($query);
-    $stmt->bindParam(':username', $username);
-    $stmt->execute();
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+// 4. Inclusion de la base de données
+$db_file = '/root/shared/htdocs/apachewsl2026/piece_auto/config/Database.php';
+if (file_exists($db_file)) {
+    require_once $db_file;
+} else {
+    die("Fichier Database.php introuvable.");
+}
 
-    if ($user && password_verify($password, $user['mot_de_passe'])) {
-        // Authentification réussie
-        session_regenerate_id(true);
-        $_SESSION['user_id'] = $user['id_utilisateur'];
-        $_SESSION['username'] = $user['nom_utilisateur'];
-        $_SESSION['user_role'] = $user['role'];
+$error = "";
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    try {
+        $database = new Database();
+        $db = $database->getConnection();
         
-        // Redirection vers la page d'accueil après le login
-        header('Location: ' . $GLOBALS['app_root'] . '/index.php');
-        exit;
-    } else {
-        $message = "Nom d'utilisateur ou mot de passe invalide.";
+        $username = $_POST['username'] ?? '';
+        $password = $_POST['password'] ?? '';
+
+        $stmt = $db->prepare("SELECT * FROM UTILISATEURS WHERE username = ?");
+        $stmt->execute([$username]);
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($user && $password === $user['password']) {
+            $_SESSION['user_id'] = $user['id_utilisateur'];
+            $_SESSION['username'] = $user['username'];
+            $_SESSION['user_role'] = $user['role']; 
+            $_SESSION['full_name'] = $user['prenom'] . " " . $user['nom'];
+            
+            header("Location: modules/tableau_de_bord.php");
+            exit();
+        } else {
+            $error = "Identifiants incorrects.";
+        }
+    } catch (Exception $e) {
+        $error = "Erreur SQL : " . $e->getMessage();
     }
 }
 ?>
-
-<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
-    <div class="card shadow-lg" style="width: 100%; max-width: 400px;">
-        <div class="card-header bg-dark text-white text-center">
-            <h3><i class="fas fa-lock"></i> Connexion PieceAuto ERP</h3>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Connexion - OMEGA PIECES</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f8f9fa; display: flex; align-items: center; justify-content: center; height: 100vh; }
+        .login-card { width: 100%; max-width: 380px; border: none; border-radius: 12px; }
+    </style>
+</head>
+<body>
+    <div class="card login-card shadow-lg p-4">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-primary">OMEGA PIECES</h2>
+            <p class="text-muted small">Connectez-vous pour gérer votre stock</p>
         </div>
-        <div class="card-body">
-            <?php if ($message): ?>
-                <div class="alert alert-danger"><?= htmlspecialchars($message) ?></div>
-            <?php endif; ?>
-            <form action="login.php" method="POST">
-                <div class="mb-3">
-                    <label for="username" class="form-label">Nom d'utilisateur</label>
-                    <input type="text" class="form-control" id="username" name="username" required>
-                </div>
-                <div class="mb-3">
-                    <label for="password" class="form-label">Mot de passe</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Se Connecter</button>
-            </form>
-        </div>
-        <div class="card-footer text-center">
-            <small class="text-muted">ERP V1.0</small>
-        </div>
+        <?php if($error): ?>
+            <div class="alert alert-danger py-2 small"><?= $error ?></div>
+        <?php endif; ?>
+        <form method="POST">
+            <div class="mb-3">
+                <input type="text" name="username" class="form-control" placeholder="Utilisateur" required autofocus>
+            </div>
+            <div class="mb-3">
+                <input type="password" name="password" class="form-control" placeholder="Mot de passe" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 fw-bold">SE CONNECTER</button>
+        </form>
     </div>
-</div>
-
-<?php 
-// Pas de footer pour la page de login, mais nous allons inclure le js de Bootstrap
-?>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

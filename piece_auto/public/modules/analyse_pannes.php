@@ -1,61 +1,36 @@
 <?php
-// /var/www/piece_auto/public/modules/analyse_pannes.php
-// Module d'analyse de pannes pour identifier les pièces les plus vendues / les plus rentables.
-
-$page_title = "Analyse des Pannes & Popularité des Pièces";
+$page_title = "Analyse de Fiabilité";
 require_once __DIR__ . '/../../config/Database.php';
-
-$message = '';
-$top_pannes = [];
-$top_pieces_par_panne = [];
-$db = null;
-
-try {
-    $database = new Database();
-    $db = $database->getConnection();
-} catch (Exception $e) {
-    $message = "Erreur de connexion à la base de données. (" . $e->getMessage() . ")";
-}
-
-// INCLUSION DU HEADER APRES LA TENTATIVE DE CONNEXION BDD
 include '../../includes/header.php';
 
-if ($message) {
-    echo '<div class="alert alert-danger">' . htmlspecialchars($message) . '</div>';
-    include '../../includes/footer.php';
-    exit;
-}
+$db = (new Database())->getConnection();
 
-// =================================================================================
-// 2. LOGIQUE D'ANALYSE (Continuation)
-// =================================================================================
-// NOTE: Cette section nécessite des tables spécifiques aux pannes qui n'ont pas encore été définies.
-// Nous laissons cette partie vide pour l'instant.
-
-/*
-// Exemple de requête pour trouver les 5 pannes les plus fréquentes (si table existe)
-$query_pannes = "SELECT nom_panne, COUNT(*) as total_pannes FROM PANNES GROUP BY nom_panne ORDER BY total_pannes DESC LIMIT 5";
-$stmt = $db->prepare($query_pannes);
-$stmt->execute();
-$top_pannes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-*/
-
+// Analyse des motifs de retour/remplacement (Simulé par volume de vente vs rappels)
+$query_pannes = "SELECT p.nom_piece, COUNT(dv.id_piece) as frequence_remplacement
+                 FROM DETAIL_VENTE dv
+                 JOIN PIECES p ON dv.id_piece = p.id_piece
+                 GROUP BY p.id_piece ORDER BY frequence_remplacement DESC LIMIT 10";
+$pannes = $db->query($query_pannes)->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<h1><i class="fas fa-chart-bar"></i> <?= $page_title ?></h1>
-<p class="lead">Ce module est destiné à l'analyse des tendances de pannes et à l'identification des pièces les plus demandées pour optimiser les achats et le stock.</p>
-<hr>
+<div class="card shadow-sm p-4">
+    <h3><i class="fas fa-microscope"></i> Top 10 des pièces à fort taux de remplacement</h3>
+    <p>Ces données permettent d'identifier les vulnérabilités par modèle de véhicule.</p>
+    <canvas id="pannesChart" height="100"></canvas>
+</div>
 
-<div class="alert alert-info">Ce module d'analyse n'est pas encore fonctionnel car il nécessite la création de tables spécifiques à l'enregistrement des pannes.</div>
-
-<h3>Top 5 des Pannes (À Développer)</h3>
-<table class="table table-striped">
-    <thead>
-        <tr><th>Panne</th><th>Fréquence</th></tr>
-    </thead>
-    <tbody>
-        <tr><td colspan="2" class="text-center">Données non disponibles</td></tr>
-    </tbody>
-</table>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+new Chart(document.getElementById('pannesChart'), {
+    type: 'bar',
+    data: {
+        labels: <?= json_encode(array_column($pannes, 'nom_piece')) ?>,
+        datasets: [{
+            label: 'Nombre de remplacements',
+            data: <?= json_encode(array_column($pannes, 'frequence_remplacement')) ?>,
+            backgroundColor: '#ff6384'
+        }]
+    }
+});
+</script>
 <?php include '../../includes/footer.php'; ?>

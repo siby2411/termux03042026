@@ -1,5 +1,5 @@
 // Connexion PDO simplifiée
-$pdo = new PDO('mysql:host=localhost;dbname=hopital_db', 'user', 'password');
+$pdo = new PDO('mysql:host=127.0.0.1;dbname=hopital_db', 'user', 'password');
 
 // Récupération des services pour le menu déroulant
 $services = $pdo->query("SELECT * FROM services")->fetchAll();

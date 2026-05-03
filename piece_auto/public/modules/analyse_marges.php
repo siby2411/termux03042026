@@ -1,142 +1,64 @@
 <?php
-// /var/www/piece_auto/public/modules/analyse_marges.php
-// Module d'analyse de la rentabilité des pièces
-
-$page_title = "Analyse de la Rentabilité et des Marges";
+require_once __DIR__ . '/../../includes/auth_check.php';
 require_once __DIR__ . '/../../config/Database.php';
-include '../../includes/header.php'; // Correction de la ligne 7
-
 $database = new Database();
 $db = $database->getConnection();
 
-$message = '';
-$resultats_marges = [];
-$labels = [];
-$marge_data = [];
+$page_title = "Analyse des Marges";
+include '../../includes/header.php';
 
-try {
-    // 1. Requête pour récupérer les données nécessaires au calcul de la marge
-    // La marge est calculée par : (Prix Vente HT - CUMP) * Quantité Vendue
-    $query = "SELECT
-                p.reference,
-                p.nom_piece,
-                p.cump_actuel,
-                p.prix_vente_ht,
-                SUM(lv.quantite) AS total_ventes,
-                SUM(lv.quantite * lv.prix_vente_unitaire) AS total_revenu,
-                SUM(lv.quantite * p.cump_actuel) AS total_cump
-              FROM LIGNE_VENTE lv
-              JOIN PIECES p ON lv.id_piece = p.id_piece
-              GROUP BY p.id_piece
-              ORDER BY total_revenu DESC";
-              
-    $stmt = $db->prepare($query);
-    $stmt->execute();
-    $resultats_marges = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // 2. Traitement des données pour les graphiques et l'affichage
-    foreach ($resultats_marges as &$resultat) {
-        $resultat['marge_brute'] = $resultat['total_revenu'] - $resultat['total_cump'];
-        
-        // Calcul du Taux de Marge (%) : (Marge Brute / Coût d'Achat) * 100
-        $resultat['taux_marge'] = ($resultat['total_cump'] > 0) 
-                                ? ($resultat['marge_brute'] / $resultat['total_cump']) * 100 
-                                : 0;
-        
-        // Calcul du Taux de Marque (%) : (Marge Brute / Prix de Vente) * 100
-        $resultat['taux_marque'] = ($resultat['total_revenu'] > 0)
-                                ? ($resultat['marge_brute'] / $resultat['total_revenu']) * 100
-                                : 0;
-        
-        // Pour le graphique (Top 10 des pièces par Marge Brute)
-        if (count($labels) < 10) {
-            $labels[] = $resultat['reference'];
-            $marge_data[] = round($resultat['marge_brute'], 2);
-        }
-    }
-    
-} catch (Exception $e) {
-    $message = '<div class="alert alert-danger">Erreur de base de données lors de l\'analyse des marges : ' . $e->getMessage() . '</div>';
-}
-
+$query = "SELECT cv.id_commande_vente, cv.date_vente, cv.total_commande, cv.cout_total_cump, cv.marge_brute,
+          c.nom, c.prenom
+          FROM COMMANDE_VENTE cv
+          JOIN CLIENTS c ON cv.id_client = c.id_client
+          ORDER BY cv.date_vente DESC";
+$stmt = $db->query($query);
 ?>
 
-<h1><i class="fas fa-hand-holding-usd"></i> <?= $page_title ?></h1>
-<p class="lead">Visualisez la rentabilité de chaque pièce en comparant le Prix de Vente (HT) au Coût Unitaire Moyen Pondéré (CUMP).</p>
-<hr>
-
-<?= $message ?>
-
-<div class="card mb-4">
-    <div class="card-header">Top 10 des Pièces par Marge Brute (€)</div>
-    <div class="card-body">
-        <canvas id="margeChart" style="height: 300px;"></canvas>
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card bg-primary text-white p-3">
+            <h4>Rentabilité sur les Ventes</h4>
+            <p class="mb-0">Suivi des gains réels basés sur le Coût Unitaire Moyen Pondéré (CUMP).</p>
+        </div>
     </div>
 </div>
 
-<h3>Détail de la Marge par Pièce</h3>
-<div class="table-responsive">
-    <table class="table table-striped table-hover table-sm">
-        <thead>
-            <tr>
-                <th>Référence</th>
-                <th>Désignation</th>
-                <th class="text-end">CUMP</th>
-                <th class="text-end">Prix Vente HT</th>
-                <th class="text-end">Total Marge Brute (€)</th>
-                <th class="text-end">Taux Marge (%)</th>
-                <th class="text-end">Taux Marque (%)</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($resultats_marges as $res): ?>
-            <tr>
-                <td><?= htmlspecialchars($res['reference']) ?></td>
-                <td><?= htmlspecialchars($res['nom_piece']) ?></td>
-                <td class="text-end"><?= number_format($res['cump_actuel'], 2, ',', ' ') ?></td>
-                <td class="text-end"><?= number_format($res['prix_vente_ht'], 2, ',', ' ') ?></td>
-                <td class="text-end fw-bold text-success"><?= number_format($res['marge_brute'], 2, ',', ' ') ?></td>
-                <td class="text-end"><?= number_format($res['taux_marge'], 1, ',', ' ') ?></td>
-                <td class="text-end"><?= number_format($res['taux_marque'], 1, ',', ' ') ?></td>
-            </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Vente #</th>
+                    <th>Client</th>
+                    <th class="text-end">CA (F)</th>
+                    <th class="text-end">Coût (CUMP)</th>
+                    <th class="text-end">Marge Brute</th>
+                    <th class="text-center">Performance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php while($v = $stmt->fetch(PDO::FETCH_ASSOC)): 
+                    $pct = ($v['total_commande'] > 0) ? ($v['marge_brute'] / $v['total_commande']) * 100 : 0;
+                ?>
+                <tr>
+                    <td><?= date('d/m/Y', strtotime($v['date_vente'])) ?></td>
+                    <td>#<?= $v['id_commande_vente'] ?></td>
+                    <td><?= $v['nom'] ?></td>
+                    <td class="text-end fw-bold"><?= number_format($v['total_commande'], 0, ',', ' ') ?> F</td>
+                    <td class="text-end text-muted"><?= number_format($v['cout_total_cump'], 0, ',', ' ') ?> F</td>
+                    <td class="text-end text-success fw-bold">+ <?= number_format($v['marge_brute'], 0, ',', ' ') ?> F</td>
+                    <td class="text-center">
+                        <span class="badge <?= $pct > 20 ? 'bg-success' : 'bg-warning' ?>">
+                            <?= round($pct, 1) ?> %
+                        </span>
+                    </td>
+                </tr>
+                <?php endwhile; ?>
+            </tbody>
+        </table>
+    </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('margeChart').getContext('2d');
-    const labels = <?= json_encode($labels) ?>;
-    const data = <?= json_encode($marge_data) ?>;
-
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Marge Brute Totale (€)',
-                data: data,
-                backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Marge Brute (€)'
-                    }
-                }
-            }
-        }
-    });
-});
-</script>
 
 <?php include '../../includes/footer.php'; ?>

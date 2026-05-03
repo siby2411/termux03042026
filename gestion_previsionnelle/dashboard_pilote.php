@@ -249,9 +249,77 @@ if (!function_exists('number_format')) {
                 <div class="row">
                     <div class="col-8">
                         <div class="fs-6 text-uppercase">Valorisation des Stocks (CUMP)</div>
-                        <div class="fs-3 fw-bold"><?= number_format($kpis['ValorisationStock'], 0, ',', ' ') ?> €</div>
+    <div class="col-lg-6 col-md-6 mb-4">
+        <div class="card border-0 shadow-lg text-white bg-danger">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-8">
+                        <div class="fs-6 text-uppercase">Alerte Stock Dormant</div>
+                        <a href="audit_stock_dormant.php" class="btn btn-light btn-sm mt-2 fw-bold text-danger">
+                            <i class="fas fa-search"></i> Analyser l'immobilisation
+                        </a>
                     </div>
+                    <div class="col-4 text-end">
+                        <i class="fas fa-hourglass-end fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+                        <div class="fs-3 fw-bold"><?= number_format($kpis['ValorisationStock'], 0, ',', ' ') ?> €</div>
+    <div class="col-lg-6 col-md-6 mb-4">
+        <div class="card border-0 shadow-lg text-white bg-danger">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-8">
+                        <div class="fs-6 text-uppercase">Alerte Stock Dormant</div>
+                        <a href="audit_stock_dormant.php" class="btn btn-light btn-sm mt-2 fw-bold text-danger">
+                            <i class="fas fa-search"></i> Analyser l'immobilisation
+                        </a>
+                    </div>
+                    <div class="col-4 text-end">
+                        <i class="fas fa-hourglass-end fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+                    </div>
+    <div class="col-lg-6 col-md-6 mb-4">
+        <div class="card border-0 shadow-lg text-white bg-danger">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-8">
+                        <div class="fs-6 text-uppercase">Alerte Stock Dormant</div>
+                        <a href="audit_stock_dormant.php" class="btn btn-light btn-sm mt-2 fw-bold text-danger">
+                            <i class="fas fa-search"></i> Analyser l'immobilisation
+                        </a>
+                    </div>
+                    <div class="col-4 text-end">
+                        <i class="fas fa-hourglass-end fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
                     <div class="col-4 text-end"><i class="fas fa-warehouse fa-3x"></i></div>
+    <div class="col-lg-6 col-md-6 mb-4">
+        <div class="card border-0 shadow-lg text-white bg-danger">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-8">
+                        <div class="fs-6 text-uppercase">Alerte Stock Dormant</div>
+                        <a href="audit_stock_dormant.php" class="btn btn-light btn-sm mt-2 fw-bold text-danger">
+                            <i class="fas fa-search"></i> Analyser l'immobilisation
+                        </a>
+                    </div>
+                    <div class="col-4 text-end">
+                        <i class="fas fa-hourglass-end fa-3x opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
                 </div>
             </div>
         </div>

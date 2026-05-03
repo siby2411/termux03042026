@@ -1,4 +1,9 @@
 <?php
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_once __DIR__ . '/../includes/auth_check.php';
 // /var/www/piece_auto/public/modules/gestion_tournees.php
 // Ce module est en cours de développement. Il est minimaliste pour l'instant.
 

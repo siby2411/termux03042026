@@ -8,7 +8,7 @@ ini_set('display_errors', 1);
 echo "=== CORRECTION DES PROBLÈMES D'ACCÈS SYSCOHADA ===\n\n";
 
 // 1. VÉRIFIER LA CONFIGURATION DE LA BASE
-$host = 'localhost';
+$host = '127.0.0.1';
 $dbname = 'sysco_ohada';
 $username = 'root';
 $password = '123';
@@ -74,7 +74,7 @@ if (!function_exists("get_db_connection_syscohada")) {
         static $conn = null;
         
         if ($conn === null) {
-            $host = "localhost";
+            $host = "127.0.0.1";
             $dbname = "sysco_ohada";
             $username = "root";
             $password = "";

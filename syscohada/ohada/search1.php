@@ -1,7 +1,7 @@
 <?php
 if (isset($_POST['num_compte'])) {
     // Connexion à la base de données
-    $conn = new mysqli("localhost", "root", "123", "ohada");
+    $conn = new mysqli("127.0.0.1", "root", "", "ohada");
 
     // Vérifiez la connexion
     if ($conn->connect_error) {

@@ -79,7 +79,7 @@ if (file_exists('config.php')) {
 // 4. Test base de données
 echo "<h2>4. Base de données</h2>";
 try {
-    $pdo = new PDO("mysql:host=localhost", "root", "123");
+    $pdo = new PDO("mysql:host=127.0.0.1", "root", "");
     echo "<span class='success'>✅ Connexion MySQL réussie</span><br>";
     
     // Test base sysco_ohada

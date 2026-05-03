@@ -3,7 +3,7 @@
 // CONFIGURATION SÉCURISÉE DE LA BASE DE DONNÉES OHADA
 
 class DatabaseConfig {
-    private $host = 'localhost';
+    private $host = '127.0.0.1';
     private $dbname = 'sysco_ohada';
     private $username = 'root';
     private $password = '123';

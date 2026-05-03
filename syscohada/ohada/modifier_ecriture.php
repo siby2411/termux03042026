@@ -4,7 +4,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Connexion à la base de données
-$servername = "localhost";
+$servername = "127.0.0.1";
 $username = "root";
 $password = "123";
 $dbname = "ohada";

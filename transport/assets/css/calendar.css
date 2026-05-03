@@ -1,0 +1,10 @@
+.fc {
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+}
+.fc-toolbar-title { color: var(--primary-color); }
+.fc-button-primary {
+    background: var(--primary-color) !important;
+    border: none !important;
+}

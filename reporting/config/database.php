@@ -1,6 +1,6 @@
 <?php
 // database.php
-$host = 'localhost';
+$host = '127.0.0.1';
 $db   = 'synthesepro_db';
 $user = 'root';
 $pass = '123';

@@ -1,6 +1,6 @@
 <?php
 // Connexion à la base de données MySQL
-$servername = "localhost";
+$servername = "127.0.0.1";
 $username = "root"; // Changez selon votre configuration
 $password = "123"; // Changez selon votre configuration
 $dbname = "ohada"; // Remplacez par le nom de votre base de données

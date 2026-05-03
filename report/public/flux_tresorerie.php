@@ -1,80 +1,63 @@
 <?php
 require_once __DIR__ . '/../includes/db.php';
-require_once __DIR__ . '/../includes/auth_check.php';
-require_once 'layout.php';
-// Récupération des flux (table dédiée)
-$flux = $pdo->query("SELECT * FROM FLUX_TRESORERIE ORDER BY periode")->fetchAll(PDO::FETCH_ASSOC);
+// On remplace l'include problématique par layout.php ou on vérifie l'existence de header.php
+if (file_exists("layout.php")) {
+    require_once "layout.php";
+} elseif (file_exists("header.php")) {
+    require_once "header.php";
+}
 
-// Calcul direct à partir des écritures (compte banque = 2200)
+// 1. On s'assure que la table existe
+$pdo->exec("CREATE TABLE IF NOT EXISTS FLUX_TRESORERIE (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    periode VARCHAR(20) NOT NULL,
+    flux_activite_exploit DECIMAL(15,2) DEFAULT 0,
+    flux_activite_invest DECIMAL(15,2) DEFAULT 0,
+    flux_activite_finance DECIMAL(15,2) DEFAULT 0,
+    variation_tresorerie DECIMAL(15,2) DEFAULT 0,
+    UNIQUE(periode)
+) ENGINE=InnoDB;");
+
+$flux = $pdo->query("SELECT * FROM FLUX_TRESORERIE ORDER BY periode DESC")->fetchAll(PDO::FETCH_ASSOC);
+
+// 2. Calcul dynamique sur la Classe 5
 $sql = "
-SELECT DATE_FORMAT(date_operation,'%Y-%m-%d') AS dateop,
-  SUM(CASE WHEN compte_debite_id = 2200 THEN montant ELSE 0 END) AS bank_debit,
-  SUM(CASE WHEN compte_credite_id = 2200 THEN montant ELSE 0 END) AS bank_credit
+SELECT DATE_FORMAT(date_ecriture,'%Y-%m') AS mois,
+  SUM(CASE WHEN compte_debite_id LIKE '5%' THEN montant ELSE 0 END) AS bank_debit,
+  SUM(CASE WHEN compte_credite_id LIKE '5%' THEN montant ELSE 0 END) AS bank_credit
 FROM ECRITURES_COMPTABLES
-GROUP BY DATE_FORMAT(date_operation,'%Y-%m')
-ORDER BY DATE_FORMAT(date_operation,'%Y-%m');
+GROUP BY mois
+ORDER BY mois DESC;
 ";
 $bank_mov = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
 ?>
-<!doctype html>
-<html lang="fr">
-<head>
-<meta charset="utf-8">
-<title>Flux de trésorerie</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>body{background:#f8f9fb;padding:20px}</style>
-</head>
-<body>
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Flux de trésorerie</h3>
-        <a href="dashboard_graphic.php" class="btn btn-primary btn-sm">Voir Dashboard graphique</a>
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3><i class='bx bx-water'></i> Flux de Trésorerie OMEGA</h3>
+        <a href="generer_flux.php" class="btn btn-outline-primary btn-sm">Actualiser les calculs</a>
     </div>
 
-    <div class="card p-3 mb-3">
-        <h5>Table FLUX_TRESORERIE (saisie ou automatique)</h5>
-        <?php if(empty($flux)): ?>
-            <div class="alert alert-info">Aucune ligne dans FLUX_TRESORERIE.</div>
-        <?php else: ?>
-            <table class="table table-striped">
-                <thead><tr><th>Période</th><th>Flux activité exploitation</th><th>Investissement</th><th>Financement</th><th>Variation trésorerie</th></tr></thead>
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white">Tableau de Synthèse (TFT)</div>
+        <div class="card-body">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr><th>Période</th><th>Exploitation</th><th>Investissement</th><th>Financement</th><th>Variation</th></tr>
+                </thead>
                 <tbody>
                 <?php foreach($flux as $f): ?>
                 <tr>
-                    <td><?php echo htmlspecialchars($f['periode']); ?></td>
-                    <td class="text-end"><?php echo number_format($f['flux_activite_exploit'] ?? 0,2,',',' '); ?></td>
-                    <td class="text-end"><?php echo number_format($f['flux_activite_invest'] ?? 0,2,',',' '); ?></td>
-                    <td class="text-end"><?php echo number_format($f['flux_activite_finance'] ?? 0,2,',',' '); ?></td>
-                    <td class="text-end"><?php echo number_format($f['variation_tresorerie'] ?? 0,2,',',' '); ?></td>
+                    <td><?= htmlspecialchars($f['periode']) ?></td>
+                    <td class="text-end"><?= number_format($f['flux_activite_exploit'], 0, ',', ' ') ?> F</td>
+                    <td class="text-end"><?= number_format($f['flux_activite_invest'], 0, ',', ' ') ?> F</td>
+                    <td class="text-end"><?= number_format($f['flux_activite_finance'], 0, ',', ' ') ?> F</td>
+                    <td class="text-end fw-bold"><?= number_format($f['variation_tresorerie'], 0, ',', ' ') ?> F</td>
                 </tr>
                 <?php endforeach; ?>
                 </tbody>
             </table>
-        <?php endif; ?>
-    </div>
-
-    <div class="card p-3">
-        <h5>Estimation flux à partir des mouvements bancaires (compte 2200)</h5>
-        <p class="small-muted">Agrégation mensuelle depuis ECRITURES_COMPTABLES (compte 2200)</p>
-        <table class="table">
-            <thead><tr><th>Mois</th><th class="text-end">Total débit (entrée)</th><th class="text-end">Total crédit (sortie)</th><th class="text-end">Net</th></tr></thead>
-            <tbody>
-            <?php foreach($bank_mov as $bm): 
-                $de = (float)$bm['bank_debit'];
-                $cr = (float)$bm['bank_credit'];
-                $net = $de - $cr;
-            ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($bm['dateop']); ?></td>
-                    <td class="text-end"><?php echo number_format($de,2,',',' '); ?></td>
-                    <td class="text-end"><?php echo number_format($cr,2,',',' '); ?></td>
-                    <td class="text-end"><?php echo number_format($net,2,',',' '); ?></td>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
+        </div>
     </div>
 </div>
-</body>
-</html>
-
+<?php if(file_exists("footer.php")) include "footer.php"; ?>

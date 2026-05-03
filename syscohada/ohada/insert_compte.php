@@ -1,6 +1,6 @@
 <?php
 // Informations de connexion à la base de données
-$servername = "localhost";
+$servername = "127.0.0.1";
 $username = "root";
 $password = "123";
 $dbname = "ohada";  // Remplacez par le nom de votre base de données

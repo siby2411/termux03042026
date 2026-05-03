@@ -1,0 +1,7 @@
+RewriteEngine On
+RewriteBase /pme/
+RewriteRule ^login\.php$ login.php [L]
+RewriteRule ^index\.php$ index.php [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . index.php [L]

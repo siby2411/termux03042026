@@ -1,7 +1,7 @@
 <?php
 // test_minimal.php - Test sans config
 try {
-    $pdo = new PDO("mysql:host=localhost;dbname=gestion_auto", "root", "123");
+    $pdo = new PDO("mysql:host=127.0.0.1;dbname=gestion_auto", "root", "");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
     echo "<h1>Connexion directe OK</h1>";

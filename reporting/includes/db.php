@@ -1,5 +1,5 @@
 <?php
-$host = 'localhost';
+$host = '127.0.0.1';
 $dbname = 'synthesepro_db';  // on utilise la même BDD existante
 $user = 'root';
 $pass = '123';

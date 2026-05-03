@@ -2,7 +2,7 @@
 // Configuration SYSCOHADA - Version corrigée
 
 // === CONFIGURATION DE LA BASE DE DONNÉES ===
-define('DB_HOST', 'localhost');
+define('DB_HOST', '127.0.0.1');
 define('DB_NAME', 'sysco_ohada');
 define('DB_USER', 'root');
 define('DB_PASS', '123');
@@ -10,7 +10,7 @@ define('DB_PASS', '123');
 // === CONFIGURATION DE L'APPLICATION ===
 define('SYSCOHADA_VERSION', '2.0');
 define('SITE_NAME', 'SYSCOHADA v2.0');
-define('SITE_URL', 'http://' . ($_SERVER['HTTP_HOST'] ?? 'localhost') . '/syscoa/');
+define('SITE_URL', 'http://' . ($_SERVER['HTTP_HOST'] ?? '127.0.0.1') . '/syscoa/');
 define('COMPANY_NAME', 'SYSCOHADA Entreprise');
 define('COMPANY_ADDRESS', '123 Rue des Comptables, Ville');
 define('COMPANY_PHONE', '+225 01 23 45 67 89');

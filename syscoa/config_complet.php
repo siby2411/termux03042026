@@ -3,7 +3,7 @@
 session_start();
 
 // Configuration de la base de données
-define('DB_HOST', 'localhost');
+define('DB_HOST', '127.0.0.1');
 define('DB_NAME', 'sysco_ohada');
 define('DB_USER', 'root');
 define('DB_PASS', '123');

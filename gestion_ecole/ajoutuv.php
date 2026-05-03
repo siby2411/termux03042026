@@ -16,7 +16,7 @@
                 <option value="">-- Sélectionner une classe --</option>
                 <?php
                 // Connexion à la base
-                $conn = new mysqli("localhost", "root", "", "ecole");
+                $conn = new mysqli("127.0.0.1", "root", "", "ecole");
                 if ($conn->connect_error) {
                     die("Connection failed: " . $conn->connect_error);
                 }

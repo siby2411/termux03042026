@@ -1,144 +1,94 @@
 <?php
-// /var/www/piece_auto/public/modules/tableau_bord_rentabilite.php
-
-$page_title = "Tableau de Bord de Rentabilité";
-include '../../config/Database.php';
+$page_title = "Rentabilité Réelle (CUMP)";
+require_once __DIR__ . '/../../config/Database.php';
 include '../../includes/header.php';
 
-$database = new Database();
-$db = $database->getConnection();
+$db = (new Database())->getConnection();
 
-// --- 1. FONCTION POUR RÉCUPÉRER LES INDICATEURS CLÉS (KPI) ---
-function get_kpis($db) {
-    // Récupère les totaux globaux pour les indicateurs (depuis COMMANDE_VENTE)
-    $query = "SELECT 
-                SUM(montant_total) AS total_ca,
-                SUM(cout_total_cump) AS total_cump,
-                SUM(marge_brute) AS total_marge
-              FROM COMMANDE_VENTE";
-    
-    $stmt = $db->prepare($query);
-    $stmt->execute();
-    $kpis = $stmt->fetch(PDO::FETCH_ASSOC);
-    
-    // Si les valeurs sont NULL (aucune vente), les forcer à zéro
-    foreach ($kpis as $key => $value) {
-        $kpis[$key] = $value ?? 0;
-    }
-    
-    // Calcul du Taux de Marge Brute
-    $kpis['taux_marge_brute'] = ($kpis['total_ca'] > 0) 
-        ? number_format(($kpis['total_marge'] / $kpis['total_ca']) * 100, 2) 
-        : 0.00;
-        
-    return $kpis;
-}
+// KPI basés sur le cumul des marges réelles (Prix de vente - Coût de revient figé)
+$query = "SELECT 
+            SUM(prix_vente_unitaire * quantite_vendue) as ca_total,
+            SUM(cump_au_moment_vente * quantite_vendue) as cout_total
+          FROM DETAIL_VENTE";
+$res = $db->query($query)->fetch(PDO::FETCH_ASSOC);
 
-// --- 2. FONCTION POUR RÉCUPÉRER LES VENTES RÉCENTES ---
-function get_recent_sales($db, $limit = 10) {
-    $query = "SELECT 
-                cv.id_commande_vente,
-                cv.date_commande,
-                cv.montant_total,
-                cv.marge_brute,
-                c.nom AS client_nom,
-                c.prenom AS client_prenom
-              FROM COMMANDE_VENTE cv
-              JOIN CLIENTS c ON cv.id_client = c.id_client
-              ORDER BY cv.date_commande DESC
-              LIMIT :limit";
-    
-    $stmt = $db->prepare($query);
-    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-    $stmt->execute();
-    return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-// Exécution des fonctions
-$kpis = get_kpis($db);
-$recent_sales = get_recent_sales($db);
-
+$ca = $res['ca_total'] ?? 0;
+$cout = $res['cout_total'] ?? 0;
+$marge = $ca - $cout;
+$taux = ($ca > 0) ? ($marge / $ca) * 100 : 0;
 ?>
 
-<h1><i class="fas fa-chart-line"></i> <?= $page_title ?></h1>
-<p class="lead">Aperçu des indicateurs de performance clés (KPI) et de la rentabilité.</p>
-<hr>
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1><i class="fas fa-balance-scale text-success"></i> Analyse de Rentabilité</h1>
+            <p class="text-muted">Calcul basé sur le Coût Unitaire Moyen Pondéré (CUMP).</p>
+        </div>
+    </div>
 
-<div class="row mb-5">
-    
-    <div class="col-md-3">
-        <div class="card text-white bg-primary mb-3">
-            <div class="card-header">Chiffre d'Affaires (CA)</div>
-            <div class="card-body">
-                <h4 class="card-title"><?= number_format($kpis['total_ca'], 2, ',', ' ') ?> €</h4>
-                <p class="card-text">Total des ventes enregistrées.</p>
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card bg-primary text-white shadow">
+                <div class="card-body">
+                    <h6>Ventes Totales (HT)</h6>
+                    <h2><?= number_format($ca, 2, ',', ' ') ?> €</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-success text-white shadow">
+                <div class="card-body">
+                    <h6>Marge Brute Réelle</h6>
+                    <h2><?= number_format($marge, 2, ',', ' ') ?> €</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card bg-info text-white shadow">
+                <div class="card-body">
+                    <h6>Taux de Marge Moyen</h6>
+                    <h2><?= number_format($taux, 1) ?> %</h2>
+                </div>
             </div>
         </div>
     </div>
     
-    <div class="col-md-3">
-        <div class="card text-white bg-danger mb-3">
-            <div class="card-header">Coût Total des Ventes (CUMP)</div>
-            <div class="card-body">
-                <h4 class="card-title"><?= number_format($kpis['total_cump'], 2, ',', ' ') ?> €</h4>
-                <p class="card-text">Coût de revient des pièces vendues.</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card text-white bg-success mb-3">
-            <div class="card-header">Marge Brute Totale</div>
-            <div class="card-body">
-                <h4 class="card-title"><?= number_format($kpis['total_marge'], 2, ',', ' ') ?> €</h4>
-                <p class="card-text">CA - CUMP (Votre bénéfice brut).</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card text-white bg-info mb-3">
-            <div class="card-header">Taux de Marge Brute</div>
-            <div class="card-body">
-                <h4 class="card-title"><?= number_format($kpis['taux_marge_brute'], 2, ',', ' ') ?> %</h4>
-                <p class="card-text">Rentabilité moyenne des ventes (Marge / CA).</p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="card">
-    <div class="card-header">Ventes Récentes (Top 10)</div>
-    <div class="card-body">
-        <table class="table table-striped table-hover table-sm">
-            <thead>
-                <tr>
-                    <th>N° Vente</th>
-                    <th>Date</th>
-                    <th>Client</th>
-                    <th class="text-end">Montant Total (€)</th>
-                    <th class="text-end text-success">Marge Brute (€)</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php if (count($recent_sales) > 0): ?>
-                    <?php foreach ($recent_sales as $sale): ?>
-                        <tr>
-                            <td><?= htmlspecialchars($sale['id_commande_vente']) ?></td>
-                            <td><?= date("d/m/Y H:i", strtotime($sale['date_commande'])) ?></td>
-                            <td><?= htmlspecialchars($sale['client_prenom'] . ' ' . $sale['client_nom']) ?></td>
-                            <td class="text-end"><?= number_format($sale['montant_total'], 2, ',', ' ') ?></td>
-                            <td class="text-end text-success"><?= number_format($sale['marge_brute'], 2, ',', ' ') ?></td>
-                        </tr>
-                    <?php endforeach; ?>
-                <?php else: ?>
+    <div class="card shadow-sm">
+        <div class="card-header bg-white"><strong>Dernières ventes et marges unitaires</strong></div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
                     <tr>
-                        <td colspan="5" class="text-center">Aucune vente enregistrée pour le moment.</td>
+                        <th>Date</th>
+                        <th>Référence</th>
+                        <th>Prix Vente</th>
+                        <th>Coût Revient (CUMP)</th>
+                        <th>Marge</th>
                     </tr>
-                <?php endif; ?>
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    <?php
+                    $details = $db->query("SELECT dv.*, p.reference, cv.date_commande 
+                                         FROM DETAIL_VENTE dv 
+                                         JOIN PIECES p ON dv.id_piece = p.id_piece 
+                                         JOIN COMMANDE_VENTE cv ON dv.id_commande_vente = cv.id_commande_vente
+                                         ORDER BY cv.date_commande DESC LIMIT 10");
+                    while($row = $details->fetch(PDO::FETCH_ASSOC)):
+                        $m_unitaire = $row['prix_vente_unitaire'] - $row['cump_au_moment_vente'];
+                    ?>
+                    <tr>
+                        <td><?= date('d/m/y', strtotime($row['date_commande'])) ?></td>
+                        <td><strong><?= $row['reference'] ?></strong></td>
+                        <td><?= number_format($row['prix_vente_unitaire'], 2) ?> €</td>
+                        <td class="text-muted"><?= number_format($row['cump_au_moment_vente'], 2) ?> €</td>
+                        <td class="fw-bold text-<?= ($m_unitaire > 0) ? 'success' : 'danger' ?>">
+                            <?= number_format($m_unitaire, 2) ?> €
+                        </td>
+                    </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-
 <?php include '../../includes/footer.php'; ?>

@@ -1,6 +1,6 @@
 <?php
 // Informations de connexion à la base de données
-$host = 'localhost'; // Nom d'hôte du serveur MySQL
+$host = '127.0.0.1'; // Nom d'hôte du serveur MySQL
 $dbname = 'ohada'; // Nom de la base de données
 $username = ''; // Nom d'utilisateur MySQL
 $password = 'votre_mot_de_passe'; // Mot de passe MySQL

@@ -1,5 +1,5 @@
 <?php
-$host = 'localhost';
+$host = '127.0.0.1';
 $db = 'compta';
 $user = 'root';
 $pass = '123';  // Pas de mot de passe

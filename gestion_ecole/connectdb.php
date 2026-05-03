@@ -1,27 +1,31 @@
 <?php
-// Fichier : db_connect_ecole.php
-// Configuration de la connexion à la base de données 'ecole'
+/**
+ * db_connect_ecole.php - Configuration OMEGA ÉCOLE 2026
+ * Optimisé pour MariaDB via Socket (proot-distro)
+ */
 
 function db_connect_ecole() {
-    $servername = "localhost";
-    $username = "root"; // Utilisez l'utilisateur MariaDB/MySQL approprié
-    $password = "123"; // **!!! ATTENTION: Mettez votre vrai mot de passe root !!!**
-    $dbname = "ecole";
+    $user = 'root';
+    $pass = '';
+    $db   = 'ecole';
+    // Chemin du socket MariaDB sur votre système
+    $socket = '/var/run/mysqld/mysqld.sock';
 
-    // Créer la connexion
-    $conn = new mysqli($servername, $username, $password, $dbname);
+    // On passe null pour l'hôte afin de forcer l'utilisation du socket
+    $conn = new mysqli(null, $user, $pass, $db, null, $socket);
 
-    // Vérifier la connexion
     if ($conn->connect_error) {
-        // En cas d'échec, arrête l'exécution et affiche l'erreur
-        die("Échec de la connexion à la base de données : " . $conn->connect_error);
+        // Secours si le socket est inaccessible
+        $conn = new mysqli('127.0.0.1', $user, $pass, $db);
+        if ($conn->connect_error) {
+            die("Erreur de connexion OMEGA ÉCOLE : " . $conn->connect_error);
+        }
     }
-    
-    // Assurer l'encodage UTF-8
+
     $conn->set_charset("utf8mb4");
-    
     return $conn;
 }
 
-// Pour des raisons de sécurité, le mot de passe devrait être chargé depuis un fichier de configuration externe.
+// Initialisation de la timezone pour Dakar
+date_default_timezone_set('Africa/Dakar');
 ?>

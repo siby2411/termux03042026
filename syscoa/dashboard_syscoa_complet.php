@@ -4,10 +4,10 @@
 // Conforme aux normes SYSCOHADA UEMOA
 
 // Connexion à la base de données
-$host = 'localhost';
+$host = '127.0.0.1';
 $dbname = 'sysco_ohada';
 $username = 'root';
-$password = '';
+$password = '123';
 
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);

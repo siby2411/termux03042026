@@ -9,7 +9,7 @@ class ModuleTravauxCloture {
     private $exercice_id;
     
     public function __construct($exercice_id = 1) {
-        $this->db = new PDO("mysql:host=localhost;dbname=sysco_ohada", "username", "password");
+        $this->db = new PDO("mysql:host=127.0.0.1;dbname=sysco_ohada", "username", "password");
         $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->exercice_id = $exercice_id;
     }

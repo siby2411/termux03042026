@@ -701,7 +701,7 @@ echo "✓ Modules migrés : " $(ls modules/*.php 2>/dev/null | wc -l) " fichiers
 echo ""
 echo "🔗 ACCÈS :"
 echo "----------"
-echo "URL principale : http://localhost/syscoa/"
+echo "URL principale : http://127.0.0.1/syscoa/"
 echo "Modules disponibles :"
 echo "  • dashboard      - Tableau de bord"
 echo "  • soldes         - Soldes intermédiaires"

@@ -1,0 +1,503 @@
+<?php
+session_start();
+require_once '../../config/database.php';
+require_once '../../includes/auth.php';
+
+if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] !== 'admin') {
+    header('Location: /login.php');
+    exit();
+}
+
+$pdo = getPDO();
+
+// Statistiques globales
+$stats = $pdo->query("
+    SELECT 
+        (SELECT COUNT(*) FROM patients) as patients,
+        (SELECT COUNT(*) FROM consultations) as consultations,
+        (SELECT COUNT(*) FROM rendez_vous WHERE date_rdv >= CURDATE()) as rdv,
+        (SELECT COUNT(*) FROM paiements) as paiements,
+        (SELECT SUM(montant_total) FROM paiements) as recettes,
+        (SELECT COUNT(*) FROM users WHERE role = 'medecin') as medecins,
+        (SELECT COUNT(*) FROM users WHERE role = 'caissier') as caissiers,
+        (SELECT COUNT(*) FROM services) as services,
+        (SELECT COUNT(*) FROM materiel) as equipements,
+        (SELECT COUNT(*) FROM file_attente WHERE statut = 'en_attente') as file_attente,
+        (SELECT COUNT(*) FROM salles) as salles,
+        (SELECT COUNT(*) FROM batiments) as batiments
+")->fetch();
+
+// Statistiques par service pour la file d'attente
+$file_attente_services = $pdo->query("
+    SELECT s.name, COUNT(f.id) as total
+    FROM file_attente f
+    RIGHT JOIN services s ON f.service_id = s.id AND f.statut = 'en_attente'
+    GROUP BY s.id, s.name
+    ORDER BY total DESC
+")->fetchAll();
+
+// Derniers équipements ajoutés
+$derniers_equipements = $pdo->query("
+    SELECT m.*, s.name as service_nom, cat.nom as categorie_nom
+    FROM materiel m
+    LEFT JOIN services s ON m.service_id = s.id
+    LEFT JOIN categories_materiel cat ON m.categorie_id = cat.id
+    ORDER BY m.id DESC
+    LIMIT 5
+")->fetchAll();
+
+// Dernières activités
+$recent_activities = $pdo->query("
+    (SELECT 'patient' as type, CONCAT(prenom, ' ', nom) as libelle, created_at 
+     FROM patients ORDER BY created_at DESC LIMIT 3)
+    UNION ALL
+    (SELECT 'paiement' as type, CONCAT('Facture ', numero_facture, ' - ', montant_total, ' FCFA') as libelle, date_paiement as created_at 
+     FROM paiements ORDER BY date_paiement DESC LIMIT 3)
+    UNION ALL
+    (SELECT 'materiel' as type, CONCAT('Nouveau: ', nom) as libelle, created_at 
+     FROM materiel ORDER BY created_at DESC LIMIT 3)
+    UNION ALL
+    (SELECT 'rdv' as type, CONCAT('RDV #', id) as libelle, cree_le as created_at 
+     FROM rendez_vous ORDER BY cree_le DESC LIMIT 3)
+    ORDER BY created_at DESC LIMIT 8
+")->fetchAll();
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Centre de Santé</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <style>
+        .sidebar {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: white;
+            padding: 20px;
+        }
+        .sidebar a {
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            padding: 10px 15px;
+            display: block;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: all 0.3s;
+        }
+        .sidebar a:hover, .sidebar a.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            transform: translateX(5px);
+        }
+        .sidebar-menu {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .kpi-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 25px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            transition: all 0.3s;
+        }
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+        }
+        .kpi-value {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .kpi-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #1e3c72;
+            color: #1e3c72;
+        }
+        
+        .btn-module {
+            display: inline-block;
+            padding: 15px 20px;
+            margin: 5px;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s;
+            border: 1px solid #dee2e6;
+            background: white;
+            color: #333;
+            text-decoration: none;
+            width: 180px;
+        }
+        .btn-module:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-color: #1e3c72;
+            color: #1e3c72;
+        }
+        .btn-module i {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 10px;
+            color: #1e3c72;
+        }
+        
+        .activity-timeline {
+            position: relative;
+            padding-left: 20px;
+        }
+        .activity-item {
+            position: relative;
+            padding-bottom: 15px;
+            border-left: 2px solid #1e3c72;
+            padding-left: 20px;
+            margin-left: 10px;
+        }
+        .activity-item:before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 0;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #1e3c72;
+        }
+        
+        .badge-service {
+            background: #1e3c72;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- SIDEBAR - Menu principal -->
+            <div class="col-md-2 p-0">
+                <div class="sidebar">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-hospital fa-3x mb-2"></i>
+                        <h5>Centre Mamadou Diop</h5>
+                        <small>Administrateur</small>
+                    </div>
+                    
+                    <ul class="sidebar-menu">
+                        <li><a href="dashboard.php" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
+                        
+                        <!-- SECTION PATIENTS -->
+                        <li class="mt-3"><strong style="color: rgba(255,255,255,0.5); font-size: 12px;">GESTION PATIENTS</strong></li>
+                        <li><a href="../patients/liste.php"><i class="fas fa-users"></i> Liste des patients</a></li>
+                        <li><a href="../patients/form.php"><i class="fas fa-user-plus"></i> Nouveau patient</a></li>
+                        <li><a href="../patients/recherche.php"><i class="fas fa-search"></i> Recherche patient</a></li>
+                        
+                        <!-- SECTION RENDEZ-VOUS -->
+                        <li class="mt-3"><strong style="color: rgba(255,255,255,0.5); font-size: 12px;">RENDEZ-VOUS</strong></li>
+                        <li><a href="../rendezvous/liste.php"><i class="fas fa-calendar-alt"></i> Tous les RDV</a></li>
+                        <li><a href="../rendezvous/form.php"><i class="fas fa-calendar-plus"></i> Prendre RDV</a></li>
+                        <li><a href="../rendezvous/recherche.php"><i class="fas fa-search"></i> Recherche RDV</a></li>
+                        
+                        <!-- SECTION CONSULTATIONS -->
+                        <li class="mt-3"><strong style="color: rgba(255,255,255,0.5); font-size: 12px;">CONSULTATIONS</strong></li>
+                        <li><a href="../consultation/liste.php"><i class="fas fa-stethoscope"></i> Consultations</a></li>
+                        <li><a href="../consultation/form.php"><i class="fas fa-plus-circle"></i> Nouvelle consultation</a></li>
+                        
+                        <!-- SECTION PAIEMENTS -->
+                        <li class="mt-3"><strong style="color: rgba(255,255,255,0.5); font-size: 12px;">PAIEMENTS</strong></li>
+                        <li><a href="../paiements/liste.php"><i class="fas fa-credit-card"></i> Liste des paiements</a></li>
+                        <li><a href="../paiements/form.php"><i class="fas fa-plus-circle"></i> Nouveau paiement</a></li>
+                        
+                        <!-- SECTION LOCALISATION & MATÉRIEL -->
+                        <li class="mt-3"><strong style="color: rgba(255,255,255,0.5); font-size: 12px;">LOCALISATION & MATÉRIEL</strong></li>
+                        <li><a href="batiments.php"><i class="fas fa-building"></i> Bâtiments</a></li>
+                        <li><a href="salles.php"><i class="fas fa-door-open"></i> Salles</a></li>
+                        <li><a href="etages.php"><i class="fas fa-level-up-alt"></i> Étages</a></li>
+                        <li><a href="plan_interactif.php"><i class="fas fa-map-marked-alt"></i> Plan interactif</a></li>
+                        <li><a href="materiel.php"><i class="fas fa-tools"></i> Matériel médical</a></li>
+                        <li><a href="inventaire.php"><i class="fas fa-boxes"></i> Inventaire</a></li>
+                        <li><a href="fournisseurs.php"><i class="fas fa-truck"></i> Fournisseurs</a></li>
+                        
+                        <!-- SECTION ADMINISTRATION -->
+                        <li class="mt-3"><strong style="color: rgba(255,255,255,0.5); font-size: 12px;">ADMINISTRATION</strong></li>
+                        <li><a href="services.php"><i class="fas fa-building"></i> Services</a></li>
+                        <li><a href="personnel.php"><i class="fas fa-user-md"></i> Personnel</a></li>
+                        <li><a href="statistiques.php"><i class="fas fa-chart-line"></i> Statistiques</a></li>
+                        <li><a href="../pointage/index.php"><i class="fas fa-clock"></i> Pointage</a></li>
+                        <li><a href="/logout.php" class="text-danger mt-3"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- CONTENU PRINCIPAL -->
+            <div class="col-md-10 p-4">
+                <h2 class="mb-4"><i class="fas fa-chart-line"></i> Tableau de bord</h2>
+                
+                <!-- STATISTIQUES GLOBALES -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="kpi-card">
+                            <div class="kpi-value"><?= $stats['patients'] ?></div>
+                            <div class="kpi-label">Patients</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="kpi-card" style="background: linear-gradient(135deg, #27ae60 0%, #2ecc71 100%);">
+                            <div class="kpi-value"><?= $stats['consultations'] ?></div>
+                            <div class="kpi-label">Consultations</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="kpi-card" style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);">
+                            <div class="kpi-value"><?= $stats['rdv'] ?></div>
+                            <div class="kpi-label">Rendez-vous à venir</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="kpi-card" style="background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);">
+                            <div class="kpi-value"><?= number_format($stats['recettes'] ?? 0, 0, ',', ' ') ?> FCFA</div>
+                            <div class="kpi-label">Recettes totales</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- DEUXIÈME LIGNE DE STATISTIQUES -->
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="kpi-card" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);">
+                            <div class="kpi-value"><?= $stats['medecins'] ?></div>
+                            <div class="kpi-label">Médecins</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="kpi-card" style="background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);">
+                            <div class="kpi-value"><?= $stats['caissiers'] ?></div>
+                            <div class="kpi-label">Caissiers</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="kpi-card" style="background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);">
+                            <div class="kpi-value"><?= $stats['services'] ?></div>
+                            <div class="kpi-label">Services</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="kpi-card" style="background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);">
+                            <div class="kpi-value"><?= $stats['equipements'] ?></div>
+                            <div class="kpi-label">Équipements</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="kpi-card" style="background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);">
+                            <div class="kpi-value"><?= $stats['file_attente'] ?></div>
+                            <div class="kpi-label">File d'attente</div>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="kpi-card" style="background: linear-gradient(135deg, #7f8c8d 0%, #95a5a6 100%);">
+                            <div class="kpi-value"><?= $stats['salles'] ?> / <?= $stats['batiments'] ?></div>
+                            <div class="kpi-label">Salles/Bâtiments</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- MODULES RAPIDES -->
+                <div class="dashboard-card mt-4">
+                    <h5 class="section-title"><i class="fas fa-rocket"></i> Actions rapides</h5>
+                    <div class="d-flex flex-wrap">
+                        <a href="../patients/form.php" class="btn-module">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Nouveau patient</span>
+                        </a>
+                        <a href="../rendezvous/form.php" class="btn-module">
+                            <i class="fas fa-calendar-plus"></i>
+                            <span>Nouveau RDV</span>
+                        </a>
+                        <a href="../consultation/form.php" class="btn-module">
+                            <i class="fas fa-stethoscope"></i>
+                            <span>Consultation</span>
+                        </a>
+                        <a href="../paiements/form.php" class="btn-module">
+                            <i class="fas fa-credit-card"></i>
+                            <span>Paiement</span>
+                        </a>
+                        <a href="materiel_form.php" class="btn-module">
+                            <i class="fas fa-tools"></i>
+                            <span>Ajouter matériel</span>
+                        </a>
+                        <a href="batiment_form.php" class="btn-module">
+                            <i class="fas fa-building"></i>
+                            <span>Ajouter bâtiment</span>
+                        </a>
+                        <a href="salle_form.php" class="btn-module">
+                            <i class="fas fa-door-open"></i>
+                            <span>Ajouter salle</span>
+                        </a>
+                        <a href="plan_interactif.php" class="btn-module">
+                            <i class="fas fa-map-marked-alt"></i>
+                            <span>Plan du centre</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="row mt-4">
+                    <!-- COLONNE GAUCHE : File d'attente par service -->
+                    <div class="col-md-6">
+                        <div class="dashboard-card">
+                            <h5 class="section-title"><i class="fas fa-clock"></i> File d'attente par service</h5>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Service</th>
+                                        <th>Patients en attente</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach($file_attente_services as $fs): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($fs['name']) ?></td>
+                                            <td>
+                                                <span class="badge bg-<?= $fs['total'] > 0 ? 'warning' : 'secondary' ?>">
+                                                    <?= $fs['total'] ?> patient(s)
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- Derniers équipements ajoutés -->
+                        <div class="dashboard-card mt-3">
+                            <h5 class="section-title"><i class="fas fa-tools"></i> Derniers équipements</h5>
+                            <?php if (empty($derniers_equipements)): ?>
+                                <p class="text-muted">Aucun équipement enregistré</p>
+                            <?php else: ?>
+                                <?php foreach($derniers_equipements as $eq): ?>
+                                    <div class="d-flex justify-content-between align-items-center mb-2 p-2" style="background: #f8f9fa; border-radius: 5px;">
+                                        <div>
+                                            <strong><?= htmlspecialchars($eq['nom'] ?? 'N/A') ?></strong>
+                                            <br><small class="text-muted"><?= htmlspecialchars($eq['service_nom'] ?? 'Non assigné') ?></small>
+                                        </div>
+                                        <span class="badge-service"><?= htmlspecialchars($eq['categorie_nom'] ?? 'Matériel') ?></span>
+                                    </div>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                    
+                    <!-- COLONNE DROITE : Activités récentes -->
+                    <div class="col-md-6">
+                        <div class="dashboard-card">
+                            <h5 class="section-title"><i class="fas fa-history"></i> Activités récentes</h5>
+                            <div class="activity-timeline">
+                                <?php foreach($recent_activities as $act): ?>
+                                    <div class="activity-item">
+                                        <small class="text-muted"><?= date('d/m/Y H:i', strtotime($act['created_at'])) ?></small>
+                                        <div>
+                                            <?php if ($act['type'] == 'patient'): ?>
+                                                <i class="fas fa-user-plus text-primary"></i> Nouveau patient: <?= htmlspecialchars($act['libelle']) ?>
+                                            <?php elseif ($act['type'] == 'paiement'): ?>
+                                                <i class="fas fa-credit-card text-success"></i> <?= htmlspecialchars($act['libelle']) ?>
+                                            <?php elseif ($act['type'] == 'materiel'): ?>
+                                                <i class="fas fa-tools text-warning"></i> <?= htmlspecialchars($act['libelle']) ?>
+                                            <?php else: ?>
+                                                <i class="fas fa-calendar text-info"></i> <?= htmlspecialchars($act['libelle']) ?>
+                                            <?php endif; ?>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+                        
+                        <!-- Liens vers la gestion spatiale -->
+                        <div class="dashboard-card mt-3">
+                            <h5 class="section-title"><i class="fas fa-map-marked-alt"></i> Gestion spatiale</h5>
+                            <div class="row">
+                                <div class="col-6">
+                                    <a href="batiments.php" class="btn btn-outline-primary w-100 mb-2">
+                                        <i class="fas fa-building"></i> Bâtiments
+                                    </a>
+                                </div>
+                                <div class="col-6">
+                                    <a href="etages.php" class="btn btn-outline-primary w-100 mb-2">
+                                        <i class="fas fa-level-up-alt"></i> Étages
+                                    </a>
+                                </div>
+                                <div class="col-6">
+                                    <a href="salles.php" class="btn btn-outline-primary w-100 mb-2">
+                                        <i class="fas fa-door-open"></i> Salles
+                                    </a>
+                                </div>
+                                <div class="col-6">
+                                    <a href="plan_interactif.php" class="btn btn-outline-primary w-100 mb-2">
+                                        <i class="fas fa-map"></i> Plan interactif
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Statistiques matériel -->
+                        <div class="dashboard-card mt-3">
+                            <h5 class="section-title"><i class="fas fa-chart-pie"></i> Matériel par catégorie</h5>
+                            <?php
+                            $categories = $pdo->query("
+                                SELECT c.nom, COUNT(m.id) as total
+                                FROM categories_materiel c
+                                LEFT JOIN materiel m ON c.id = m.categorie_id
+                                GROUP BY c.id, c.nom
+                                ORDER BY total DESC
+                            ")->fetchAll();
+                            ?>
+                            <?php foreach($categories as $cat): ?>
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span><?= htmlspecialchars($cat['nom']) ?></span>
+                                        <span class="badge bg-primary"><?= $cat['total'] ?></span>
+                                    </div>
+                                    <div class="progress" style="height: 5px;">
+                                        <div class="progress-bar bg-success" style="width: <?= min(100, $cat['total'] * 10) ?>%"></div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+                        <!-- SECTION LOCALISATION & MATÉRIEL (AJOUTER DANS LE MENU LATÉRAL) -->
+                        <li class="mt-3"><strong style="color: rgba(255,255,255,0.5); font-size: 12px;">LOCALISATION & MATÉRIEL</strong></li>
+                        <li><a href="batiments_form.php"><i class="fas fa-building"></i> Gestion Bâtiments</a></li>
+                        <li><a href="salles_form.php"><i class="fas fa-door-open"></i> Gestion Salles</a></li>
+                        <li><a href="materiel_form.php"><i class="fas fa-tools"></i> Gestion Matériel</a></li>
+                        <li><a href="plan_interactif.php"><i class="fas fa-map-marked-alt"></i> Plan interactif</a></li>
+                        <li><a href="../medical/recherche_medicale.php"><i class="fas fa-search"></i> Recherche Médicale</a></li>
+                        <li><a href="../medical/recherche_medicale.php"><i class="fas fa-search"></i> Recherche Médicale</a></li>

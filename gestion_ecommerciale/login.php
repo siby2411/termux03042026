@@ -1,75 +1,83 @@
 <?php
-// Fichier : login.php
-// Module de connexion pour les vendeurs
-
 session_start();
-include_once 'db_connect.php';
 
-$error_message = '';
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-// Si le formulaire est soumis
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $conn = db_connect();
-    $email = $conn->real_escape_string($_POST['email']);
+
+require_once 'db_connect.php';
+
+if (isset($_SESSION['id_vendeur'])) {
+    header("Location: dashboard.php");
+    exit();
+}
+
+$error = "";
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // 1. Recherche du vendeur par email
-    $sql = "SELECT id_vendeur, nom, mot_de_passe FROM vendeurs WHERE email = ?";
-    $stmt = $conn->prepare($sql);
+    $conn = db_connect();
+    $stmt = $conn->prepare("SELECT id_vendeur, nom, mot_de_passe FROM vendeurs WHERE email = ? AND statut = 'actif'");
     $stmt->bind_param("s", $email);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows == 1) {
-        $vendeur = $result->fetch_assoc();
-        
-        // 2. Vérification du mot de passe
-        // Note: Le mot de passe stocké est '123'. Dans une vraie app, il serait hashé.
-        // Si vous utilisez le hash (recommandé), remplacez par : 
-        // if (password_verify($password, $vendeur['mot_de_passe'])) { ...
-        
-        if ($password === $vendeur['mot_de_passe']) {
-            // Connexion réussie : Stockage en session
-            $_SESSION['id_vendeur'] = $vendeur['id_vendeur'];
-            $_SESSION['nom_vendeur'] = $vendeur['nom'];
-            
-            // 3. Redirection vers le tableau de bord (à créer)
-            header("Location: dashboard.php"); 
+    if ($user = $result->fetch_assoc()) {
+        // Vérification du mot de passe haché
+        if (password_verify($password, $user['mot_de_passe'])) {
+            $_SESSION['id_vendeur'] = $user['id_vendeur'];
+            $_SESSION['nom_vendeur'] = $user['nom'];
+            header("Location: dashboard.php");
             exit();
         } else {
-            $error_message = "Mot de passe incorrect.";
+            $error = "Mot de passe incorrect.";
         }
     } else {
-        $error_message = "Email non trouvé.";
+        $error = "Utilisateur non trouvé ou inactif.";
     }
-
     $conn->close();
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Connexion Vendeur</title>
+    <title>Connexion - Omega Market</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100vh; display: flex; align-items: center; }
+        .card { border: none; border-radius: 15px; }
+    </style>
 </head>
 <body>
-    <h2>Connexion à la Gestion Commerciale</h2>
-    
-    <?php if ($error_message): ?>
-        <p style="color: red;"><?php echo $error_message; ?></p>
-    <?php endif; ?>
-
-    <form method="post" action="login.php">
-        <label for="email">Email:</label><br>
-        <input type="email" id="email" name="email" required><br><br>
-        
-        <label for="password">Mot de passe:</label><br>
-        <input type="password" id="password" name="password" required><br><br>
-        
-        <button type="submit">Se Connecter</button>
-    </form>
-    
-    <p>Testez avec : Email: momo@gestion.local, Pass: 123</p>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-4">
+                <div class="card shadow-lg p-4">
+                    <h2 class="text-center text-primary mb-4">Omega Market</h2>
+                    <?php if($error): ?>
+                        <div class="alert alert-danger p-2 small"><?= $error ?></div>
+                    <?php endif; ?>
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" placeholder="momo@omega.com" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Mot de passe</label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2">Se connecter</button>
+                    </form>
+                    <div class="text-center mt-3">
+                        <a href="index.php" class="text-decoration-none small text-muted">Retour à l'accueil</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

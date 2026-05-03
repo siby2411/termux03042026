@@ -1,0 +1,105 @@
+<?php
+// includes/header.php - Version finale OMEGA CONSULTING
+session_start();
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="OMEGA Transport - Transport scolaire sécurisé à Dakar">
+    <title>OMEGA Transport | Transport scolaire à Dakar</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root { --primary-color: #003366; --secondary-color: #006699; --accent-color: #ff9900; }
+        body { font-family: 'Poppins', sans-serif; background: #f5f7fa; }
+        .corporate-banner { background: linear-gradient(135deg, #003366 0%, #006699 100%); padding: 8px 0; text-align: center; color: white; font-size: 0.85rem; }
+        .navbar { background: white !important; box-shadow: 0 2px 15px rgba(0,0,0,0.08); padding: 12px 0; position: sticky; top: 0; z-index: 1000; }
+        .navbar-brand { font-weight: 700; font-size: 1.5rem; color: #003366 !important; }
+        .navbar-brand span { color: #ff9900; }
+        .nav-link { font-weight: 500; color: #333 !important; transition: all 0.3s; padding: 10px 18px !important; border-radius: 8px; }
+        .nav-link:hover { color: #ff9900 !important; background: rgba(0,51,102,0.05); }
+        .nav-link i { margin-right: 6px; }
+        .dropdown-menu { border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); border: none; margin-top: 8px; }
+        .dropdown-item { padding: 10px 24px; transition: all 0.2s; }
+        .dropdown-item:hover { background: linear-gradient(135deg, #003366 0%, #006699 100%); color: white; }
+        .dropdown-item i { width: 24px; margin-right: 8px; }
+        @media (max-width: 992px) { .navbar-nav { text-align: center; } .dropdown-menu { text-align: center; } }
+    </style>
+</head>
+<body>
+
+<div class="corporate-banner">
+    <div class="container">
+        <i class="fas fa-bus"></i> OMEGA INFORMATIQUE CONSULTING |
+        <i class="fas fa-shield-alt"></i> Sécurité • Fiabilité • Assiduité |
+        <i class="fas fa-tag"></i> Codes uniques parents/élèves |
+        <i class="fas fa-phone"></i> +221 77 654 28 03
+    </div>
+</div>
+
+<nav class="navbar navbar-expand-lg navbar-light">
+    <div class="container">
+        <a class="navbar-brand" href="/index.php">
+            <i class="fas fa-bus"></i> OMEGA<span>Transport</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        
+        <div class="collapse navbar-collapse" id="navbarMain">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item"><a class="nav-link" href="/index.php"><i class="fas fa-home"></i> Accueil</a></li>
+                
+                <!-- Menu Transport -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-bus"></i> Transport</a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/modules/eleves/liste_eleves.php"><i class="fas fa-child"></i> Élèves</a></li>
+                        <li><a class="dropdown-item" href="/modules/chauffeurs/liste_chauffeurs.php"><i class="fas fa-users"></i> Chauffeurs</a></li>
+                        <li><a class="dropdown-item" href="/modules/bus/galerie_bus.php"><i class="fas fa-bus"></i> Parc Auto</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/modules/itineraire/cartographie.php"><i class="fas fa-map-marked-alt"></i> Itinéraires</a></li>
+                        <li><a class="dropdown-item" href="/modules/calendrier/vue_mensuelle.php"><i class="fas fa-calendar-alt"></i> Calendrier</a></li>
+                    </ul>
+                </li>
+                
+                <!-- Menu Gestion -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-chart-line"></i> Gestion</a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/modules/parents/liste_parents.php"><i class="fas fa-users"></i> Liste des parents</a></li>
+                        <li><a class="dropdown-item" href="/modules/paiements/gestion_paiement.php"><i class="fas fa-credit-card"></i> Gestion paiements</a></li>
+                        <li><a class="dropdown-item" href="/modules/rapports/etats_financiers_complets.php"><i class="fas fa-file-invoice"></i> États financiers</a></li>
+                        <li><a class="dropdown-item" href="/modules/recherche/recherche_avancee.php"><i class="fas fa-search"></i> Recherche avancée</a></li>
+                        <li><a class="dropdown-item" href="/modules/recherche/recherche_par_code.php"><i class="fas fa-qrcode"></i> Recherche par code</a></li>
+                        <li><a class="dropdown-item" href="/modules/affectations/gestion_affectations.php"><i class="fas fa-exchange-alt"></i> Affectations bus</a></li>
+                        <li><a class="dropdown-item" href="/modules/calendrier/gestion_horaires.php"><i class="fas fa-clock"></i> Gestion horaires</a></li>
+                    </ul>
+                </li>
+                
+                <!-- Menu Espace -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="fas fa-user"></i> Espace</a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/modules/parents/login_parent.php"><i class="fas fa-parent"></i> Espace Parent</a></li>
+                        <li><a class="dropdown-item" href="/login_secretaire.php"><i class="fas fa-user-tie"></i> Espace Secrétariat</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/modules/parents/inscription_parent.php"><i class="fas fa-user-plus"></i> Inscription</a></li>
+                    </ul>
+                </li>
+                
+                <?php if(isset($_SESSION['user_name'])): ?>
+                <li class="nav-item"><a class="nav-link text-success" href="#"><i class="fas fa-user-check"></i> <?php echo $_SESSION['user_name']; ?></a></li>
+                <li class="nav-item"><a class="nav-link text-danger" href="/logout.php"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+                <?php endif; ?>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main class="main-content" style="min-height: 80vh; padding: 20px 0;">

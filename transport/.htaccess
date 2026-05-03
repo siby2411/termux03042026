@@ -1,0 +1,4 @@
+RewriteEngine On
+RewriteRule ^parent/dashboard$ modules/parents/dashboard_parent.php [L]
+RewriteRule ^parent/login$ modules/parents/login_parent.php [L]
+RewriteRule ^parent/inscription$ modules/parents/inscription_parent.php [L]

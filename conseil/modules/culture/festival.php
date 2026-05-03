@@ -1,0 +1,3 @@
+<?php include('../../includes/header.php'); ?>
+<div class="container py-5"><h1 class="text-primary">🎭 FESTIVEL 2025</h1><div class="badge bg-warning p-3 mb-4">📅 15-20 Décembre 2025</div><div class="row"><div class="col-md-8"><p>Le festival des cultures de Velingara rassemble les communautés des 4 pays frontaliers.</p><ul><li>🎵 Concerts</li><li>💃 Danses traditionnelles</li><li>🎨 Foire artisanale</li><li>⚽ Tournoi de football</li></ul></div><div class="col-md-4"><div class="card bg-light"><div class="card-body"><h5><i class="fas fa-ticket-alt"></i> Inscriptions</h5><button class="btn btn-primary" onclick="alert('Contact: 77 654 28 03')">S'inscrire</button></div></div></div></div></div>
+<?php include('../../includes/footer.php'); ?>

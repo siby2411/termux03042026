@@ -1,62 +1,86 @@
 <?php
-// /var/www/piece_auto/public/modules/gestion_retours.php
-include_once '../../config/Database.php'; 
-include '../../includes/header.php'; 
+require_once __DIR__ . '/../../includes/auth_check.php';
+require_once __DIR__ . '/../../config/Database.php';
+$db = (new Database())->getConnection();
 
-$page_title = "Gestion des Retours et Garanties";
-$message = "";
+$page_title = "Gestion des Retours Clients";
+include '../../includes/header.php';
 
-try {
-    $db = new Database();
-    $pdo = $db->getConnection();
-    
-    // Requête corrigée
-    $query = "
-        SELECT 
-            R.id_retour, C.nom, R.date_retour, R.statut 
-        FROM RETOURS_GARANTIE R
-        JOIN CLIENTS C ON R.id_client = C.id_client
-        ORDER BY R.date_retour DESC
-    ";
-    $stmt = $pdo->query($query);
-    $retours = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-} catch (Exception $e) {
-    $message = "Erreur de base de données : " . $e->getMessage();
-    $retours = [];
-}
+// On récupère les 20 dernières lignes de vente pour proposer un retour
+$query = "SELECT lv.*, p.nom_piece, p.reference, cv.date_vente, c.nom as client_nom 
+          FROM LIGNE_VENTE lv 
+          JOIN PIECES p ON lv.id_piece = p.id_piece 
+          JOIN COMMANDE_VENTE cv ON lv.id_commande_vente = cv.id_commande_vente
+          JOIN CLIENTS c ON cv.id_client = c.id_client
+          ORDER BY cv.date_vente DESC LIMIT 20";
+$stmt = $db->query($query);
 ?>
-<div class="container-fluid">
-    <h1><i class="fas fa-undo-alt"></i> <?= $page_title ?></h1>
-    <p class="lead">Suivi des demandes de retour et des gestions de garantie.</p>
-    
-    <?php if ($message): ?>
-        <div class="alert alert-danger"><?= htmlspecialchars($message) ?></div>
-    <?php endif; ?>
 
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
+<div class="card shadow-sm border-0 mb-4">
+    <div class="card-header bg-warning text-dark fw-bold">
+        <i class="fas fa-undo me-2"></i> Effectuer un nouveau retour
+    </div>
+    <div class="card-body">
+        <table class="table table-hover align-middle">
             <thead>
                 <tr>
-                    <th>ID Retour</th>
+                    <th>Date Vente</th>
                     <th>Client</th>
-                    <th>Date Retour</th>
-                    <th>Statut</th>
+                    <th>Article</th>
+                    <th>Qté Vendue</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($retours as $retour): ?>
+                <?php while($l = $stmt->fetch(PDO::FETCH_ASSOC)): ?>
                 <tr>
-                    <td><?= htmlspecialchars($retour['id_retour']) ?></td>
-                    <td><?= htmlspecialchars($retour['nom']) ?></td>
-                    <td><?= htmlspecialchars($retour['date_retour']) ?></td>
-                    <td><?= htmlspecialchars($retour['statut']) ?></td>
+                    <td><?= date('d/m/Y', strtotime($l['date_vente'])) ?></td>
+                    <td><?= $l['client_nom'] ?></td>
+                    <td><b><?= $l['nom_piece'] ?></b></td>
+                    <td><?= $l['quantite'] ?></td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalRetour<?= $l['id_ligne_vente'] ?>">
+                            <i class="fas fa-arrow-left"></i> Retourner
+                        </button>
+                    </td>
                 </tr>
-                <?php endforeach; ?>
+
+                <div class="modal fade" id="modalRetour<?= $l['id_ligne_vente'] ?>" tabindex="-1">
+                  <div class="modal-dialog">
+                    <form action="traitement_retour.php" method="POST" class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title">Retourner : <?= $l['nom_piece'] ?></h5>
+                      </div>
+                      <div class="modal-body">
+                        <input type="hidden" name="id_piece" value="<?= $l['id_piece'] ?>">
+                        <input type="hidden" name="id_ligne_vente" value="<?= $l['id_ligne_vente'] ?>">
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Quantité à retourner (Max: <?= $l['quantite'] ?>)</label>
+                            <input type="number" name="qte" class="form-control" max="<?= $l['quantite'] ?>" min="1" value="1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">État de la pièce</label>
+                            <select name="etat" class="form-select">
+                                <option value="Réintégré">Réintégrer au Stock (Neuf)</option>
+                                <option value="Défectueux">Défectueux (Sortie Définitive)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Motif du retour</label>
+                            <textarea name="motif" class="form-control" rows="2" placeholder="Ex: Erreur de référence..."></textarea>
+                        </div>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Valider le retour</button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+                <?php endwhile; ?>
             </tbody>
         </table>
     </div>
-
 </div>
 
 <?php include '../../includes/footer.php'; ?>

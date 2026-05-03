@@ -1,7 +1,7 @@
 <?php
 // Connexion à la base de données
 try {
-    $db = new PDO('mysql:host=localhost;dbname=ohada', 'root', '123');
+    $db = new PDO('mysql:host=127.0.0.1;dbname=ohada', 'root', '');
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (Exception $e) {
     die('Erreur de connexion à la base de données : ' . $e->getMessage());

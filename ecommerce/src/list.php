@@ -4,7 +4,7 @@
 // ==========================
 ?>
 <?php
-$pdo = new PDO("mysql:host=localhost;dbname=ecommerce;charset=utf8", "root", "");
+$pdo = new PDO("mysql:host=127.0.0.1;dbname=ecommerce;charset=utf8", "root", "");
 $products = $pdo->query("SELECT * FROM produits")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 <!DOCTYPE html>

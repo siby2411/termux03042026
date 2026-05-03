@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../includes/auth_check.php';
 // /var/www/piece_auto/public/marques_premium.php
 
 include '../config/Database.php';

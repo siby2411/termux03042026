@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diaporama de Présentation - Gestion de Parc</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #3498db;
+            --bg-light: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* Conteneur principal du diaporama */
+        .slider-container {
+            width: 80%;
+            max-width: 900px;
+            height: 500px;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            position: relative;
+            background: #fff;
+        }
+
+        .slides {
+            display: flex;
+            width: 500%; /* 5 slides = 500% */
+            height: 100%;
+            transition: transform 0.8s ease-in-out;
+        }
+
+        .slide {
+            width: 20%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 40px;
+            box-sizing: border-box;
+        }
+
+        /* Couleurs pour différencier les slides */
+        .slide:nth-child(1) { border-left: 8px solid #e74c3c; }
+        .slide:nth-child(2) { border-left: 8px solid #f1c40f; }
+        .slide:nth-child(3) { border-left: 8px solid #2ecc71; }
+
+        .slide h2 {
+            color: var(--primary-color);
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+        }
+
+        .slide p {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            max-width: 600px;
+        }
+
+        .slide-footer {
+            margin-top: 30px;
+            font-weight: bold;
+            color: var(--accent-color);
+            background: #ecf0f1;
+            padding: 10px 20px;
+            border-radius: 20px;
+        }
+
+        /* Navigation simple par boutons radio (Invisible) */
+        input[name="nav"] { display: none; }
+
+        .nav-controls {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+
+        .nav-label {
+            width: 15px;
+            height: 15px;
+            background: #ddd;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        /* Logique de transition */
+        #slide1:checked ~ .slides { transform: translateX(0%); }
+        #slide2:checked ~ .slides { transform: translateX(-20%); }
+        #slide3:checked ~ .slides { transform: translateX(-40%); }
+        #slide4:checked ~ .slides { transform: translateX(-60%); }
+        #slide5:checked ~ .slides { transform: translateX(-80%); }
+
+        #slide1:checked ~ .nav-controls .nav-label:nth-child(1),
+        #slide2:checked ~ .nav-controls .nav-label:nth-child(2),
+        #slide3:checked ~ .nav-controls .nav-label:nth-child(3) {
+            background: var(--accent-color);
+            width: 30px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="slider-container">
+    <input type="radio" name="nav" id="slide1" checked>
+    <input type="radio" name="nav" id="slide2">
+    <input type="radio" name="nav" id="slide3">
+
+    <div class="slides">
+        <div class="slide">
+            <h2>Gestion de Parc</h2>
+            <p>Visualisez l'état de votre flotte en temps réel. Ajoutez, modifiez et gérez les détails techniques de chaque véhicule.</p>
+            <div class="slide-footer">Module : liste_voitures.php</div>
+        </div>
+
+        <div class="slide">
+            <h2>Fichiers Clients</h2>
+            <p>Un suivi rigoureux des locataires et partenaires commerciaux pour optimiser vos relations d'affaires.</p>
+            <div class="slide-footer">Module : liste_clients.php</div>
+        </div>
+
+        <div class="slide">
+            <h2>Locations & Contrats</h2>
+            <p>Enregistrez les départs, suivez les retours et sécurisez vos flux de trésorerie avec le suivi des paiements.</p>
+            <div class="slide-footer">Module : liste_locations.php</div>
+        </div>
+    </div>
+
+    <div class="nav-controls">
+        <label for="slide1" class="nav-label"></label>
+        <label for="slide2" class="nav-label"></label>
+        <label for="slide3" class="nav-label"></label>
+    </div>
+</div>
+
+</body>
+</html>

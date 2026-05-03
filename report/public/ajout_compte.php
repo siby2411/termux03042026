@@ -1,71 +1,39 @@
 <?php
-$page_title = "Ajouter un compte";
-require_once "../includes/db.php";
-require_once "layout.php";
+require_once __DIR__ . '/../includes/db.php';
+$page_title = "Paramétrage Plan Comptable - OMEGA";
+include "layout.php";
 
-$message = "";
-
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-
-    $compte_id = intval($_POST["compte_id"]);
-    $intitule = trim($_POST["intitule"]);
-    $classe = intval(substr($compte_id, 0, 1));
-    $solde_normal = $_POST["solde_normal"];
-    $nature = $_POST["nature_resultat"];
-
-    if ($classe < 1 || $classe > 8) {
-        $message = "<div class='alert alert-danger'>Compte invalide selon SYSCOHADA.</div>";
-    } else {
-
-        try {
-            $req = $pdo->prepare("
-                INSERT INTO PLAN_COMPTABLE_UEMOA 
-                (compte_id, intitule_compte, classe, solde_normal, nature_resultat)
-                VALUES (?, ?, ?, ?, ?)
-            ");
-            $req->execute([$compte_id, $intitule, $classe, $solde_normal, $nature]);
-
-            $message = "<div class='alert alert-success'>Compte ajouté avec succès.</div>";
-
-        } catch (PDOException $e) {
-            $message = "<div class='alert alert-danger'>Erreur : ". $e->getMessage() ."</div>";
-        }
-    }
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $stmt = $pdo->prepare("INSERT INTO PLAN_COMPTABLE_UEMOA (compte_id, intitule_compte, classe) VALUES (?, ?, ?)");
+    $stmt->execute([$_POST['id'], $_POST['libelle'], substr($_POST['id'], 0, 1)]);
+    echo "<div class='alert alert-success form-centered mb-4 shadow-sm'>Compte ajouté au référentiel SYSCOHADA.</div>";
 }
 ?>
 
-<div class="card p-4">
-<h5>Ajouter un compte SYSCOHADA</h5>
-
-<?= $message ?>
-
-<form method="post">
-
-<label class="form-label">Numéro de compte</label>
-<input type="number" name="compte_id" class="form-control" required>
-
-<label class="form-label mt-2">Intitulé</label>
-<input type="text" name="intitule" class="form-control" required>
-
-<label class="form-label mt-2">Sens normal</label>
-<select name="solde_normal" class="form-control">
-<option value="D">Débit</option>
-<option value="C">Crédit</option>
-</select>
-
-<label class="form-label mt-2">Nature</label>
-<select name="nature_resultat" class="form-control">
-<option value="BIL">Bilan</option>
-<option value="EXP">Exploitation</option>
-<option value="FIN">Financier</option>
-<option value="HAO">Hors Activité Ordinaire</option>
-</select>
-
-<button class="btn btn-primary mt-3">Enregistrer</button>
-</form>
-
+<div class="form-centered">
+    <div class="card omega-card overflow-hidden">
+        <div class="card-header bg-white py-4 border-0">
+            <h3 class="text-center fw-bold text-dark mb-0"><i class="bi bi-plus-square-dotted text-primary"></i> Création de Compte</h3>
+        </div>
+        <div class="card-body p-5">
+            <form method="POST" class="row g-4">
+                <div class="col-md-4">
+                    <label class="form-label">Numéro de Compte</label>
+                    <input type="number" name="id" class="form-control" placeholder="Ex: 521" required>
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label">Intitulé du compte</label>
+                    <input type="text" name="libelle" class="form-control" placeholder="Ex: BOA SÉNÉGAL" required>
+                </div>
+                <div class="col-12 text-center mt-4">
+                    <button type="submit" class="btn btn-omega shadow-lg">
+                        <i class="bi bi-save"></i> ENREGISTRER DANS LE PLAN COMPTABLE
+                    </button>
+                    <a href="admin_dashboard.php" class="btn btn-link text-muted ms-3">Retour Dashboard</a>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
-
-
-
-
+</body>
+</html>

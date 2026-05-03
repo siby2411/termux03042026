@@ -12,7 +12,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 // Informations de connexion à la base de données
-$host = 'localhost'; // Nom d'hôte du serveur MySQL
+$host = '127.0.0.1'; // Nom d'hôte du serveur MySQL
 $dbname = 'ohada'; // Nom de la base de données
 $username = 'root'; // Nom d'utilisateur MySQL (root sans mot de passe)
 $password = '123'; // Mot de passe

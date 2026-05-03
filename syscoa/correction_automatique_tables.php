@@ -12,7 +12,7 @@ class CorrectionAutomatiqueTables {
     
     public function __construct() {
         try {
-            $this->db = new PDO("mysql:host=localhost;dbname=sysco_ohada", "root", "123");
+            $this->db = new PDO("mysql:host=127.0.0.1;dbname=sysco_ohada", "root", "");
             $this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             echo "✅ Connexion à la base de données réussie\n";
         } catch (PDOException $e) {

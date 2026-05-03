@@ -1,0 +1,248 @@
+<?php
+session_start();
+require_once 'config/database.php';
+require_once 'includes/auth.php';
+require_once 'includes/functions.php';
+
+// Redirection si déjà connecté
+if (isset($_SESSION['user_id'])) {
+    switch ($_SESSION['user_role']) {
+        case 'admin': header('Location: modules/admin/dashboard.php'); break;
+        case 'caissier': header('Location: modules/caisse/index.php'); break;
+        case 'sagefemme': header('Location: modules/sagefemme/index.php'); break;
+        case 'medecin': header('Location: modules/medecin/consultation.php'); break;
+        default: header('Location: modules/dashboard/index.php');
+    }
+    exit();
+}
+
+$pdo = getPDO();
+
+// Statistiques globales pour la page d'accueil
+$stats = $pdo->query("
+    SELECT 
+        (SELECT COUNT(*) FROM patients) as total_patients,
+        (SELECT COUNT(*) FROM users WHERE role = 'medecin') as total_medecins,
+        (SELECT COUNT(*) FROM services) as total_services,
+        (SELECT COUNT(*) FROM file_attente WHERE statut = 'en_attente') as en_attente
+")->fetch();
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centre de Santé Mamadou Diop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 100px 0;
+            text-align: center;
+        }
+        .feature-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            height: 100%;
+        }
+        .feature-card:hover {
+            transform: translateY(-10px);
+        }
+        .feature-icon {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        .stats-section {
+            padding: 60px 0;
+            background: #f8f9fa;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 30px;
+        }
+        .stat-number {
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-hospital"></i> Centre Mamadou Diop
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#stats">Statistiques</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Contact</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-light text-dark ms-3" href="login.php">Connexion</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="display-4 mb-4">Bienvenue au Centre de Santé Mamadou Diop</h1>
+            <p class="lead mb-5">Une gestion moderne et efficace pour des soins de qualité</p>
+            <a href="login.php" class="btn btn-light btn-lg">
+                <i class="fas fa-sign-in-alt"></i> Accéder à l'application
+            </a>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section id="stats" class="stats-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number"><?= $stats['total_patients'] ?></div>
+                        <div class="stat-label">Patients enregistrés</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number"><?= $stats['total_medecins'] ?></div>
+                        <div class="stat-label">Médecins</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number"><?= $stats['total_services'] ?></div>
+                        <div class="stat-label">Services</div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-item">
+                        <div class="stat-number"><?= $stats['en_attente'] ?></div>
+                        <div class="stat-label">En consultation</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Nos Services</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-ticket-alt"></i>
+                        </div>
+                        <h3>File d'attente intelligente</h3>
+                        <p>Gestion automatisée des flux avec répartition équitable entre les salles</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-stethoscope"></i>
+                        </div>
+                        <h3>Dossier médical électronique</h3>
+                        <p>Accès instantané à l'historique des patients</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-qrcode"></i>
+                        </div>
+                        <h3>Pointage par QR Code</h3>
+                        <p>Suivi en temps réel des présences du personnel</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h3>Statistiques avancées</h3>
+                        <p>Tableaux de bord interactifs en temps réel</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <h3>Paiements intégrés</h3>
+                        <p>Gestion des paiements et facturation automatique</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3>Rendez-vous en ligne</h3>
+                        <p>Planification et suivi des rendez-vous</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Contactez-nous</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card p-4">
+                        <h4>Adresse</h4>
+                        <p><i class="fas fa-map-marker-alt"></i> Dakar, Sénégal</p>
+                        <p><i class="fas fa-phone"></i> +221 33 123 45 67</p>
+                        <p><i class="fas fa-envelope"></i> contact@centre.sn</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card p-4">
+                        <h4>Horaires</h4>
+                        <p>Lundi - Vendredi: 8h - 20h</p>
+                        <p>Samedi: 9h - 17h</p>
+                        <p>Dimanche: Fermé</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container text-center">
+            <p>&copy; 2026 Centre de Santé Mamadou Diop. Tous droits réservés.</p>
+            <p>Développé par Omega Informatique Consulting</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

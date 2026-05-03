@@ -100,7 +100,7 @@ class Protection
     /**
      * Hashed password.
      */
-    private string $password = '';
+    private string $password = '123';
 
     /**
      * Algorithm name.

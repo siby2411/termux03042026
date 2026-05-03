@@ -16,7 +16,7 @@
                     <option value="">-- Sélectionnez un cours --</option>
                     <?php
                     // Connexion à la base de données mySQL
-                    $host = 'localhost';
+                    $host = '127.0.0.1';
                     $dbname = 'ohada';
                     $user = 'root';
                     $password = '123';

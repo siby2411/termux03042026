@@ -10,9 +10,9 @@ $commandes = $stmt->fetchAll();
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Gestion Facturation & Commandes</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        <button type="button" class="btn btn-sm btn-primary">
+        <a href="creer_commande.php" class="btn btn-sm btn-primary">
             <i class="fas fa-plus"></i> Nouvelle Commande
-        </button>
+        </a>
     </div>
 </div>
 
@@ -48,8 +48,8 @@ $commandes = $stmt->fetchAll();
                     </td>
                     <td><?= htmlspecialchars($cmd['createur']) ?></td>
                     <td>
-                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-eye"></i></button>
-                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></button>
+                        <button class="btn btn-sm btn-outline-secondary"><i class="fas fa-eye"></i></a>
+                        <button class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i></a>
                     </td>
                 </tr>
                 <?php endforeach; ?>

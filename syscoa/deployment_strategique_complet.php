@@ -4,7 +4,7 @@
  * Déploiement stratégique de tous les modules critiques
  */
 
-$host = 'localhost';
+$host = '127.0.0.1';
 $dbname = 'sysco_ohada';
 $username = 'root';
 $password = '123';

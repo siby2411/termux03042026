@@ -1,6 +1,6 @@
 <?php
 // Connexion à la base de données MySQL
-$servername = "localhost";
+$servername = "127.0.0.1";
 $username = "root";
 $password = "";
 $dbname = "comptabilite";

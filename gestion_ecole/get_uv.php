@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: application/json');
-$conn = new mysqli("localhost", "root", "123", "ecole");
+$conn = new mysqli("127.0.0.1", "root", "", "ecole");
 if ($conn->connect_error) die(json_encode([]));
 
 $matiere_id = isset($_GET['matiere_id']) ? intval($_GET['matiere_id']) : 0;

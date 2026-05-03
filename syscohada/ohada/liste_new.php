@@ -4,7 +4,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 // Connexion à la base de données MySQL
-$host = 'localhost';
+$host = '127.0.0.1';
 $dbname = 'ohada';
 $username = 'root';
 $password = '123';

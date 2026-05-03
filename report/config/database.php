@@ -1,21 +1,18 @@
 <?php
-// config/database.php
-$host = 'localhost';
-$db   = 'synthesepro_db';
-$user = 'root';
-$pass = '123';
-$charset = 'utf8mb4';
-
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
-$options = [
-    PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-    PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-];
+// OMEGA CONFIG - REPORTING OHADA
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'reporting_db'); // Vérifiez le nom de votre base report
+define('DB_USER', 'root');
+define('DB_PASS', '');
+define('DB_SOCKET', '/var/run/mysqld/mysqld.sock');
 
 try {
-    $conn = new PDO($dsn, $user, $pass, $options); // Connexion globale
+    $dsn = "mysql:host=".DB_HOST.";unix_socket=".DB_SOCKET.";dbname=".DB_NAME.";charset=utf8mb4";
+    $pdo = new PDO($dsn, DB_USER, DB_PASS, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
 } catch (PDOException $e) {
-    die("Erreur DB : " . $e->getMessage());
+    die("❌ ERREUR CONNEXION BDD OMEGA : " . $e->getMessage());
 }
 ?>
-

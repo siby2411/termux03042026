@@ -1,6 +1,6 @@
 <?php
 // Configuration de la base de données
-$host = 'localhost'; // ou l'adresse IP de votre serveur de base de données
+$host = '127.0.0.1'; // ou l'adresse IP de votre serveur de base de données
 $dbname = 'ohada'; // Remplacez par le nom de votre base de données
 $user = 'root'; // Remplacez par votre nom d'utilisateur de base de données
 $password = '123'; // Remplacez par votre mot de passe de base de données

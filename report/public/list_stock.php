@@ -11,7 +11,7 @@ if (function_exists('getConnection')) {
 } elseif (isset($db) && $db instanceof PDO) {
     $pdo = $db;
 } else {
-    $pdo = new PDO('mysql:host=localhost;dbname=synthesepro_db;charset=utf8mb4','root','123');
+    $pdo = new PDO('mysql:host=127.0.0.1;dbname=synthesepro_db;charset=utf8mb4','root','123');
 }
 
 // Charger les mouvements de stock

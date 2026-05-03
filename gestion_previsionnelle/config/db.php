@@ -1,6 +1,6 @@
 <?php
 class Database {
-    private $host = "localhost";
+    private $host = "127.0.0.1";
     private $db_name = "ingenierie"; // Nom de la base de données
     private $username = "root";      // Remplacez par votre utilisateur
     private $password = "123";  // Remplacez par votre mot de passe

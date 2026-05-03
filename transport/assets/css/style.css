@@ -1,0 +1,55 @@
+:root {
+    --primary-color: #003366;
+    --secondary-color: #006699;
+    --accent-color: #ff9900;
+    --success-color: #4CAF50;
+    --danger-color: #f44336;
+}
+body {
+    font-family: 'Poppins', 'Roboto', sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+}
+.navbar {
+    background: white !important;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+}
+.navbar-brand {
+    font-weight: 700;
+    color: #003366 !important;
+}
+.navbar-brand span { color: #ff9900; }
+.nav-link {
+    font-weight: 500;
+    color: #333 !important;
+    transition: color 0.3s;
+}
+.nav-link:hover { color: #ff9900 !important; }
+.dropdown-menu {
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    border: none;
+}
+.dropdown-item:hover {
+    background: #f0f0f0;
+    color: #ff9900;
+}
+.card {
+    border-radius: 15px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+    transition: transform 0.3s;
+}
+.card:hover { transform: translateY(-5px); }
+.btn-primary {
+    background: var(--primary-color);
+    border: none;
+    border-radius: 30px;
+    padding: 10px 25px;
+}
+.btn-primary:hover { background: var(--secondary-color); }
+footer {
+    background: #001f3f;
+    color: #ddd;
+    margin-top: 50px;
+    padding: 40px 0 20px;
+}

@@ -1,9 +1,9 @@
 <?php
 // Fichier: /var/www/auto/db_connect.php
 
-$servername = "localhost"; // Ou l'adresse IP de votre serveur MySQL/MariaDB
+$servername = "127.0.0.1"; // Ou l'adresse IP de votre serveur MySQL/MariaDB
 $username = "root";       // Votre nom d'utilisateur MySQL/MariaDB
-$password = "123"; // Votre mot de passe MySQL/MariaDB (mettez le vrai)
+$password = ""; // Votre mot de passe MySQL/MariaDB (mettez le vrai)
 $dbname = "auto"; // Le nom de votre base de données
 
 // Créer une connexion

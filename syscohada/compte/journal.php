@@ -1,6 +1,6 @@
 <?php
 // Connexion à la base de données
-$conn = new mysqli('localhost', 'root', '', 'comptabilite');
+$conn = new mysqli('127.0.0.1', 'root', '', 'comptabilite');
 
 // Vérifier la connexion
 if ($conn->connect_error) {

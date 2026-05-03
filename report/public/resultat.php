@@ -1,97 +1,43 @@
 <?php
-$page_title = "Compte de Résultat";
-require_once 'layout.php';
-require_once '../config/database.php'; // $conn disponible
+require_once __DIR__ . '/../includes/db.php';
+$page_title = "Compte de Résultat - OMEGA";
+include "layout.php";
 
-// --- Récupération des comptes de charges (classe 6) ---
-$stmt_charges = $conn->prepare("SELECT compte_id, intitule_compte 
-                                FROM PLAN_COMPTABLE_UEMOA 
-                                WHERE classe = 6");
-$stmt_charges->execute();
-$charges = $stmt_charges->fetchAll();
-
-// --- Récupération des comptes de produits (classe 7) ---
-$stmt_produits = $conn->prepare("SELECT compte_id, intitule_compte 
-                                 FROM PLAN_COMPTABLE_UEMOA 
-                                 WHERE classe = 7");
-$stmt_produits->execute();
-$produits = $stmt_produits->fetchAll();
-
-// --- Calcul résultat par compte (en joignant avec ECRITURES_COMPTABLES) ---
-function getTotal($conn, $compte_id) {
-    $stmt = $conn->prepare("
-        SELECT 
-            SUM(montant) as total
-        FROM ECRITURES_COMPTABLES
-        WHERE compte_debite_id = :compte OR compte_credite_id = :compte
-    ");
-    $stmt->execute(['compte' => $compte_id]);
-    $row = $stmt->fetch();
-    return $row['total'] ?? 0;
-}
+// Produits (Classe 7)
+$produits = $pdo->query("SELECT SUM(montant) FROM ECRITURES_COMPTABLES WHERE compte_credite_id LIKE '7%'")->fetchColumn() ?: 0;
+// Charges (Classe 6)
+$charges = $pdo->query("SELECT SUM(montant) FROM ECRITURES_COMPTABLES WHERE compte_debite_id LIKE '6%'")->fetchColumn() ?: 0;
+$resultat = $produits - $charges;
 ?>
 
-<div class="container-fluid">
-    <h3 class="mb-4">Compte de Résultat</h3>
-
-    <div class="row">
-        <!-- CHARGES -->
-        <div class="col-md-6">
-            <div class="card mb-3">
-                <div class="card-header bg-danger text-white">Charges (Classe 6)</div>
-                <div class="card-body p-0">
-                    <table class="table table-sm table-striped mb-0">
-                        <thead>
-                            <tr>
-                                <th>Compte</th>
-                                <th>Libellé</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach($charges as $c): ?>
-                            <tr>
-                                <td><?= $c['compte_id'] ?></td>
-                                <td><?= $c['intitule_compte'] ?></td>
-                                <td><?= number_format(getTotal($conn, $c['compte_id']),2,',',' ') ?></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+<div class="form-centered">
+    <div class="card omega-card overflow-hidden">
+        <div class="card-header bg-white py-4 text-center border-0">
+            <h2 class="fw-bold text-dark">COMPTE DE RÉSULTAT (SYSCOHADA)</h2>
+            <div class="badge bg-gold text-dark">Performance Annuelle 2026</div>
+        </div>
+        <div class="card-body p-5">
+            <div class="row g-5">
+                <div class="col-md-6">
+                    <div class="p-4 rounded-4 bg-light border-start border-5 border-success">
+                        <h4 class="text-success fw-bold">PRODUITS (7)</h4>
+                        <p class="display-6 fw-bold"><?= number_format($produits, 0, ',', ' ') ?> F</p>
+                        <small class="text-muted">Ventes de marchandises et services</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-4 rounded-4 bg-light border-start border-5 border-danger">
+                        <h4 class="text-danger fw-bold">CHARGES (6)</h4>
+                        <p class="display-6 fw-bold"><?= number_format($charges, 0, ',', ' ') ?> F</p>
+                        <small class="text-muted">Achats, salaires, impôts et loyers</small>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- PRODUITS -->
-        <div class="col-md-6">
-            <div class="card mb-3">
-                <div class="card-header bg-success text-white">Produits (Classe 7)</div>
-                <div class="card-body p-0">
-                    <table class="table table-sm table-striped mb-0">
-                        <thead>
-                            <tr>
-                                <th>Compte</th>
-                                <th>Libellé</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach($produits as $p): ?>
-                            <tr>
-                                <td><?= $p['compte_id'] ?></td>
-                                <td><?= $p['intitule_compte'] ?></td>
-                                <td><?= number_format(getTotal($conn, $p['compte_id']),2,',',' ') ?></td>
-                            </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
+            <div class="mt-5 text-center p-5 rounded-5 <?= $resultat >= 0 ? 'bg-success text-white' : 'bg-danger text-white' ?>">
+                <h1 class="fw-bold">RÉSULTAT NET : <?= number_format($resultat, 0, ',', ' ') ?> F CFA</h1>
+                <h3><?= $resultat >= 0 ? '🏆 BÉNÉFICE D\'EXPLOITATION' : '⚠️ PERTE D\'EXPLOITATION' ?></h3>
             </div>
         </div>
     </div>
 </div>
-
-
-
-
-

@@ -11,7 +11,7 @@
 
     <?php
     // Connexion à la base
-    $conn = new mysqli("localhost", "root", "123", "ecole");
+    $conn = new mysqli("127.0.0.1", "root", "", "ecole");
     if ($conn->connect_error) die("Connexion échouée : " . $conn->connect_error);
 
     // Requête pour récupérer classes, matières et UV

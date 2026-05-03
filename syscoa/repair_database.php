@@ -8,7 +8,7 @@ error_reporting(E_ALL);
 echo "<h2>Réparation de la base de données</h2>";
 
 // Connexion
-$host = 'localhost';
+$host = '127.0.0.1';
 $dbname = 'sysco_ohada';
 $username = 'root';
 $password = '123';

@@ -2,7 +2,7 @@
 // /var/www/piece_auto/config/Database.php
 
 class Database {
-    private $host = 'localhost';
+    private $host = '127.0.0.1';
     private $db_name = 'piece_auto';
     private $username = 'root'; // À changer en production !
     private $password = '123';     // Entrez votre mot de passe MariaDB si nécessaire

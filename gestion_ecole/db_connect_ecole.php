@@ -1,17 +1,16 @@
 <?php
 function db_connect_ecole() {
-    $host = "localhost";
-    $user = "root";
-    $pass = "123";
-    $db   = "ecole";
-
-    $conn = new mysqli($host, $user, $pass, $db);
-
+    $host = null; 
+    $user = 'root';
+    $pass = '';
+    $db   = 'ecole';
+    $socket = '/var/run/mysqld/mysqld.sock';
+    
+    $conn = new mysqli($host, $user, $pass, $db, null, $socket);
     if ($conn->connect_error) {
-        die("Erreur connexion DB : " . $conn->connect_error);
+        $conn = new mysqli('127.0.0.1', $user, $pass, $db);
     }
-
+    $conn->set_charset("utf8mb4");
     return $conn;
 }
 ?>
-
