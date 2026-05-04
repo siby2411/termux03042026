@@ -1,198 +1,102 @@
 <?php
-// Fichier : crud_filieres.php - Gestion CRUD des Filières
-
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
-require_once 'db_connect_ecole.php'; 
+if (session_status() == PHP_SESSION_NONE) { session_start(); }
+if (!isset($_SESSION['role'])) { header("Location: login.php"); exit(); }
 
-// Vérification admin
-if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
-    $_SESSION['message'] = "Accès non autorisé.";
-    $_SESSION['msg_type'] = "danger";
-    header("Location: index.php"); 
-    exit();
-}
-
+require_once 'db_connect_ecole.php';
 $conn = db_connect_ecole();
-if ($conn->connect_error) {
-    die("Erreur de connexion : " . $conn->connect_error);
+
+// --- DÉTECTION DYNAMIQUE DU SCHÉMA ---
+$res = $conn->query("SHOW COLUMNS FROM filieres");
+$cols = [];
+while($row = $res->fetch_assoc()) { $cols[] = $row['Field']; }
+
+$col_id = $cols[0];
+// On cherche une colonne de type 'nom' ou 'libelle', sinon on prend la 2ème colonne
+$col_nom = "nom"; 
+foreach(['nom', 'nom_filiere', 'libelle', 'designation'] as $possibilite) {
+    if (in_array($possibilite, $cols)) { $col_nom = $possibilite; break; }
+}
+if ($col_nom == "nom" && !in_array("nom", $cols)) { $col_nom = $cols[1]; }
+
+// Traitement de l'ajout
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['filiere_nom'])) {
+    $nom_val = $conn->real_escape_string($_POST['filiere_nom']);
+    $conn->query("INSERT INTO filieres ($col_nom) VALUES ('$nom_val')");
 }
 
-// --- FORM VARIABLES ---
-$id_filiere = 0;
-$nom_filiere = '';
-$cycle_id = 0;
-$is_editing = false;
-
-// --- SAVE / UPDATE ---
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['save_filiere'])) {
-
-    $nom_filiere = $_POST['nom_filiere'] ?? '';
-    $cycle_id = intval($_POST['cycle_id'] ?? 0);
-    $id_filiere = intval($_POST['id_filiere'] ?? 0);
-
-    if (empty($nom_filiere) || $cycle_id == 0) {
-        $_SESSION['message'] = "Veuillez remplir tous les champs.";
-        $_SESSION['msg_type'] = "danger";
-    } else {
-        if ($id_filiere > 0) {
-            // UPDATE
-            $stmt = $conn->prepare("UPDATE filieres SET nom_filiere = ?, cycle_id = ? WHERE id_filiere = ?");
-            $stmt->bind_param("sii", $nom_filiere, $cycle_id, $id_filiere);
-            $action = "modifiée";
-        } else {
-            // INSERT
-            $stmt = $conn->prepare("INSERT INTO filieres (nom_filiere, cycle_id) VALUES (?, ?)");
-            $stmt->bind_param("si", $nom_filiere, $cycle_id);
-            $action = "ajoutée";
-        }
-
-        if ($stmt->execute()) {
-            $_SESSION['message'] = "Filière '{$nom_filiere}' $action avec succès.";
-            $_SESSION['msg_type'] = "success";
-        } else {
-            $_SESSION['message'] = "Erreur SQL : " . $stmt->error;
-            $_SESSION['msg_type'] = "danger";
-        }
-        $stmt->close();
-    }
+// Suppression
+if (isset($_GET['del'])) {
+    $id_del = intval($_GET['del']);
+    $conn->query("DELETE FROM filieres WHERE $col_id = $id_del");
     header("Location: crud_filieres.php");
     exit();
 }
 
-// --- EDIT ---
-if (isset($_GET['edit'])) {
-    $id_filiere = intval($_GET['edit']);
-    $is_editing = true;
-
-    $res = $conn->query("SELECT * FROM filieres WHERE id_filiere = $id_filiere");
-
-    if ($res->num_rows == 1) {
-        $row = $res->fetch_assoc();
-        $nom_filiere = $row['nom_filiere'];
-        $cycle_id = $row['cycle_id'];
-    }
-}
-
-// --- DELETE ---
-if (isset($_GET['delete'])) {
-    $id_filiere = intval($_GET['delete']);
-
-    $stmt = $conn->prepare("DELETE FROM filieres WHERE id_filiere = ?");
-    $stmt->bind_param("i", $id_filiere);
-
-    if ($stmt->execute()) {
-        $_SESSION['message'] = "Filière supprimée avec succès.";
-        $_SESSION['msg_type'] = "success";
-    } else {
-        $_SESSION['message'] = "Erreur suppression : " . $stmt->error;
-        $_SESSION['msg_type'] = "danger";
-    }
-
-    $stmt->close();
-    header("Location: crud_filieres.php");
-    exit();
-}
-
-// --- FETCH DATA ---
-$result_filieres = $conn->query("
-    SELECT f.*, c.nom AS cycle_nom
-    FROM filieres f
-    JOIN cycles c ON f.cycle_id = c.id
-    ORDER BY f.nom_filiere
-");
-
-$cycles = $conn->query("SELECT id, nom FROM cycles ORDER BY nom");
+$resultat = $conn->query("SELECT * FROM filieres ORDER BY $col_nom ASC");
 
 include 'header_ecole.php';
 ?>
 
 <div class="container mt-4">
-
-<h2 class="mb-4">Gestion des Filières</h2>
-
-<?php if (isset($_SESSION['message'])): ?>
-<div class="alert alert-<?php echo $_SESSION['msg_type']; ?>">
-    <?php echo $_SESSION['message']; ?>
-</div>
-<?php unset($_SESSION['message'], $_SESSION['msg_type']); endif; ?>
-
-
-<div class="row">
-    <div class="col-md-4">
-        <div class="card shadow-lg">
-            <div class="card-header bg-primary text-white">
-                <?php echo $is_editing ? "Modifier Filière" : "Ajouter Filière"; ?>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white fw-bold">Nouvelle Filière</div>
+                <div class="card-body">
+                    <form method="POST">
+                        <div class="mb-3">
+                            <label class="small">Nom de la Filière</label>
+                            <input type="text" name="filiere_nom" class="form-control" placeholder="Ex: Informatique de Gestion" required>
+                        </div>
+                        <button class="btn btn-primary w-100 fw-bold">Ajouter la Filière</button>
+                    </form>
+                </div>
             </div>
-            <div class="card-body">
+            <div class="mt-3">
+                <a href="crud_classes.php" class="btn btn-outline-secondary w-100 btn-sm">
+                    <i class="bi bi-arrow-left"></i> Gérer les Classes
+                </a>
+            </div>
+        </div>
 
-                <form action="crud_filieres.php" method="POST">
-
-                    <input type="hidden" name="id_filiere" value="<?php echo $id_filiere; ?>">
-
-                    <div class="mb-3">
-                        <label>Nom de la Filière</label>
-                        <input type="text" name="nom_filiere" class="form-control" required
-                               value="<?php echo htmlspecialchars($nom_filiere); ?>">
-                    </div>
-
-                    <div class="mb-3">
-                        <label>Cycle</label>
-                        <select name="cycle_id" class="form-select" required>
-                            <option value="">-- Choisir un cycle --</option>
-                            <?php while ($c = $cycles->fetch_assoc()): ?>
-                                <option value="<?= $c['id']; ?>" 
-                                    <?php if ($cycle_id == $c['id']) echo "selected"; ?>>
-                                    <?= htmlspecialchars($c['nom']); ?>
-                                </option>
-                            <?php endwhile; ?>
-                        </select>
-                    </div>
-
-                    <button class="btn btn-success w-100" name="save_filiere">
-                        <?php echo $is_editing ? "Mettre à jour" : "Enregistrer"; ?>
-                    </button>
-
-                </form>
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-dark small">
+                            <tr>
+                                <th>ID</th>
+                                <th>Désignation de la Filière</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if ($resultat && $resultat->num_rows > 0): ?>
+                                <?php while($f = $resultat->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?= $f[$col_id] ?></td>
+                                    <td class="fw-bold"><?= htmlspecialchars($f[$col_nom]) ?></td>
+                                    <td class="text-end">
+                                        <a href="crud_filieres.php?del=<?= $f[$col_id] ?>" 
+                                           class="btn btn-sm btn-outline-danger" 
+                                           onclick="return confirm('Supprimer cette filière ?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                <?php endwhile; ?>
+                            <?php else: ?>
+                                <tr><td colspan="3" class="text-center py-4 text-muted">Aucune filière trouvée.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-
-    <div class="col-md-8">
-        <h4>Liste des Filières</h4>
-        <table class="table table-bordered table-striped shadow">
-            <thead class="table-dark">
-                <tr>
-                    <th>ID</th>
-                    <th>Filière</th>
-                    <th>Cycle</th>
-                    <th width="160px">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php while ($row = $result_filieres->fetch_assoc()): ?>
-                <tr>
-                    <td><?= $row['id_filiere']; ?></td>
-                    <td><?= htmlspecialchars($row['nom_filiere']); ?></td>
-                    <td><span class="badge bg-info text-dark"><?= htmlspecialchars($row['cycle_nom']); ?></span></td>
-                    <td>
-                        <a href="crud_filieres.php?edit=<?= $row['id_filiere']; ?>" class="btn btn-sm btn-warning">Modifier</a>
-                        <a href="crud_filieres.php?delete=<?= $row['id_filiere']; ?>" 
-                           onclick="return confirm('Supprimer cette filière ?');"
-                           class="btn btn-sm btn-danger mt-1">Supprimer</a>
-                    </td>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
-    </div>
-</div>
-
 </div>
 
 <?php include 'footer_ecole.php'; ?>
-
