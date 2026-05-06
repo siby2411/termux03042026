@@ -1,69 +1,119 @@
 <?php
-require_once __DIR__ . '/../includes/db.php';
-$page_title = "Grand Livre - OMEGA CONSULTING";
-include "layout.php";
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
 
-$compte_filter = $_GET['compte'] ?? '';
-$where = $compte_filter ? "WHERE compte_debite_id = :cpte OR compte_credite_id = :cpte" : "";
+$page_title = "Grand Livre - Consultation analytique";
+$page_icon = "book";
+require_once dirname(__DIR__) . '/config/config.php';
+include 'inc_navbar.php';
 
-$sql = "SELECT * FROM ECRITURES_COMPTABLES $where ORDER BY date_ecriture ASC";
-$stmt = $pdo->prepare($sql);
-if($compte_filter) $stmt->bindValue(':cpte', $compte_filter);
-$stmt->execute();
-$ecritures = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Récupération des comptes
+$comptes = $pdo->query("SELECT compte_id, intitule_compte FROM PLAN_COMPTABLE_UEMOA ORDER BY compte_id")->fetchAll();
+
+$filtre = isset($_GET['compte']) ? (int)$_GET['compte'] : null;
+
+// Requête des écritures
+$sql = "SELECT e.*, 
+        c1.intitule_compte as lib_debit,
+        c2.intitule_compte as lib_credit
+        FROM ECRITURES_COMPTABLES e
+        LEFT JOIN PLAN_COMPTABLE_UEMOA c1 ON e.compte_debite_id = c1.compte_id
+        LEFT JOIN PLAN_COMPTABLE_UEMOA c2 ON e.compte_credite_id = c2.compte_id";
+
+if ($filtre) {
+    $sql .= " WHERE e.compte_debite_id = :filtre OR e.compte_credite_id = :filtre";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute(['filtre' => $filtre]);
+} else {
+    $stmt = $pdo->query($sql);
+}
+$ecritures = $stmt->fetchAll();
+
+$total_debit = 0;
+$total_credit = 0;
+foreach ($ecritures as $row) {
+    if ($row['compte_debite_id']) $total_debit += $row['montant'];
+    if ($row['compte_credite_id']) $total_credit += $row['montant'];
+}
 ?>
 
-<div class="form-centered">
-    <div class="card omega-card border-0 mb-4">
-        <div class="card-body p-4">
-            <form method="GET" class="row g-3 align-items-end mb-4">
-                <div class="col-md-4">
-                    <label class="form-label fw-bold">Filtrer par compte (ex: 521)</label>
-                    <input type="number" name="compte" class="form-control" value="<?= htmlspecialchars($compte_filter) ?>">
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-omega w-100">Filtrer</button>
-                </div>
+<div class="card">
+    <div class="card-header bg-white">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h5 class="mb-0"><i class="bi bi-book-half"></i> Grand Livre Général</h5>
+            <form method="GET" class="d-flex gap-2">
+                <select name="compte" class="form-select" onchange="this.form.submit()">
+                    <option value="">📊 Tous les comptes</option>
+                    <?php foreach ($comptes as $c): ?>
+                        <option value="<?= $c['compte_id'] ?>" <?= $filtre == $c['compte_id'] ? 'selected' : '' ?>>
+                            <?= $c['compte_id'] ?> - <?= htmlspecialchars(substr($c['intitule_compte'], 0, 40)) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <?php if ($filtre): ?>
+                    <a href="grand_livre.php" class="btn btn-outline-secondary btn-sm">✖ Réinitialiser</a>
+                <?php endif; ?>
             </form>
-
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Date</th>
-                            <th>Référence</th>
-                            <th>Libellé</th>
-                            <th>Débit</th>
-                            <th>Crédit</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php 
-                        $total_debit = 0; $total_credit = 0;
-                        foreach($ecritures as $e): 
-                            $d = ($compte_filter == $e['compte_debite_id'] || !$compte_filter) ? $e['montant'] : 0;
-                            $c = ($compte_filter == $e['compte_credite_id'] || !$compte_filter) ? $e['montant'] : 0;
-                            $total_debit += $d; $total_credit += $c;
-                        ?>
-                        <tr>
-                            <td><?= date('d/m/Y', strtotime($e['date_ecriture'])) ?></td>
-                            <td><span class="badge bg-light text-dark"><?= $e['reference_piece'] ?></span></td>
-                            <td><?= htmlspecialchars($e['libelle']) ?></td>
-                            <td class="text-end"><?= number_format($d, 0, ',', ' ') ?></td>
-                            <td class="text-end text-danger"><?= number_format($c, 0, ',', ' ') ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                    <tfoot class="table-light fw-bold">
-                        <tr>
-                            <td colspan="3" class="text-end">TOTAL :</td>
-                            <td class="text-end text-primary"><?= number_format($total_debit, 0, ',', ' ') ?> F</td>
-                            <td class="text-end text-danger"><?= number_format($total_credit, 0, ',', ' ') ?> F</td>
-                        </tr>
-                    </tfoot>
-                </table>
+            <div>
+                <button onclick="window.print()" class="btn btn-outline-primary btn-sm"><i class="bi bi-printer"></i></button>
             </div>
         </div>
     </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover mb-0">
+                <thead class="table-light">
+                    <tr class="text-center">
+                        <th>Date</th>
+                        <th>Référence</th>
+                        <th>Libellé</th>
+                        <th>Compte Débit</th>
+                        <th class="text-danger">Débit (FCFA)</th>
+                        <th>Compte Crédit</th>
+                        <th class="text-success">Crédit (FCFA)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (count($ecritures) > 0): ?>
+                        <?php foreach ($ecritures as $row): ?>
+                            <tr>
+                                <td class="text-center"><?= date('d/m/Y', strtotime($row['date_ecriture'])) ?></td>
+                                <td class="text-center"><?= htmlspecialchars($row['reference_piece'] ?? '-') ?></td>
+                                <td><?= htmlspecialchars($row['libelle'] ?? '-') ?></td>
+                                <td class="text-center">
+                                    <?php if ($row['compte_debite_id']): ?>
+                                        <span class="badge bg-danger"><?= $row['compte_debite_id'] ?></span>
+                                        <br><small><?= htmlspecialchars(substr($row['lib_debit'] ?? '', 0, 25)) ?></small>
+                                    <?php else: ?>-<?php endif; ?>
+                                </td>
+                                <td class="text-end text-danger fw-bold"><?= $row['compte_debite_id'] ? number_format($row['montant'], 0, ',', ' ') : '-' ?></td>
+                                <td class="text-center">
+                                    <?php if ($row['compte_credite_id']): ?>
+                                        <span class="badge bg-success"><?= $row['compte_credite_id'] ?></span>
+                                        <br><small><?= htmlspecialchars(substr($row['lib_credit'] ?? '', 0, 25)) ?></small>
+                                    <?php else: ?>-<?php endif; ?>
+                                </td>
+                                <td class="text-end text-success fw-bold"><?= $row['compte_credite_id'] ? number_format($row['montant'], 0, ',', ' ') : '-' ?></td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr><td colspan="7" class="text-center py-5 text-muted">Aucune écriture trouvée</td></tr>
+                    <?php endif; ?>
+                </tbody>
+                <tfoot class="table-secondary fw-bold">
+                    <tr>
+                        <td colspan="4" class="text-end">TOTAUX :</td>
+                        <td class="text-end text-danger"><?= number_format($total_debit, 0, ',', ' ') ?> F</td>
+                        <td></td>
+                        <td class="text-end text-success"><?= number_format($total_credit, 0, ',', ' ') ?> F</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
 </div>
-<?php include "footer.php"; ?>
+
+<?php include 'inc_footer.php'; ?>

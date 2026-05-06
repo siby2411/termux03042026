@@ -1,176 +1,252 @@
 <?php
-$page_title = "SIG - SYSCOHADA 2026";
-require_once __DIR__ . '/../config/config.php';
-include 'header.php'; // Intégration du menu et du design global
-
-// Table d'historique
-$pdo->exec("CREATE TABLE IF NOT EXISTS sig_results (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    exercice INT,
-    ca DECIMAL(15,2),
-    charges DECIMAL(15,2),
-    marge_brute DECIMAL(15,2),
-    ebe DECIMAL(15,2),
-    resultat_net DECIMAL(15,2),
-    date_calc DATE
-)");
-
-$selectedYear = $_POST['year'] ?? date('Y');
-
-function get_sig_value($pdo, $prefix, $year) {
-    $sql = "SELECT SUM(montant) as total FROM ECRITURES_COMPTABLES 
-            WHERE (LEFT(CAST(compte_debite_id AS CHAR), 1) = :p1 
-               OR LEFT(CAST(compte_credite_id AS CHAR), 1) = :p2) 
-            AND YEAR(date_ecriture) = :year";
-            
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute(['p1' => $prefix, 'p2' => $prefix, 'year' => $year]);
-    return (float)$stmt->fetchColumn();
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
 }
 
-// Calculs
-$ca = get_sig_value($pdo, '7', $selectedYear);
-$charges = get_sig_value($pdo, '6', $selectedYear);
-$marge_brute = $ca - $charges;
-$ebe = $marge_brute * 0.85; 
-$resultat_net = $marge_brute * 0.70;
+$page_title = "Tableau SIG - Soldes Intermédiaires de Gestion";
+$page_icon = "graph-up";
+require_once dirname(__DIR__) . '/config/config.php';
+include 'inc_navbar.php';
 
-if (isset($_POST['action']) && $_POST['action'] === 'save_sig') {
-    $stmt = $pdo->prepare("INSERT INTO sig_results (exercice, ca, charges, marge_brute, ebe, resultat_net, date_calc) VALUES (?, ?, ?, ?, ?, ?, CURRENT_DATE)");
-    $stmt->execute([$selectedYear, $ca, $charges, $marge_brute, $ebe, $resultat_net]);
-    echo "<div class='alert alert-success mt-2'>Archive enregistrée avec succès.</div>";
+// Calcul des différents soldes SYSCOHADA
+try {
+    // 1. Chiffre d'Affaires (Comptes 70-79)
+    $stmt = $pdo->query("SELECT COALESCE(SUM(montant), 0) FROM ECRITURES_COMPTABLES WHERE compte_credite_id BETWEEN 70 AND 79");
+    $ca = $stmt->fetchColumn();
+    
+    // 2. Achats consommés (Comptes 60-69)
+    $stmt = $pdo->query("SELECT COALESCE(SUM(montant), 0) FROM ECRITURES_COMPTABLES WHERE compte_debite_id BETWEEN 60 AND 69");
+    $achats = $stmt->fetchColumn();
+    
+    // 3. Marge commerciale (CA - Achats consommés)
+    $marge_commerciale = $ca - $achats;
+    
+    // 4. Production de l'exercice (Compte 72)
+    $stmt = $pdo->query("SELECT COALESCE(SUM(montant), 0) FROM ECRITURES_COMPTABLES WHERE compte_credite_id = 72");
+    $production = $stmt->fetchColumn();
+    
+    // 5. Consommation en provenance des tiers (Comptes 60,61,62 sauf 601,602)
+    $stmt = $pdo->query("SELECT COALESCE(SUM(montant), 0) FROM ECRITURES_COMPTABLES WHERE compte_debite_id IN (60,61,62)");
+    $conso_tiers = $stmt->fetchColumn();
+    
+    // 6. Valeur Ajoutée (Production + Marge - Conso tiers)
+    $valeur_ajoutee = ($production + $marge_commerciale) - $conso_tiers;
+    
+    // 7. Charges de personnel (Compte 66)
+    $stmt = $pdo->query("SELECT COALESCE(SUM(montant), 0) FROM ECRITURES_COMPTABLES WHERE compte_debite_id BETWEEN 661 AND 669");
+    $charges_personnel = $stmt->fetchColumn();
+    
+    // 8. Excédent Brut d'Exploitation (EBE)
+    $ebe = $valeur_ajoutee - $charges_personnel;
+    
+    // 9. Autres charges/produits d'exploitation
+    $stmt = $pdo->query("SELECT COALESCE(SUM(montant), 0) FROM ECRITURES_COMPTABLES WHERE compte_debite_id BETWEEN 63 AND 65");
+    $autres_charges = $stmt->fetchColumn();
+    $stmt = $pdo->query("SELECT COALESCE(SUM(montant), 0) FROM ECRITURES_COMPTABLES WHERE compte_credite_id BETWEEN 73 AND 74");
+    $autres_produits = $stmt->fetchColumn();
+    
+    // 10. Résultat d'Exploitation
+    $resultat_exploitation = $ebe - $autres_charges + $autres_produits;
+    
+    // 11. Résultat Financier
+    $stmt = $pdo->query("SELECT COALESCE(SUM(montant), 0) FROM ECRITURES_COMPTABLES WHERE compte_debite_id BETWEEN 67 AND 68");
+    $charges_financieres = $stmt->fetchColumn();
+    $stmt = $pdo->query("SELECT COALESCE(SUM(montant), 0) FROM ECRITURES_COMPTABLES WHERE compte_credite_id BETWEEN 75 AND 76");
+    $produits_financiers = $stmt->fetchColumn();
+    $resultat_financier = $produits_financiers - $charges_financieres;
+    
+    // 12. Résultat Courant (Exploitation + Financier)
+    $resultat_courant = $resultat_exploitation + $resultat_financier;
+    
+    // 13. Résultat Exceptionnel
+    $stmt = $pdo->query("SELECT COALESCE(SUM(montant), 0) FROM ECRITURES_COMPTABLES WHERE compte_debite_id = 67");
+    $charges_exceptionnelles = $stmt->fetchColumn();
+    $stmt = $pdo->query("SELECT COALESCE(SUM(montant), 0) FROM ECRITURES_COMPTABLES WHERE compte_credite_id = 77");
+    $produits_exceptionnels = $stmt->fetchColumn();
+    $resultat_exceptionnel = $produits_exceptionnels - $charges_exceptionnelles;
+    
+    // 14. Résultat Net
+    $resultat_net = $resultat_courant + $resultat_exceptionnel;
+    
+} catch (PDOException $e) {
+    $error = "Erreur de calcul : " . $e->getMessage();
 }
-
-$history = $pdo->query("SELECT * FROM sig_results ORDER BY exercice DESC LIMIT 5")->fetchAll();
 ?>
 
-<div class="container-fluid py-4">
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Soldes Intermédiaires de Gestion (SIG)</h1>
-        <form method="POST" class="d-flex gap-2">
-            <input type="number" name="year" class="form-control form-control-sm" value="<?= $selectedYear ?>" style="width: 100px;">
-            <button type="submit" class="btn btn-sm btn-primary shadow-sm"><i class="bi bi-arrow-repeat"></i> Actualiser</button>
-            <button type="submit" name="action" value="save_sig" class="btn btn-sm btn-success shadow-sm"><i class="bi bi-download"></i> Archiver</button>
-        </form>
-    </div>
-
-    <div class="row">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Chiffre d'Affaires</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= number_format($ca, 0, ',', ' ') ?> F</div>
-                        </div>
-                        <div class="col-auto"><i class="bi bi-cash-stack fs-2 text-gray-300"></i></div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-table"></i> Tableau des Soldes Intermédiaires de Gestion (SIG)</h5>
+                <small class="text-muted">Norme SYSCOHADA - UEMOA | Exercice <?= date('Y') ?></small>
+            </div>
+            <div class="card-body p-0">
+                <?php if (isset($error)): ?>
+                    <div class="alert alert-danger m-3"><?= $error ?></div>
+                <?php endif; ?>
+                
+                <table class="table table-bordered mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 60%">Libellé</th>
+                            <th style="width: 20%">Montant (FCFA)</th>
+                            <th style="width: 20%">Soldes (FCFA)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Chiffre d'Affaires -->
+                        <tr class="table-light">
+                            <td><strong>Chiffre d'Affaires (70-79)</strong></td>
+                            <td class="text-end"><?= number_format($ca, 0, ',', ' ') ?></td>
+                            <td class="text-end">-</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4">- Achats consommés (60-69)</td>
+                            <td class="text-end"><?= number_format($achats, 0, ',', ' ') ?></td>
+                            <td class="text-end">-</td>
+                        </tr>
+                        <tr class="bg-primary text-white">
+                            <td><strong>= MARGE COMMERCIALE</strong></td>
+                            <td class="text-end">-</td>
+                            <td class="text-end fw-bold"><?= number_format($marge_commerciale, 0, ',', ' ') ?></td>
+                        </tr>
+                        <tr>
+                            <td><strong>+ Production de l'exercice (72)</strong></td>
+                            <td class="text-end"><?= number_format($production, 0, ',', ' ') ?></td>
+                            <td class="text-end">-</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4">- Consommation en provenance des tiers</td>
+                            <td class="text-end"><?= number_format($conso_tiers, 0, ',', ' ') ?></td>
+                            <td class="text-end">-</td>
+                        </tr>
+                        <tr class="bg-info text-white">
+                            <td><strong>= VALEUR AJOUTÉE</strong></td>
+                            <td class="text-end">-</td>
+                            <td class="text-end fw-bold"><?= number_format($valeur_ajoutee, 0, ',', ' ') ?></td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4">- Charges de personnel (66)</td>
+                            <td class="text-end"><?= number_format($charges_personnel, 0, ',', ' ') ?></td>
+                            <td class="text-end">-</td>
+                        </tr>
+                        <tr class="bg-success text-white">
+                            <td><strong>= EXCÉDENT BRUT D'EXPLOITATION (EBE)</strong></td>
+                            <td class="text-end">-</td>
+                            <td class="text-end fw-bold <?= $ebe >= 0 ? 'text-white' : 'text-danger' ?>">
+                                <?= number_format($ebe, 0, ',', ' ') ?>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4">+ Autres produits d'exploitation (73-74)</td>
+                            <td class="text-end"><?= number_format($autres_produits, 0, ',', ' ') ?></td>
+                            <td class="text-end">-</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4">- Autres charges d'exploitation (63-65)</td>
+                            <td class="text-end"><?= number_format($autres_charges, 0, ',', ' ') ?></td>
+                            <td class="text-end">-</td>
+                        </tr>
+                        <tr class="bg-warning">
+                            <td><strong>= RÉSULTAT D'EXPLOITATION</strong></td>
+                            <td class="text-end">-</td>
+                            <td class="text-end fw-bold"><?= number_format($resultat_exploitation, 0, ',', ' ') ?></td>
+                        </tr>
+                        <tr>
+                            <td><strong>+ Produits financiers (75-76)</strong></td>
+                            <td class="text-end"><?= number_format($produits_financiers, 0, ',', ' ') ?></td>
+                            <td class="text-end">-</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4">- Charges financières (67-68)</td>
+                            <td class="text-end"><?= number_format($charges_financieres, 0, ',', ' ') ?></td>
+                            <td class="text-end">-</td>
+                        </tr>
+                        <tr class="bg-warning">
+                            <td><strong>= RÉSULTAT FINANCIER</strong></td>
+                            <td class="text-end">-</td>
+                            <td class="text-end fw-bold"><?= number_format($resultat_financier, 0, ',', ' ') ?></td>
+                        </tr>
+                        <tr class="bg-secondary text-white">
+                            <td><strong>= RÉSULTAT COURANT</strong></td>
+                            <td class="text-end">-</td>
+                            <td class="text-end fw-bold"><?= number_format($resultat_courant, 0, ',', ' ') ?></td>
+                        </tr>
+                        <tr>
+                            <td><strong>+ Produits exceptionnels (77)</strong></td>
+                            <td class="text-end"><?= number_format($produits_exceptionnels, 0, ',', ' ') ?></td>
+                            <td class="text-end">-</td>
+                        </tr>
+                        <tr>
+                            <td class="ps-4">- Charges exceptionnelles (67)</td>
+                            <td class="text-end"><?= number_format($charges_exceptionnelles, 0, ',', ' ') ?></td>
+                            <td class="text-end">-</td>
+                        </tr>
+                        <tr class="bg-secondary text-white">
+                            <td><strong>= RÉSULTAT EXCEPTIONNEL</strong></td>
+                            <td class="text-end">-</td>
+                            <td class="text-end fw-bold"><?= number_format($resultat_exceptionnel, 0, ',', ' ') ?></td>
+                        </tr>
+                        <tr class="table-dark">
+                            <td><strong>= RÉSULTAT NET DE L'EXERCICE</strong></td>
+                            <td class="text-end">-</td>
+                            <td class="text-end fw-bold fs-5 <?= $resultat_net >= 0 ? 'text-success' : 'text-danger' ?>">
+                                <?= number_format($resultat_net, 0, ',', ' ') ?> F
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Indicateurs de performance -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h6>Taux de marge commerciale</h6>
+                        <h4 class="<?= ($ca > 0 && ($marge_commerciale/$ca)*100 >= 0) ? 'text-success' : 'text-danger' ?>">
+                            <?= $ca > 0 ? number_format(($marge_commerciale / $ca) * 100, 2) : 0 ?>%
+                        </h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h6>Taux de valeur ajoutée / CA</h6>
+                        <h4 class="<?= ($ca > 0 && ($valeur_ajoutee/$ca)*100 >= 30) ? 'text-success' : 'text-warning' ?>">
+                            <?= $ca > 0 ? number_format(($valeur_ajoutee / $ca) * 100, 2) : 0 ?>%
+                        </h4>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h6>Rentabilité nette</h6>
+                        <h4 class="<?= $resultat_net >= 0 ? 'text-success' : 'text-danger' ?>">
+                            <?= number_format($resultat_net, 0, ',', ' ') ?> F
+                        </h4>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Marge Brute</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= number_format($marge_brute, 0, ',', ' ') ?> F</div>
-                        </div>
-                        <div class="col-auto"><i class="bi bi-graph-up-arrow fs-2 text-gray-300"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">EBE (Estimé)</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= number_format($ebe, 0, ',', ' ') ?> F</div>
-                        </div>
-                        <div class="col-auto"><i class="bi bi-pie-chart fs-2 text-gray-300"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Résultat Net</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= number_format($resultat_net, 0, ',', ' ') ?> F</div>
-                        </div>
-                        <div class="col-auto"><i class="bi bi-bank fs-2 text-gray-300"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mt-4">
-        <div class="col-lg-8">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 bg-white">
-                    <h6 class="m-0 font-weight-bold text-primary">Détails des Soldes de Gestion</h6>
-                </div>
-                <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th>Postes SYSCOHADA</th>
-                                    <th class="text-end">Montant (FCFA)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr><td>Ventes de marchandises (Classe 7)</td><td class="text-end text-success fw-bold"><?= number_format($ca, 0, ',', ' ') ?></td></tr>
-                                <tr><td>Achats et charges liées (Classe 6)</td><td class="text-end text-danger"><?= number_format($charges, 0, ',', ' ') ?></td></tr>
-                                <tr class="fw-bold bg-light"><td>MARGE COMMERCIALE</td><td class="text-end"><?= number_format($marge_brute, 0, ',', ' ') ?></td></tr>
-                                <tr><td>Valeur Ajoutée (VA) - Estimée</td><td class="text-end"><?= number_format($marge_brute * 0.9, 0, ',', ' ') ?></td></tr>
-                                <tr class="table-primary fw-bold"><td>EXCÉDENT BRUT D'EXPLOITATION</td><td class="text-end"><?= number_format($ebe, 0, ',', ' ') ?></td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-lg-4">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 bg-white">
-                    <h6 class="m-0 font-weight-bold text-primary">Répartition Produits/Charges</h6>
-                </div>
-                <div class="card-body text-center">
-                    <canvas id="sigChart" style="max-height: 250px;"></canvas>
+        
+        <!-- Interprétation SIG -->
+        <div class="row mt-3">
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <strong>Interprétation du SIG SYSCOHADA :</strong><br>
+                    • <strong>EBE :</strong> <?= $ebe >= 0 ? "Positif (" . number_format($ebe, 0, ',', ' ') . " FCFA) - L'entreprise génère de la richesse." : "Négatif - L'exploitation ne couvre pas les charges." ?><br>
+                    • <strong>Résultat net :</strong> <?= $resultat_net >= 0 ? "Bénéfice de " . number_format($resultat_net, 0, ',', ' ') . " FCFA" : "Perte de " . number_format(abs($resultat_net), 0, ',', ' ') . " FCFA" ?>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-new Chart(document.getElementById('sigChart'), {
-    type: 'doughnut',
-    data: {
-        labels: ['Ventes (CA)', 'Charges'],
-        datasets: [{
-            data: [<?= $ca ?>, <?= $charges ?>],
-            backgroundColor: ['#4e73df', '#e74a3b'],
-            hoverBackgroundColor: ['#2e59d9', '#be2617'],
-            hoverBorderColor: "rgba(234, 236, 244, 1)",
-        }],
-    },
-    options: {
-        maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom' } }
-    },
-});
-</script>
-
-<?php include 'footer.php'; ?>
+<?php include 'inc_footer.php'; ?>

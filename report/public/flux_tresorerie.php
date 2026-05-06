@@ -1,63 +1,61 @@
 <?php
-require_once __DIR__ . '/../includes/db.php';
-// On remplace l'include problématique par layout.php ou on vérifie l'existence de header.php
-if (file_exists("layout.php")) {
-    require_once "layout.php";
-} elseif (file_exists("header.php")) {
-    require_once "header.php";
-}
+session_start();
+if (!isset($_SESSION['user_id'])) header("Location: login.php");
+$page_title = "Tableau des Flux de Trésorerie";
+$page_icon = "cash-stack";
+require_once dirname(__DIR__) . '/config/config.php';
+include 'inc_navbar.php';
 
-// 1. On s'assure que la table existe
-$pdo->exec("CREATE TABLE IF NOT EXISTS FLUX_TRESORERIE (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    periode VARCHAR(20) NOT NULL,
-    flux_activite_exploit DECIMAL(15,2) DEFAULT 0,
-    flux_activite_invest DECIMAL(15,2) DEFAULT 0,
-    flux_activite_finance DECIMAL(15,2) DEFAULT 0,
-    variation_tresorerie DECIMAL(15,2) DEFAULT 0,
-    UNIQUE(periode)
-) ENGINE=InnoDB;");
+// Encaissements (comptes de produits 7)
+$stmt = $pdo->query("SELECT COALESCE(SUM(montant), 0) FROM ECRITURES_COMPTABLES WHERE compte_credite_id BETWEEN 700 AND 799");
+$encaissements = $stmt->fetchColumn();
 
-$flux = $pdo->query("SELECT * FROM FLUX_TRESORERIE ORDER BY periode DESC")->fetchAll(PDO::FETCH_ASSOC);
+// Décaissements (comptes de charges 6)
+$stmt = $pdo->query("SELECT COALESCE(SUM(montant), 0) FROM ECRITURES_COMPTABLES WHERE compte_debite_id BETWEEN 600 AND 699");
+$decaissements = $stmt->fetchColumn();
 
-// 2. Calcul dynamique sur la Classe 5
-$sql = "
-SELECT DATE_FORMAT(date_ecriture,'%Y-%m') AS mois,
-  SUM(CASE WHEN compte_debite_id LIKE '5%' THEN montant ELSE 0 END) AS bank_debit,
-  SUM(CASE WHEN compte_credite_id LIKE '5%' THEN montant ELSE 0 END) AS bank_credit
-FROM ECRITURES_COMPTABLES
-GROUP BY mois
-ORDER BY mois DESC;
-";
-$bank_mov = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+// Flux exploitation
+$flux_exploitation = $encaissements - $decaissements;
+
+// Investissements (comptes 2)
+$stmt = $pdo->query("SELECT COALESCE(SUM(montant), 0) FROM ECRITURES_COMPTABLES WHERE compte_debite_id BETWEEN 200 AND 299");
+$investissements = $stmt->fetchColumn();
+
+// Solde banque (521)
+$stmt = $pdo->query("
+    SELECT COALESCE(SUM(CASE WHEN compte_debite_id = 521 THEN montant ELSE 0 END), 0) - 
+           COALESCE(SUM(CASE WHEN compte_credite_id = 521 THEN montant ELSE 0 END), 0) 
+    FROM ECRITURES_COMPTABLES
+");
+$tresorerie_finale = $stmt->fetchColumn();
 ?>
-
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3><i class='bx bx-water'></i> Flux de Trésorerie OMEGA</h3>
-        <a href="generer_flux.php" class="btn btn-outline-primary btn-sm">Actualiser les calculs</a>
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5><i class="bi bi-cash-stack"></i> Flux de Trésorerie - Exercice <?= date('Y') ?></h5>
     </div>
-
-    <div class="card shadow-sm mb-4">
-        <div class="card-header bg-dark text-white">Tableau de Synthèse (TFT)</div>
-        <div class="card-body">
-            <table class="table table-hover">
-                <thead class="table-light">
-                    <tr><th>Période</th><th>Exploitation</th><th>Investissement</th><th>Financement</th><th>Variation</th></tr>
-                </thead>
-                <tbody>
-                <?php foreach($flux as $f): ?>
-                <tr>
-                    <td><?= htmlspecialchars($f['periode']) ?></td>
-                    <td class="text-end"><?= number_format($f['flux_activite_exploit'], 0, ',', ' ') ?> F</td>
-                    <td class="text-end"><?= number_format($f['flux_activite_invest'], 0, ',', ' ') ?> F</td>
-                    <td class="text-end"><?= number_format($f['flux_activite_finance'], 0, ',', ' ') ?> F</td>
-                    <td class="text-end fw-bold"><?= number_format($f['variation_tresorerie'], 0, ',', ' ') ?> F</td>
-                </tr>
-                <?php endforeach; ?>
-                </tbody>
-            </table>
-        </div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <tr class="table-info">
+                <td><strong>Encaissements d'exploitation</strong></td>
+                <td class="text-end"><?= number_format($encaissements, 0, ',', ' ') ?> F</td>
+            </tr>
+            <tr class="table-warning">
+                <td><strong>Décaissements d'exploitation</strong></td>
+                <td class="text-end text-danger">- <?= number_format($decaissements, 0, ',', ' ') ?> F</td>
+            </tr>
+            <tr class="table-success">
+                <td><strong>FLUX NET D'EXPLOITATION</strong></td>
+                <td class="text-end fw-bold"><?= number_format($flux_exploitation, 0, ',', ' ') ?> F</td>
+            </tr>
+            <tr class="table-danger">
+                <td><strong>Investissements (Immobilisations)</strong></td>
+                <td class="text-end text-danger">- <?= number_format($investissements, 0, ',', ' ') ?> F</td>
+            </tr>
+            <tr class="table-primary">
+                <td><strong>TRÉSORERIE FINALE</strong></td>
+                <td class="text-end fw-bold"><?= number_format($tresorerie_finale, 0, ',', ' ') ?> F</td>
+            </tr>
+        </table>
     </div>
 </div>
-<?php if(file_exists("footer.php")) include "footer.php"; ?>
+<?php include 'inc_footer.php'; ?>

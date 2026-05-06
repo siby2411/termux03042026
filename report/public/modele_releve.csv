@@ -1,0 +1,5 @@
+date,libelle,montant,type
+2026-01-15,Virement client OMEGA,1250000,CREDIT
+2026-01-20,Paiement fournisseur SYSCO,-350000,DEBIT
+2026-01-25,Frais bancaires,-25000,DEBIT
+2026-02-01,Intérêts créditeurs,15000,CREDIT

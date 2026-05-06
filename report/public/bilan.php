@@ -1,51 +1,93 @@
 <?php
-$page_title = "Bilan Officiel OMEGA 2026";
-require_once __DIR__ . '/../includes/db.php';
-include "layout.php";
+session_start();
+if (!isset($_SESSION['user_id'])) header("Location: login.php");
+$page_title = "Bilan Synthétique - SYSCOHADA";
+$page_icon = "pie-chart";
+require_once dirname(__DIR__) . '/config/config.php';
+include 'inc_navbar.php';
 
-// Logique de récupération simplifiée
-$comptes = $pdo->query("SELECT p.compte_id, p.intitule_compte, 
-    SUM(CASE WHEN e.compte_debite_id = p.compte_id THEN e.montant ELSE 0 END) - 
-    SUM(CASE WHEN e.compte_credite_id = p.compte_id THEN e.montant ELSE 0 END) as solde
-    FROM PLAN_COMPTABLE_UEMOA p
-    LEFT JOIN ECRITURES_COMPTABLES e ON (p.compte_id = e.compte_debite_id OR p.compte_id = e.compte_credite_id)
-    GROUP BY p.compte_id HAVING solde != 0")->fetchAll(PDO::FETCH_ASSOC);
+// ACTIF (Comptes de 2 à 5)
+$sql_actif = "
+    SELECT 
+        c.compte_id,
+        c.intitule_compte,
+        COALESCE(SUM(e.montant), 0) as total
+    FROM PLAN_COMPTABLE_UEMOA c
+    LEFT JOIN ECRITURES_COMPTABLES e ON e.compte_debite_id = c.compte_id
+    WHERE c.compte_id BETWEEN 200 AND 599
+    GROUP BY c.compte_id, c.intitule_compte
+    ORDER BY c.compte_id
+";
+$actifs = $pdo->query($sql_actif)->fetchAll();
+$total_actif = array_sum(array_column($actifs, 'total'));
 
-$total_actif = 0; $total_passif = 0;
+// PASSIF (Comptes de 1, 6, 7, 8 - côté crédit)
+$sql_passif = "
+    SELECT 
+        c.compte_id,
+        c.intitule_compte,
+        COALESCE(SUM(e.montant), 0) as total
+    FROM PLAN_COMPTABLE_UEMOA c
+    LEFT JOIN ECRITURES_COMPTABLES e ON e.compte_credite_id = c.compte_id
+    WHERE c.compte_id BETWEEN 100 AND 199 OR c.compte_id BETWEEN 600 AND 899
+    GROUP BY c.compte_id, c.intitule_compte
+    ORDER BY c.compte_id
+";
+$passifs = $pdo->query($sql_passif)->fetchAll();
+$total_passif = array_sum(array_column($passifs, 'total'));
 ?>
-
-<div class="form-centered">
-    <h3 class="text-center text-primary mb-4">BILAN FINANCIER AU <?= date('d/m/Y') ?></h3>
-    <div class="row g-4">
-        <div class="col-md-6">
-            <div class="card card-omega h-100">
-                <div class="card-header bg-success text-white text-center fw-bold">ACTIF (Emplois)</div>
-                <div class="card-body">
-                    <table class="table table-sm">
-                        <?php foreach($comptes as $c): if($c['solde'] > 0): $total_actif += $c['solde']; ?>
-                        <tr><td><?= $c['intitule_compte'] ?></td><td class="text-end"><?= number_format($c['solde'], 0, ',', ' ') ?> F</td></tr>
-                        <?php endif; endforeach; ?>
-                    </table>
-                </div>
-                <div class="card-footer bg-light fw-bold d-flex justify-content-between">
-                    <span>TOTAL ACTIF</span><span><?= number_format($total_actif, 0, ',', ' ') ?> F</span>
-                </div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="bi bi-pie-chart-fill"></i> Bilan SYSCOHADA</h5>
             </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card card-omega h-100">
-                <div class="card-header bg-primary text-white text-center fw-bold">PASSIF (Ressources)</div>
-                <div class="card-body">
-                    <table class="table table-sm">
-                        <?php foreach($comptes as $c): if($c['solde'] < 0): $total_passif += abs($c['solde']); ?>
-                        <tr><td><?= $c['intitule_compte'] ?></td><td class="text-end"><?= number_format(abs($c['solde']), 0, ',', ' ') ?> F</td></tr>
-                        <?php endif; endforeach; ?>
-                    </table>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-header bg-primary text-white">ACTIF (Emplois)</div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm mb-0">
+                                    <?php foreach($actifs as $a): ?>
+                                    <tr><td><?= $a['compte_id'] ?> - <?= htmlspecialchars(substr($a['intitule_compte'], 0, 30)) ?></td>
+                                    <td class="text-end"><?= number_format($a['total'], 0, ',', ' ') ?> F</td></tr>
+                                    <?php endforeach; ?>
+                                    <tr class="table-primary fw-bold">
+                                        <td>TOTAL ACTIF</td>
+                                        <td class="text-end"><?= number_format($total_actif, 0, ',', ' ') ?> F</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-header bg-success text-white">PASSIF (Ressources)</div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm mb-0">
+                                    <?php foreach($passifs as $p): ?>
+                                    <tr><td><?= $p['compte_id'] ?> - <?= htmlspecialchars(substr($p['intitule_compte'], 0, 30)) ?></td>
+                                    <td class="text-end"><?= number_format($p['total'], 0, ',', ' ') ?> F</td></tr>
+                                    <?php endforeach; ?>
+                                    <tr class="table-success fw-bold">
+                                        <td>TOTAL PASSIF</td>
+                                        <td class="text-end"><?= number_format($total_passif, 0, ',', ' ') ?> F</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="card-footer bg-light fw-bold d-flex justify-content-between">
-                    <span>TOTAL PASSIF</span><span><?= number_format($total_passif, 0, ',', ' ') ?> F</span>
+                <div class="alert <?= abs($total_actif - $total_passif) < 1 ? 'alert-success' : 'alert-danger' ?> mt-3">
+                    <?php if(abs($total_actif - $total_passif) < 1): ?>
+                        ✅ BILAN ÉQUILIBRÉ (<?= number_format($total_actif, 0, ',', ' ') ?> FCFA)
+                    <?php else: ?>
+                        ⚠️ Écart de <?= number_format(abs($total_actif - $total_passif), 0, ',', ' ') ?> FCFA
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<?php include 'inc_footer.php'; ?>

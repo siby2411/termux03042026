@@ -1,102 +1,125 @@
 <?php
-require_once __DIR__ . '/../includes/db.php';
-$page_title = "Gestion des Immobilisations - OMEGA";
-include "layout.php";
-
-// 1. Traitement de l'ajout (Formulaire)
-if(isset($_POST['add_immo'])){
-    try {
-        $stmt = $pdo->prepare("INSERT INTO immobilisations (code_immo, designation, date_acquisition, valeur_origine, duree_vie, vnc) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->execute([$_POST['code'], $_POST['label'], $_POST['date'], $_POST['valeur'], $_POST['duree'], $_POST['valeur']]);
-        echo "<div class='alert alert-success form-centered mb-4 shadow-sm'>L'actif a été intégré au patrimoine avec succès.</div>";
-    } catch (Exception $e) {
-        echo "<div class='alert alert-danger form-centered mb-4'>Erreur : " . $e->getMessage() . "</div>";
-    }
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
 }
 
-// 2. Récupération sécurisée de la liste
-try {
-    $immos = $pdo->query("SELECT * FROM immobilisations ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
-} catch (Exception $e) {
-    $immos = [];
-}
+$page_title = "Immobilisations - Gestion des actifs";
+$page_icon = "building";
+require_once dirname(__DIR__) . '/config/config.php';
+include 'inc_navbar.php';
+
+// Récupération des immobilisations (comptes classe 2)
+$sql = "
+    SELECT 
+        c.compte_id,
+        c.intitule_compte,
+        COALESCE(SUM(CASE WHEN e.compte_debite_id = c.compte_id THEN e.montant ELSE 0 END), 0) as valeur_brute,
+        COALESCE(SUM(CASE WHEN e.compte_credite_id = c.compte_id AND e.libelle LIKE '%amortissement%' THEN e.montant ELSE 0 END), 0) as amortissements
+    FROM PLAN_COMPTABLE_UEMOA c
+    LEFT JOIN ECRITURES_COMPTABLES e ON c.compte_id IN (e.compte_debite_id, e.compte_credite_id)
+    WHERE c.compte_id BETWEEN 20 AND 29
+    GROUP BY c.compte_id, c.intitule_compte
+    ORDER BY c.compte_id
+";
+$stmt = $pdo->query($sql);
+$immobilisations = $stmt->fetchAll();
+
+$total_brut = 0;
+$total_amort = 0;
 ?>
 
-<div class="form-centered">
-    <div class="text-center mb-4">
-        <h2 class="fw-bold text-dark text-uppercase" style="letter-spacing: 2px;">Registre des Immobilisations</h2>
-        <div class="bg-gold mx-auto" style="height: 4px; width: 60px; background-color: #c5a059;"></div>
-    </div>
-
-    <div class="card omega-card border-0 shadow-lg mb-5">
-        <div class="card-header bg-white py-4 border-0">
-            <h5 class="mb-0 fw-bold"><i class="bi bi-plus-circle-fill text-primary"></i> Acquisition d'un nouvel actif</h5>
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-building"></i> Immobilisations (Classe 2 - Actif)</h5>
+                <small class="text-muted">Norme SYSCOHADA - Comptes d'immobilisations corporelles et incorporelles</small>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-bordered mb-0">
+                        <thead class="table-dark">
+                            <tr class="text-center">
+                                <th>N° Compte</th>
+                                <th>Intitulé</th>
+                                <th>Valeur brute (FCFA)</th>
+                                <th>Amortissements (FCFA)</th>
+                                <th>Valeur nette (FCFA)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php if(count($immobilisations) > 0): ?>
+                                <?php foreach($immobilisations as $row): 
+                                    $valeur_nette = $row['valeur_brute'] - $row['amortissements'];
+                                    $total_brut += $row['valeur_brute'];
+                                    $total_amort += $row['amortissements'];
+                                ?>
+                                <tr>
+                                    <td class="text-center fw-bold"><?= $row['compte_id'] ?></td>
+                                    <td><?= htmlspecialchars($row['intitule_compte']) ?></td>
+                                    <td class="text-end"><?= number_format($row['valeur_brute'], 0, ',', ' ') ?></td>
+                                    <td class="text-end text-danger"><?= number_format($row['amortissements'], 0, ',', ' ') ?></td>
+                                    <td class="text-end fw-bold text-primary"><?= number_format($valeur_nette, 0, ',', ' ') ?></td>
+                                </tr>
+                                <?php endforeach; ?>
+                            <?php else: ?>
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-muted">
+                                        <i class="bi bi-inbox fs-1"></i><br>
+                                        Aucune immobilisation enregistrée
+                                    </td>
+                                </tr>
+                            <?php endif; ?>
+                        </tbody>
+                        <?php if(count($immobilisations) > 0): ?>
+                        <tfoot class="table-secondary fw-bold">
+                            <tr>
+                                <td colspan="2" class="text-end">TOTAUX :</td>
+                                <td class="text-end"><?= number_format($total_brut, 0, ',', ' ') ?></td>
+                                <td class="text-end text-danger"><?= number_format($total_amort, 0, ',', ' ') ?></td>
+                                <td class="text-end text-primary"><?= number_format($total_brut - $total_amort, 0, ',', ' ') ?></td>
+                            </tr>
+                        </tfoot>
+                        <?php endif; ?>
+                    </table>
+                </div>
+            </div>
         </div>
-        <div class="card-body p-5">
-            <form method="POST" class="row g-4">
-                <div class="col-md-3">
-                    <label class="form-label">Code Immo</label>
-                    <input type="text" name="code" class="form-control bg-light" placeholder="EX: MAT-001" required>
+        
+        <!-- Informations SYSCOHADA -->
+        <div class="card mt-4">
+            <div class="card-header bg-light">
+                <h6><i class="bi bi-info-circle"></i> Informations SYSCOHADA - Immobilisations</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Comptes d'immobilisations (Classe 2) :</strong>
+                        <ul class="mt-2">
+                            <li><strong>21</strong> - Immobilisations incorporelles</li>
+                            <li><strong>22</strong> - Terrains bâtis/non bâtis</li>
+                            <li><strong>23</strong> - Constructions</li>
+                            <li><strong>24</strong> - Installations techniques</li>
+                            <li><strong>25</strong> - Autres immobilisations corporelles</li>
+                            <li><strong>28</strong> - Amortissements</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-primary">
+                            <i class="bi bi-calculator-fill"></i>
+                            <strong>Valeur nette comptable (VNC) :</strong>
+                            <?= number_format($total_brut - $total_amort, 0, ',', ' ') ?> FCFA
+                        </div>
+                        <a href="amortissements.php" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-calculator"></i> Calculer amortissements
+                        </a>
+                    </div>
                 </div>
-                <div class="col-md-9">
-                    <label class="form-label">Désignation (Nom de l'immobilisation)</label>
-                    <input type="text" name="label" class="form-control bg-light" placeholder="Ex: Matériel Informatique DELL" required>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Date de mise en service</label>
-                    <input type="date" name="date" class="form-control bg-light" required>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Valeur d'entrée (F CFA)</label>
-                    <input type="number" name="valeur" class="form-control bg-light fw-bold" placeholder="0" required>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label">Durée (Années)</label>
-                    <input type="number" name="duree" class="form-control bg-light" placeholder="Ex: 5" required>
-                </div>
-                <div class="col-12 text-center mt-4">
-                    <button type="submit" name="add_immo" class="btn btn-omega px-5 py-3">
-                        <i class="bi bi-shield-check"></i> ENREGISTRER L'ACTIF
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div class="card omega-card border-0 shadow-sm">
-        <div class="card-body p-0">
-            <table class="table table-hover mb-0">
-                <thead style="background-color: #00264d; color: white;">
-                    <tr>
-                        <th class="p-3">Code</th>
-                        <th class="p-3">Désignation</th>
-                        <th class="p-3">Acquisition</th>
-                        <th class="p-3">Valeur Brute</th>
-                        <th class="p-3">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if (empty($immos)): ?>
-                        <tr><td colspan="5" class="text-center py-5 text-muted">Aucune immobilisation enregistrée.</td></tr>
-                    <?php else: foreach($immos as $immo): ?>
-                        <tr>
-                            <td class="p-3 fw-bold"><?= $immo['code_immo'] ?></td>
-                            <td class="p-3"><?= $immo['designation'] ?></td>
-                            <td class="p-3"><?= date('d/m/Y', strtotime($immo['date_acquisition'])) ?></td>
-                            <td class="p-3 fw-bold text-primary"><?= number_format($immo['valeur_origine'], 0, ',', ' ') ?> F</td>
-                            <td class="p-3 text-center">
-                                <button class="btn btn-sm btn-outline-dark rounded-pill">Détails</button>
-                            </td>
-                        </tr>
-                    <?php endforeach; endif; ?>
-                </tbody>
-            </table>
+            </div>
         </div>
     </div>
 </div>
 
-<footer class="text-center py-5 text-muted small">
-    © 2026 OMEGA Informatique CONSULTING - Standard SYSCOHADA UEMOA
-</footer>
-</body>
-</html>
+<?php include 'inc_footer.php'; ?>
