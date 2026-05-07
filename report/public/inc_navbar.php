@@ -345,9 +345,88 @@ function toggleSidebar() {
         </a>
     </div>
 
-    <div class="nav-section">🎓 FORMATION</div>
     <div class="nav-item">
         <a href="../didactiel/index.php" class="nav-link">
             <i class="bi bi-mortarboard"></i> Didacticiel SYSCOHADA
+        </a>
+    </div>
+
+    <div class="nav-section">🏢 GESTION COMMERCIALE</div>
+    <div class="nav-item">
+        <a href="tiers.php" class="nav-link">
+            <i class="bi bi-people"></i> Tiers (Clients/Fournisseurs)
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="facturation.php" class="nav-link">
+            <i class="bi bi-file-invoice"></i> Facturation
+        </a>
+    </div>
+    
+    <div class="nav-section">⚠️ ENGAGEMENTS & CONTRÔLE</div>
+    <div class="nav-item">
+        <a href="engagements_hors_bilan.php" class="nav-link">
+            <i class="bi bi-shield"></i> Engagements Hors Bilan
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="audit_trail.php" class="nav-link">
+            <i class="bi bi-eye"></i> Audit Trail
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="declarations_fiscales.php" class="nav-link">
+            <i class="bi bi-file-text"></i> Déclarations fiscales
+        </a>
+    </div>
+
+    <div class="nav-section">🎓 FORMATION & SUPPORT SAV</div>
+    <div class="nav-item">
+        <a href="formations/index.php" class="nav-link">
+            <i class="bi bi-mortarboard"></i> Centre de formation
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="manuel_formation.php" class="nav-link">
+            <i class="bi bi-book"></i> Manuel utilisateur
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="support_technique.php" class="nav-link">
+            <i class="bi bi-headset"></i> Support technique
+        </a>
+    </div>
+
+    <div class="nav-section">📊 FINANCES AVANCÉES</div>
+    <div class="nav-item">
+        <a href="dotations_amortissements.php" class="nav-link">
+            <i class="bi bi-calculator"></i> Dotations amortissements
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="evaluation_financiere.php" class="nav-link">
+            <i class="bi bi-graph-up"></i> VAN / TRI / DCF
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="ecarts_reevaluation.php" class="nav-link">
+            <i class="bi bi-arrow-repeat"></i> Écarts de réévaluation
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="augmentation_capital.php" class="nav-link">
+            <i class="bi bi-bank"></i> Augmentation capital
+        </a>
+    </div>
+
+    <div class="nav-section">📊 CONTRÔLE DE GESTION</div>
+    <div class="nav-item">
+        <a href="controle_budgetaire.php" class="nav-link">
+            <i class="bi bi-graph-up"></i> Contrôle budgétaire
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="report_impots.php" class="nav-link">
+            <i class="bi bi-file-text"></i> Report à nouveau & Impôts
         </a>
     </div>
