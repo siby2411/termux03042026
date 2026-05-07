@@ -470,3 +470,20 @@ function toggleSidebar() {
             <i class="bi bi-cart"></i> Achats, Ventes, TVA
         </a>
     </div>
+
+    <div class="nav-section">📦 GESTION DES STOCKS</div>
+    <div class="nav-item">
+        <a href="gestion_stocks_complet.php" class="nav-link">
+            <i class="bi bi-box-seam"></i> Gestion des stocks
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="inventaire_physique.php" class="nav-link">
+            <i class="bi bi-clipboard-data"></i> Inventaire physique
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="depreciation_stocks.php" class="nav-link">
+            <i class="bi bi-graph-down"></i> Dépréciation stocks
+        </a>
+    </div>
