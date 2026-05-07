@@ -430,3 +430,43 @@ function toggleSidebar() {
             <i class="bi bi-file-text"></i> Report à nouveau & Impôts
         </a>
     </div>
+
+    <div class="nav-section">👥 RESSOURCES HUMAINES</div>
+    <div class="nav-item">
+        <a href="gestion_salaires.php" class="nav-link">
+            <i class="bi bi-people"></i> Gestion des salaires
+        </a>
+    </div>
+    
+    <div class="nav-section">🛡️ PROVISIONS & RISQUES</div>
+    <div class="nav-item">
+        <a href="gestion_provisions.php" class="nav-link">
+            <i class="bi bi-shield"></i> Provisions & dépréciations
+        </a>
+    </div>
+
+    <div class="nav-section">🏦 ADMINISTRATION & CONTRÔLE</div>
+    <div class="nav-item">
+        <a href="ajouter_compte_controle.php" class="nav-link">
+            <i class="bi bi-plus-circle"></i> Ajouter un compte
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="ecriture_controlee.php" class="nav-link">
+            <i class="bi bi-shield-check"></i> Écriture contrôlée
+        </a>
+    </div>
+    
+    <div class="nav-section">📅 CLÔTURE & REPORTING</div>
+    <div class="nav-item">
+        <a href="evenements_posterieurs.php" class="nav-link">
+            <i class="bi bi-calendar"></i> Événements postérieurs
+        </a>
+    </div>
+    
+    <div class="nav-section">📚 CAS PRATIQUES</div>
+    <div class="nav-item">
+        <a href="cas_commerciaux.php" class="nav-link">
+            <i class="bi bi-cart"></i> Achats, Ventes, TVA
+        </a>
+    </div>
