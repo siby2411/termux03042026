@@ -506,3 +506,27 @@ function toggleSidebar() {
             <i class="bi bi-calculator"></i> Salaires & Impôts
         </a>
     </div>
+
+    <div class="nav-section">🏢 GESTION COMMERCIALE</div>
+    <div class="nav-item">
+        <a href="gestion_tiers.php" class="nav-link">
+            <i class="bi bi-people"></i> Clients & Fournisseurs
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="facturation_complete.php" class="nav-link">
+            <i class="bi bi-file-invoice"></i> Facturation
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="effets_commerce.php" class="nav-link">
+            <i class="bi bi-file-text"></i> Effets de commerce
+        </a>
+    </div>
+    
+    <div class="nav-section">📊 ANALYSE FINANCIÈRE</div>
+    <div class="nav-item">
+        <a href="charges_produits.php" class="nav-link">
+            <i class="bi bi-graph-up"></i> Charges & Produits
+        </a>
+    </div>
