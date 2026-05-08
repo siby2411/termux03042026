@@ -487,3 +487,22 @@ function toggleSidebar() {
             <i class="bi bi-graph-down"></i> Dépréciation stocks
         </a>
     </div>
+
+    <div class="nav-section">💰 OPÉRATIONS COMMERCIALES</div>
+    <div class="nav-item">
+        <a href="facturation_complete.php" class="nav-link">
+            <i class="bi bi-file-invoice"></i> Facturation (réductions, frais)
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="effets_commerce.php" class="nav-link">
+            <i class="bi bi-file-text"></i> Effets de commerce (LCR)
+        </a>
+    </div>
+    
+    <div class="nav-section">👥 RESSOURCES HUMAINES & FISCALITÉ</div>
+    <div class="nav-item">
+        <a href="charges_personnel_impots.php" class="nav-link">
+            <i class="bi bi-calculator"></i> Salaires & Impôts
+        </a>
+    </div>
