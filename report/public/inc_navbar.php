@@ -716,3 +716,34 @@ function toggleSidebar() {
             <i class="bi bi-cloud-upload"></i> Import relevé auto
         </a>
     </div>
+
+    <div class="nav-section">📚 GUIDES & DOCUMENTATION</div>
+    <div class="nav-item">
+        <a href="guide_modules_avances.php" class="nav-link">
+            <i class="bi bi-book"></i> Guide modules avancés
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="verification_sync.php" class="nav-link">
+            <i class="bi bi-check-circle"></i> Vérification synchro
+        </a>
+    </div>
+
+    <div class="nav-section">💰 TRÉSORERIE & PAIEMENTS</div>
+    <div class="nav-item">
+        <a href="tresorerie_complete.php" class="nav-link">
+            <i class="bi bi-cash-stack"></i> Échéanciers & prévisions
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="moyens_paiement.php" class="nav-link">
+            <i class="bi bi-credit-card"></i> Moyens de paiement
+        </a>
+    </div>
+    
+    <div class="nav-section">📄 DÉCLARATIONS FISCALES</div>
+    <div class="nav-item">
+        <a href="liasses_fiscales.php" class="nav-link">
+            <i class="bi bi-file-text"></i> Liasses fiscales (ECF)
+        </a>
+    </div>
