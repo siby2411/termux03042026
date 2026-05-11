@@ -268,6 +268,38 @@
         </a>
     </div>
     
+    <div class="nav-section">📊 ÉTATS FINANCIERS</div>
+    <div class="nav-item">
+        <a href="bilan.php" class="nav-link">
+            <i class="bi bi-pie-chart"></i> Bilan
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="compte_resultat.php" class="nav-link">
+            <i class="bi bi-calculator"></i> Compte de résultat (CPC)
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="sig.php" class="nav-link">
+            <i class="bi bi-graph-up"></i> Soldes Intermédiaires (SIG)
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="flux_tresorerie.php" class="nav-link">
+            <i class="bi bi-cash-stack"></i> Flux de trésorerie (TFT)
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="variation_capitaux.php" class="nav-link">
+            <i class="bi bi-arrow-repeat"></i> Variation capitaux (TVCP)
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="annexes_etats_financiers.php" class="nav-link">
+            <i class="bi bi-file-text"></i> Annexes (NA)
+        </a>
+    </div>
+
     <div class="nav-section">ADMINISTRATION</div>
     <div class="nav-section">FORMATION</div>
     <div class="nav-item">
@@ -445,6 +477,38 @@ function toggleSidebar() {
         </a>
     </div>
 
+    <div class="nav-section">📊 ÉTATS FINANCIERS</div>
+    <div class="nav-item">
+        <a href="bilan.php" class="nav-link">
+            <i class="bi bi-pie-chart"></i> Bilan
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="compte_resultat.php" class="nav-link">
+            <i class="bi bi-calculator"></i> Compte de résultat (CPC)
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="sig.php" class="nav-link">
+            <i class="bi bi-graph-up"></i> Soldes Intermédiaires (SIG)
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="flux_tresorerie.php" class="nav-link">
+            <i class="bi bi-cash-stack"></i> Flux de trésorerie (TFT)
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="variation_capitaux.php" class="nav-link">
+            <i class="bi bi-arrow-repeat"></i> Variation capitaux (TVCP)
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="annexes_etats_financiers.php" class="nav-link">
+            <i class="bi bi-file-text"></i> Annexes (NA)
+        </a>
+    </div>
+
     <div class="nav-section">🏦 ADMINISTRATION & CONTRÔLE</div>
     <div class="nav-item">
         <a href="ajouter_compte_controle.php" class="nav-link">
@@ -528,5 +592,115 @@ function toggleSidebar() {
     <div class="nav-item">
         <a href="charges_produits.php" class="nav-link">
             <i class="bi bi-graph-up"></i> Charges & Produits
+        </a>
+    </div>
+
+    <div class="nav-section">📦 GESTION DES ARTICLES</div>
+    <div class="nav-item">
+        <a href="gestion_articles.php" class="nav-link">
+            <i class="bi bi-box"></i> Articles & prix
+        </a>
+    <div class="nav-section">🌍 OPÉRATIONS INTERNATIONALES</div>
+    <div class="nav-item">
+        <a href="operations_etrangeres.php" class="nav-link">
+            <i class="bi bi-currency-exchange"></i> Devises & écarts de change
+        </a>
+    </div>
+    <div class="nav-section">🌍 OPÉRATIONS INTERNATIONALES</div>
+    <div class="nav-item">
+        <a href="operations_etrangeres.php" class="nav-link">
+            <i class="bi bi-currency-exchange"></i> Devises & écarts de change
+        </a>
+    </div>
+    </div>
+
+    <div class="nav-section">⚠️ ENGAGEMENTS HORS BILAN</div>
+    <div class="nav-item">
+        <a href="engagements_hors_bilan_complet.php" class="nav-link">
+            <i class="bi bi-shield"></i> Engagements (Classe 8)
+        </a>
+    </div>
+    
+    <div class="nav-section">📊 ANALYSE COMPARATIVE</div>
+    <div class="nav-item">
+        <a href="etats_comparatifs.php" class="nav-link">
+            <i class="bi bi-graph-up"></i> États comparatifs N/N-1
+        </a>
+    </div>
+    
+    <div class="nav-section">🎁 SUBVENTIONS & LIAISON</div>
+    <div class="nav-item">
+        <a href="subventions_comptes_liaison.php" class="nav-link">
+            <i class="bi bi-gift"></i> Subventions & liaison
+        </a>
+    </div>
+
+    <div class="nav-section">📅 TRAVAUX DE FIN D'EXERCICE</div>
+    <div class="nav-item">
+        <a href="travaux_fin_exercice.php" class="nav-link">
+            <i class="bi bi-calendar-check"></i> Travaux de fin d'exercice
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="manuel_procedure.php" class="nav-link">
+            <i class="bi bi-book"></i> Manuel de procédure
+        </a>
+    </div>
+
+    <div class="nav-section">📑 ANNEXES & INFORMATIONS</div>
+    <div class="nav-item">
+        <a href="annexes_etats_financiers.php" class="nav-link">
+            <i class="bi bi-file-text"></i> Annexes aux EF
+        </a>
+    </div>
+
+    <div class="nav-section">🔄 RÉGULARISATIONS & CLÔTURE</div>
+    <div class="nav-item">
+        <a href="regularisations.php" class="nav-link">
+            <i class="bi bi-arrow-repeat"></i> Régularisations
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="amortissements_complet.php" class="nav-link">
+            <i class="bi bi-calculator"></i> Amortissements
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="report_nouveau.php" class="nav-link">
+            <i class="bi bi-arrow-right-circle"></i> Report à nouveau
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="travaux_fin_exercice.php" class="nav-link">
+            <i class="bi bi-calendar-check"></i> Travaux fin d'exercice
+        </a>
+    </div>
+
+    <div class="nav-section">📊 VUE COMPTABLE</div>
+    <div class="nav-item">
+        <a href="etats_financiers_view.php" class="nav-link">
+            <i class="bi bi-eye"></i> Vue des comptes
+        </a>
+    </div>
+
+    <div class="nav-section">🚀 OUTILS AVANCÉS</div>
+    <div class="nav-item">
+        <a href="gestion_journaux.php" class="nav-link">
+            <i class="bi bi-journal"></i> Multi-journaux
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="lettrage_comptable.php" class="nav-link">
+            <i class="bi bi-link"></i> Lettrage comptable
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="analytique.php" class="nav-link">
+            <i class="bi bi-pie-chart"></i> Comptabilité analytique
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="modeles_saisie.php" class="nav-link">
+            <i class="bi bi-speedometer2"></i> Modèles de saisie
         </a>
     </div>

@@ -1,120 +1,126 @@
 <?php
 session_start();
-if(!isset($_SESSION['user_id'])){ header("Location: index.php"); exit(); }
-require_once __DIR__ . '/../includes/db.php';
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
 
-$societe_id = 1;
-$exercice = date('Y');
+$page_title = "États Financiers - Vue d'ensemble";
+$page_icon = "file-text";
+require_once dirname(__DIR__) . '/config/config.php';
+include 'inc_navbar.php';
 
-// 1) Calcul mouvements par compte (débit/crédit)
-$sql_mov = "
-SELECT pc.compte_id, pc.intitule_compte, pc.classe, pc.solde_normal,
- COALESCE(SUM(CASE WHEN ec.compte_debite_id = pc.compte_id THEN ec.montant ELSE 0 END),0) AS total_debit,
- COALESCE(SUM(CASE WHEN ec.compte_credite_id = pc.compte_id THEN ec.montant ELSE 0 END),0) AS total_credit
-FROM PLAN_COMPTABLE_UEMOA pc
-LEFT JOIN ECRITURES_COMPTABLES ec
-  ON (ec.compte_debite_id = pc.compte_id OR ec.compte_credite_id = pc.compte_id)
-  AND ec.societe_id = :societe_id
-  AND YEAR(ec.date_operation) = :exercice
-GROUP BY pc.compte_id, pc.intitule_compte, pc.classe, pc.solde_normal
+$exercice = $_GET['exercice'] ?? date('Y');
+
+// Récupération des soldes par compte
+$sql = "
+    SELECT 
+        c.compte_id,
+        c.intitule_compte,
+        COALESCE(SUM(CASE WHEN e.compte_debite_id = c.compte_id THEN e.montant ELSE 0 END), 0) as total_debit,
+        COALESCE(SUM(CASE WHEN e.compte_credite_id = c.compte_id THEN e.montant ELSE 0 END), 0) as total_credit,
+        -- Détermination du solde selon la nature du compte (si compte actif = débit - crédit, si passif = crédit - débit)
+        CASE 
+            WHEN c.compte_id BETWEEN 100 AND 199 THEN COALESCE(SUM(CASE WHEN e.compte_credite_id = c.compte_id THEN e.montant ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN e.compte_debite_id = c.compte_id THEN e.montant ELSE 0 END), 0)
+            WHEN c.compte_id BETWEEN 200 AND 599 THEN COALESCE(SUM(CASE WHEN e.compte_debite_id = c.compte_id THEN e.montant ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN e.compte_credite_id = c.compte_id THEN e.montant ELSE 0 END), 0)
+            WHEN c.compte_id BETWEEN 600 AND 799 THEN COALESCE(SUM(CASE WHEN e.compte_debite_id = c.compte_id THEN e.montant ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN e.compte_credite_id = c.compte_id THEN e.montant ELSE 0 END), 0)
+            ELSE COALESCE(SUM(CASE WHEN e.compte_debite_id = c.compte_id THEN e.montant ELSE 0 END), 0) - COALESCE(SUM(CASE WHEN e.compte_credite_id = c.compte_id THEN e.montant ELSE 0 END), 0)
+        END as solde
+    FROM PLAN_COMPTABLE_UEMOA c
+    LEFT JOIN ECRITURES_COMPTABLES e ON c.compte_id IN (e.compte_debite_id, e.compte_credite_id) AND YEAR(e.date_ecriture) = ?
+    GROUP BY c.compte_id, c.intitule_compte
+    HAVING solde != 0
+    ORDER BY c.compte_id
 ";
-$stmt = $pdo->prepare($sql_mov);
-$stmt->execute([':societe_id'=>$societe_id, ':exercice'=>$exercice]);
-$movs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$stmt = $pdo->prepare($sql);
+$stmt->execute([$exercice]);
+$comptes = $stmt->fetchAll();
 
-// 2) Calcul des soldes par compte (sens normal)
-$balances = [];
-foreach($movs as $m){
-    $td = (float)$m['total_debit']; $tc = (float)$m['total_credit'];
-    // solde selon solde_normal
-    if($m['solde_normal']==='D'){
-        $solde = $td - $tc;
-    } else {
-        $solde = $tc - $td;
+// Agrégation par classe
+$classes = [
+    1 => ['nom' => 'Capitaux propres', 'total' => 0],
+    2 => ['nom' => 'Immobilisations', 'total' => 0],
+    3 => ['nom' => 'Stocks', 'total' => 0],
+    4 => ['nom' => 'Tiers', 'total' => 0],
+    5 => ['nom' => 'Trésorerie', 'total' => 0],
+    6 => ['nom' => 'Charges', 'total' => 0],
+    7 => ['nom' => 'Produits', 'total' => 0]
+];
+
+foreach($comptes as $c) {
+    $classe = floor($c['compte_id'] / 100);
+    if(isset($classes[$classe])) {
+        $classes[$classe]['total'] += $c['solde'];
     }
-    $balances[] = [
-        'compte' => $m['compte_id'],
-        'intitule' => $m['intitule_compte'],
-        'classe' => (int)$m['classe'],
-        'solde' => $solde,
-        'type' => ($m['classe'] >=6 ? 'RESULTAT' : 'BILAN')
-    ];
-}
-
-// 3) Agrégation: Compte de Résultat (classes 6 & 7)
-$total_charges = $total_produits = 0.0;
-foreach($balances as $b){
-    if($b['classe']>=6 && $b['classe']<7){ // classe 6 = charges
-        $total_charges += $b['solde'];
-    } elseif($b['classe']>=7 && $b['classe']<8){ // classe 7 = produits
-        $total_produits += $b['solde'];
-    } elseif($b['classe']==7){ // defensive in case classes as ints
-        $total_produits += $b['solde'];
-    }
-}
-$résultat = $total_produits - $total_charges;
-
-// 4) Bilan : Actif (classes 1-5) / Passif (classes 1-5 but opposite sign)
-$actif = $passif = 0.0;
-foreach($balances as $b){
-    if($b['classe'] >=1 && $b['classe'] <=5){
-        if($b['solde'] >= 0) $actif += $b['solde']; else $passif += abs($b['solde']);
-    }
-}
-
-?>
-<!doctype html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>États financiers - Reporting</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body class="bg-light">
-<div class="container py-4">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1>États financiers — Exercice <?=htmlspecialchars($exercice)?></h1>
-    <div><a class="btn btn-outline-secondary" href="dashboard.php">Retour</a></div>
-  </div>
-
-  <div class="row">
-    <div class="col-md-6">
-      <div class="card mb-3 p-3">
-        <h4>Compte de résultat (simplifié)</h4>
-        <table class="table table-sm">
-          <tr><th>Produits</th><td class="text-end"><?=number_format($total_produits,2,","," ")?></td></tr>
-          <tr><th>Charges</th><td class="text-end"><?=number_format($total_charges,2,","," ")?></td></tr>
-          <tr class="table-secondary"><th>Résultat net</th><td class="text-end"><?=number_format($résultat,2,","," ")?></td></tr>
-        </table>
-      </div>
-    </div>
-
-    <div class="col-md-6">
-      <div class="card mb-3 p-3">
-        <h4>Bilan (simplifié)</h4>
-        <table class="table table-sm">
-          <tr><th>Actif</th><td class="text-end"><?=number_format($actif,2,","," ")?></td></tr>
-          <tr><th>Passif</th><td class="text-end"><?=number_format($passif + ($résultat<0?abs($résultat):0),2,","," ")?></td></tr>
-          <tr class="table-secondary"><th>Total</th><td class="text-end"><?=number_format(max($actif, $passif + max(0,-$résultat)),2,","," ")?></td></tr>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <h5>Détail des comptes (extraits)</h5>
-  <div class="table-responsive">
-    <table class="table table-sm table-striped">
-      <thead><tr><th>Compte</th><th>Intitulé</th><th>Classe</th><th class="text-end">Solde</th></tr></thead>
-      <tbody>
-<?php
-foreach($balances as $b){
-    echo "<tr><td>{$b['compte']}</td><td>".htmlspecialchars($b['intitule'])."</td><td>{$b['classe']}</td><td class='text-end'>".number_format($b['solde'],2,","," ")."</td></tr>";
 }
 ?>
-      </tbody>
-    </table>
-  </div>
 
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="bi bi-file-text"></i> États Financiers - Exercice <?= $exercice ?></h5>
+                <small>Vue d'ensemble des comptes et soldes</small>
+            </div>
+            <div class="card-body">
+                <!-- Sélection exercice -->
+                <form method="GET" class="row g-3 mb-4">
+                    <div class="col-md-3">
+                        <label>Exercice</label>
+                        <select name="exercice" class="form-select" onchange="this.form.submit()">
+                            <option value="2025" <?= $exercice == 2025 ? 'selected' : '' ?>>2025</option>
+                            <option value="2026" <?= $exercice == 2026 ? 'selected' : '' ?>>2026</option>
+                        </select>
+                    </div>
+                </form>
+
+                <!-- Synthèse par classe -->
+                <div class="row mb-4">
+                    <?php foreach($classes as $classe => $data): ?>
+                    <div class="col-md-3 col-sm-6 mb-2">
+                        <div class="card text-center border-primary">
+                            <div class="card-body">
+                                <h6>Classe <?= $classe ?> - <?= $data['nom'] ?></h6>
+                                <h5 class="<?= $data['total'] >= 0 ? 'text-success' : 'text-danger' ?>">
+                                    <?= number_format(abs($data['total']), 0, ',', ' ') ?> F
+                                </h5>
+                            </div>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+
+                <!-- Tableau détaillé -->
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>N° compte</th>
+                                <th>Intitulé</th>
+                                <th class="text-end">Total débit (F)</th>
+                                <th class="text-end">Total crédit (F)</th>
+                                <th class="text-end">Solde (F)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach($comptes as $c): ?>
+                            <tr>
+                                <td class="text-center"><?= $c['compte_id'] ?> </td>
+                                <td><?= htmlspecialchars($c['intitule_compte']) ?></td>
+                                <td class="text-end"><?= number_format($c['total_debit'], 0, ',', ' ') ?></td>
+                                <td class="text-end"><?= number_format($c['total_credit'], 0, ',', ' ') ?></td>
+                                <td class="text-end <?= $c['solde'] >= 0 ? 'text-success' : 'text-danger' ?>">
+                                    <?= number_format(abs($c['solde']), 0, ',', ' ') ?> 
+                                    <?= $c['solde'] >= 0 ? 'D' : 'C' ?>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-</body>
-</html>
+
+<?php include 'inc_footer.php'; ?>
