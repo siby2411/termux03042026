@@ -704,3 +704,15 @@ function toggleSidebar() {
             <i class="bi bi-speedometer2"></i> Modèles de saisie
         </a>
     </div>
+
+    <div class="nav-section">📊 BUSINESS INTELLIGENCE</div>
+    <div class="nav-item">
+        <a href="analytique_avancee.php" class="nav-link">
+            <i class="bi bi-graph-up"></i> Analyses & KPIs
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="import_releve_auto.php" class="nav-link">
+            <i class="bi bi-cloud-upload"></i> Import relevé auto
+        </a>
+    </div>
