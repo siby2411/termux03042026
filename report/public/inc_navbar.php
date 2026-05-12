@@ -747,3 +747,24 @@ function toggleSidebar() {
             <i class="bi bi-file-text"></i> Liasses fiscales (ECF)
         </a>
     </div>
+
+    <div class="nav-section">📖 GUIDES PRATIQUES</div>
+    <div class="nav-item">
+        <a href="guide_paiement.php" class="nav-link">
+            <i class="bi bi-book"></i> Guide des paiements
+        </a>
+    </div>
+
+    <div class="nav-section">📊 COMPTABILITÉ ANALYTIQUE</div>
+    <div class="nav-item">
+        <a href="centres_analytiques.php" class="nav-link">
+            <i class="bi bi-pie-chart"></i> Centres de coûts/profits
+        </a>
+    </div>
+    
+    <div class="nav-section">📈 GESTION DE PORTEFEUILLE</div>
+    <div class="nav-item">
+        <a href="gestion_titres.php" class="nav-link">
+            <i class="bi bi-graph-up"></i> Portefeuille-titres
+        </a>
+    </div>

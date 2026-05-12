@@ -28,7 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         try {
             $pdo->beginTransaction();
             
-            $stmt = $pdo->prepare("INSERT INTO EMISSIONS_PAIEMENT (date_emission, type_emission, libelle, montant_total, statut, created_by) VALUES (?, 'VIREMENT', ?, ?, 'EMIS', ?)");
+            $stmt = $pdo->prepare("INSERT INTO EMISSIONS_PAIEMENT (date_emission, type_emission, libelle, montant_total, statut, created_by) VALUES (?, 'VIREMENT', IFNULL(?, 'Paiement fournisseurs'), ?, 'EMIS', ?)");
             $stmt->execute([$date, $libelle, $montant_total, $_SESSION['user_id']]);
             $emission_id = $pdo->lastInsertId();
             
