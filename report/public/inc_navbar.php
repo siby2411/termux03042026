@@ -768,3 +768,34 @@ function toggleSidebar() {
             <i class="bi bi-graph-up"></i> Portefeuille-titres
         </a>
     </div>
+
+    <div class="nav-section">📊 SAISIE ANALYTIQUE</div>
+    <div class="nav-item">
+        <a href="saisie_analytique.php" class="nav-link">
+            <i class="bi bi-pie-chart"></i> Saisie analytique
+        </a>
+    </div>
+
+    <div class="nav-section">📊 COMPTABILITÉ ANALYTIQUE (CAE)</div>
+    <div class="nav-item">
+        <a href="analyse_cae.php" class="nav-link">
+            <i class="bi bi-graph-up"></i> Analyse CG → CAE
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="manuel_cae.php" class="nav-link">
+            <i class="bi bi-book"></i> Manuel CAE
+        </a>
+    </div>
+
+    <div class="nav-section">📊 ANALYSE FINANCIÈRE AVANCÉE</div>
+    <div class="nav-item">
+        <a href="seuil_rentabilite.php" class="nav-link">
+            <i class="bi bi-graph-up"></i> Seuil rentabilité, EBE, CAF
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="manuel_analyse_financiere.php" class="nav-link">
+            <i class="bi bi-book"></i> Manuel analyse financière
+        </a>
+    </div>
