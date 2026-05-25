@@ -1,0 +1,211 @@
+<?php
+session_start();
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$page_title = "Bilan Synthétique - SYSCOHADA";
+$page_icon = "pie-chart";
+require_once dirname(__DIR__) . '/config/config.php';
+include 'inc_navbar.php';
+
+$exercice = $_GET['exercice'] ?? date('Y');
+
+// ==================== CALCUL DE L'ACTIF ====================
+// Immobilisations brutes
+$stmt = $pdo->prepare("
+    SELECT COALESCE(SUM(montant), 0) 
+    FROM ECRITURES_COMPTABLES 
+    WHERE YEAR(date_ecriture) = ? 
+    AND compte_debite_id IN (231, 241, 245, 253)
+");
+$stmt->execute([$exercice]);
+$immobilisations_brutes = $stmt->fetchColumn();
+
+// Amortissements
+$stmt = $pdo->prepare("
+    SELECT COALESCE(SUM(montant), 0) 
+    FROM ECRITURES_COMPTABLES 
+    WHERE YEAR(date_ecriture) = ? 
+    AND compte_credite_id IN (281, 284, 285, 286)
+");
+$stmt->execute([$exercice]);
+$amortissements = $stmt->fetchColumn();
+
+$immobilisations_nettes = $immobilisations_brutes - $amortissements;
+
+// Stocks
+$stmt = $pdo->prepare("
+    SELECT COALESCE(SUM(montant), 0) 
+    FROM ECRITURES_COMPTABLES 
+    WHERE YEAR(date_ecriture) = ? 
+    AND compte_debite_id BETWEEN 30 AND 39
+");
+$stmt->execute([$exercice]);
+$stocks = $stmt->fetchColumn();
+
+// Créances clients
+$stmt = $pdo->prepare("
+    SELECT COALESCE(SUM(montant), 0) 
+    FROM ECRITURES_COMPTABLES 
+    WHERE YEAR(date_ecriture) = ? 
+    AND compte_debite_id = 411
+");
+$stmt->execute([$exercice]);
+$creances = $stmt->fetchColumn();
+
+// Trésorerie
+$stmt = $pdo->prepare("
+    SELECT COALESCE(SUM(montant), 0) 
+    FROM ECRITURES_COMPTABLES 
+    WHERE YEAR(date_ecriture) = ? 
+    AND compte_debite_id = 521
+");
+$stmt->execute([$exercice]);
+$tresorerie = $stmt->fetchColumn();
+
+// Charges constatées d'avance
+$stmt = $pdo->prepare("
+    SELECT COALESCE(SUM(montant), 0) 
+    FROM ECRITURES_COMPTABLES 
+    WHERE YEAR(date_ecriture) = ? 
+    AND compte_debite_id = 481
+");
+$stmt->execute([$exercice]);
+$charges_avance = $stmt->fetchColumn();
+
+$total_actif = $immobilisations_nettes + $stocks + $creances + $tresorerie + $charges_avance;
+
+// ==================== CALCUL DU PASSIF ====================
+// Capital social
+$stmt = $pdo->prepare("
+    SELECT COALESCE(SUM(montant), 0) 
+    FROM ECRITURES_COMPTABLES 
+    WHERE YEAR(date_ecriture) = ? 
+    AND compte_credite_id = 101
+");
+$stmt->execute([$exercice]);
+$capital = $stmt->fetchColumn();
+
+// Report à nouveau (bénéfice ou perte antérieure)
+$stmt = $pdo->prepare("
+    SELECT COALESCE(SUM(CASE WHEN compte_credite_id = 112 THEN montant ELSE 0 END), 0) -
+           COALESCE(SUM(CASE WHEN compte_debite_id = 113 THEN montant ELSE 0 END), 0)
+    FROM ECRITURES_COMPTABLES 
+    WHERE YEAR(date_ecriture) = ?
+");
+$stmt->execute([$exercice]);
+$report_anterieur = $stmt->fetchColumn();
+
+// Résultat de l'exercice
+$stmt = $pdo->prepare("
+    SELECT COALESCE(SUM(CASE WHEN compte_credite_id BETWEEN 700 AND 799 THEN montant ELSE 0 END), 0) -
+           COALESCE(SUM(CASE WHEN compte_debite_id BETWEEN 600 AND 699 THEN montant ELSE 0 END), 0)
+    FROM ECRITURES_COMPTABLES 
+    WHERE YEAR(date_ecriture) = ?
+");
+$stmt->execute([$exercice]);
+$resultat = $stmt->fetchColumn();
+
+$capitaux_propres = $capital + $report_anterieur + $resultat;
+
+// Dettes fournisseurs
+$stmt = $pdo->prepare("
+    SELECT COALESCE(SUM(montant), 0) 
+    FROM ECRITURES_COMPTABLES 
+    WHERE YEAR(date_ecriture) = ? 
+    AND compte_credite_id = 401
+");
+$stmt->execute([$exercice]);
+$dettes = $stmt->fetchColumn();
+
+// Provisions
+$stmt = $pdo->prepare("
+    SELECT COALESCE(SUM(montant), 0) 
+    FROM ECRITURES_COMPTABLES 
+    WHERE YEAR(date_ecriture) = ? 
+    AND compte_credite_id = 161
+");
+$stmt->execute([$exercice]);
+$provisions = $stmt->fetchColumn();
+
+// Produits constatés d'avance
+$stmt = $pdo->prepare("
+    SELECT COALESCE(SUM(montant), 0) 
+    FROM ECRITURES_COMPTABLES 
+    WHERE YEAR(date_ecriture) = ? 
+    AND compte_credite_id = 482
+");
+$stmt->execute([$exercice]);
+$produits_avance = $stmt->fetchColumn();
+
+$total_passif = $capitaux_propres + $dettes + $provisions + $produits_avance;
+
+$ecart = $total_actif - $total_passif;
+?>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="bi bi-pie-chart"></i> Bilan Synthétique (SYSCOHADA)</h5>
+                <small>Arrêté au <?= date('d/m/Y') ?> - Exercice <?= $exercice ?></small>
+            </div>
+            <div class="card-body">
+                
+                <?php if(abs($ecart) > 1): ?>
+                <div class="alert alert-danger">
+                    <strong>⚠️ Écart détecté : <?= number_format(abs($ecart), 0, ',', ' ') ?> FCFA</strong>
+                </div>
+                <?php else: ?>
+                <div class="alert alert-success text-center">
+                    ✅ Bilan équilibré : Actif = Passif = <?= number_format($total_actif, 0, ',', ' ') ?> FCFA
+                </div>
+                <?php endif; ?>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">ACTIF (Emplois)</div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm table-bordered mb-0">
+                                    <tr><td class="fw-bold">Immobilisations brutes</td><td class="text-end"><?= number_format($immobilisations_brutes, 0, ',', ' ') ?> F</td></tr>
+                                    <tr><td class="ps-3">- Amortissements cumulés</td><td class="text-end text-danger">- <?= number_format($amortissements, 0, ',', ' ') ?> F</td></tr>
+                                    <tr class="bg-light"><td class="fw-bold ps-3">= Immobilisations nettes</td><td class="text-end fw-bold"><?= number_format($immobilisations_nettes, 0, ',', ' ') ?> F</td></tr>
+                                    <tr><td class="fw-bold">Créances clients</td><td class="text-end"><?= number_format($creances, 0, ',', ' ') ?> F</td></tr>
+                                    <tr><td class="fw-bold">Trésorerie</td><td class="text-end"><?= number_format($tresorerie, 0, ',', ' ') ?> F</td></tr>
+                                    <tr><td class="fw-bold">Charges constatées d'avance</td><td class="text-end"><?= number_format($charges_avance, 0, ',', ' ') ?> F</td></tr>
+                                    <tr class="table-primary fw-bold"><td>TOTAL ACTIF</td><td class="text-end"><?= number_format($total_actif, 0, ',', ' ') ?> F</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-success text-white">PASSIF (Ressources)</div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm table-bordered mb-0">
+                                    <tr><td class="fw-bold">Capital social</td><td class="text-end"><?= number_format($capital, 0, ',', ' ') ?> F</td></tr>
+                                    <tr><td class="fw-bold">Report à nouveau</td><td class="text-end <?= $report_anterieur >= 0 ? 'text-success' : 'text-danger' ?>"><?= number_format($report_anterieur, 0, ',', ' ') ?> F</td></tr>
+                                    <tr><td class="fw-bold">Résultat de l'exercice</td><td class="text-end <?= $resultat >= 0 ? 'text-success' : 'text-danger' ?>"><?= number_format($resultat, 0, ',', ' ') ?> F</td></tr>
+                                    <tr><td class="fw-bold">Capitaux propres</td><td class="text-end fw-bold"><?= number_format($capitaux_propres, 0, ',', ' ') ?> F</td></tr>
+                                    <tr><td class="fw-bold">Dettes fournisseurs</td><td class="text-end"><?= number_format($dettes, 0, ',', ' ') ?> F</td></tr>
+                                    <tr><td class="fw-bold">Provisions</td><td class="text-end"><?= number_format($provisions, 0, ',', ' ') ?> F</td></tr>
+                                    <tr class="table-success fw-bold"><td>TOTAL PASSIF</td><td class="text-end"><?= number_format($total_passif, 0, ',', ' ') ?> F</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alert alert-info mt-3 text-center">
+                    <strong>🔑 ACTIF = PASSIF</strong><br>
+                    <?= number_format($total_actif, 0, ',', ' ') ?> F = <?= number_format($total_passif, 0, ',', ' ') ?> F
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?php include 'inc_footer.php'; ?>

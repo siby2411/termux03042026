@@ -232,3 +232,31 @@ $cmup = $pdo->query("
 </div>
 
 <?php include 'inc_footer.php'; ?>
+
+<!-- Section des analyses sauvegardées -->
+<div class="card mt-4">
+    <div class="card-header bg-info text-white">📊 Analyses sauvegardées</div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="table-dark">
+                    <tr><th>Date</th><th>CA (F)</th><th>Charges (F)</th><th>Résultat (F)</th><th>Marge (%)</th></tr>
+                </thead>
+                <tbody>
+                    <?php
+                    $analyses = $pdo->query("SELECT * FROM ANALYSES_FINANCIERES WHERE type_analyse = 'SIG' ORDER BY id DESC LIMIT 10")->fetchAll();
+                    foreach($analyses as $a):
+                    ?>
+                    <tr>
+                        <td><?= $a['created_at'] ?> </td>
+                        <td class="text-end"><?= number_format($a['indicateur'] == 'CA' ? $a['valeur'] : 0, 0, ',', ' ') ?> F</td>
+                        <td class="text-end">-</td>
+                        <td class="text-end">-</td>
+                        <td class="text-center">-</td>
+                    </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

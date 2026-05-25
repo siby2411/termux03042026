@@ -276,7 +276,21 @@
     <div class="nav-item"><a href="manuel_analyse_financiere.php" class="nav-link"><i class="bi bi-book"></i> Manuel analyse financière</a></div>
     <div class="nav-item"><a href="manuel_analyse_avancee.php" class="nav-link"><i class="bi bi-book"></i> Manuel analyse avancée</a></div>
 
+    <div class="nav-section">📅 BALANCES ÂGÉES</div>
+    <div class="nav-item">
+        <a href="balance_agee_clients.php" class="nav-link">👥 Clients</a>
+    </div>
+    <div class="nav-item">
+        <a href="balance_agee_fournisseurs.php" class="nav-link">🏭 Fournisseurs</a>
+    </div>
     <!-- ADMINISTRATION -->
+    <div class="nav-section">📅 BALANCES ÂGÉES</div>
+    <div class="nav-item">
+        <a href="balance_agee_clients.php" class="nav-link">👥 Clients</a>
+    </div>
+    <div class="nav-item">
+        <a href="balance_agee_fournisseurs.php" class="nav-link">🏭 Fournisseurs</a>
+    </div>
     <div class="nav-section">🏦 ADMINISTRATION</div>
     <div class="nav-item"><a href="ajouter_compte_controle.php" class="nav-link"><i class="bi bi-plus-circle"></i> Ajouter un compte</a></div>
     <div class="nav-item"><a href="audit_trail.php" class="nav-link"><i class="bi bi-eye"></i> Audit Trail</a></div>
@@ -357,5 +371,180 @@ function toggleSidebar() {
     <div class="nav-item">
         <a href="manuel_evaluation_entreprise.php" class="nav-link">
             <i class="bi bi-book"></i> Manuel évaluation
+        </a>
+    </div>
+
+    <div class="nav-section">🛡️ CONTRÔLE INTERNE</div>
+    <div class="nav-item">
+        <a href="controle_interne.php" class="nav-link">
+            <i class="bi bi-shield"></i> Audit & contrôle interne
+        </a>
+    </div>
+    
+    <div class="nav-section">📊 CAE - IMPUTATION RATIONNELLE</div>
+    <div class="nav-item">
+        <a href="imputation_rationnelle.php" class="nav-link">
+            <i class="bi bi-calculator"></i> Imputation rationnelle
+        </a>
+    </div>
+
+    <div class="nav-section">📊 CAE - MÉTHODES DE COÛTS</div>
+    <div class="nav-item">
+        <a href="couts_complets.php" class="nav-link">
+            <i class="bi bi-building"></i> Coûts complets
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="couts_variables.php" class="nav-link">
+            <i class="bi bi-graph-down"></i> Coûts variables
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="couts_directs.php" class="nav-link">
+            <i class="bi bi-arrow-right"></i> Coûts directs
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="couts_abc.php" class="nav-link">
+            <i class="bi bi-grid"></i> Méthode ABC
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="manuel_methodes_couts.php" class="nav-link">
+            <i class="bi bi-book"></i> Manuel méthodes coûts
+        </a>
+    </div>
+
+    <div class="nav-section">👥 SUIVI CLIENTS</div>
+    <div class="nav-item">
+        <a href="balance_clients.php" class="nav-link">
+            <i class="bi bi-people"></i> Soldes par client
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="balance_agee_clients.php" class="nav-link">
+            <i class="bi bi-calendar"></i> Balance âgée clients
+        </a>
+    </div>
+
+    <div class="nav-section">📄 CONTRATS & RÉGULARISATIONS</div>
+    <div class="nav-item">
+        <a href="contrats_regularisations.php" class="nav-link">
+            <i class="bi bi-file-text"></i> Gestion des contrats
+        </a>
+    </div>
+
+    <div class="nav-section">📊 CONTRÔLE DE GESTION</div>
+    <div class="nav-item">
+        <a href="budget_saisie.php" class="nav-link">📝 Saisie budgétaire</a>
+    </div>
+    <div class="nav-item">
+        <a href="analyse_ecarts.php" class="nav-link">📉 Analyse des écarts</a>
+    </div>
+    <div class="nav-item">
+        <a href="tableau_bord_kpis.php" class="nav-link">📊 Tableau de bord KPIs</a>
+    </div>
+    <div class="nav-item">
+        <a href="balanced_scorecard.php" class="nav-link">🎯 Balanced Scorecard</a>
+    </div>
+    <div class="nav-item">
+        <a href="budget_tresorerie_global.php" class="nav-link">💰 Budget de trésorerie</a>
+    </div>
+
+    <div class="nav-section">📊 PRÉVISIONS & OPTIMISATION</div>
+    <div class="nav-item">
+        <a href="previsions_ventes.php" class="nav-link">📈 Prévisions des ventes</a>
+    </div>
+    <div class="nav-item">
+        <a href="programmation_lineaire.php" class="nav-link">🧮 Programmation linéaire</a>
+    </div>
+    <div class="nav-item">
+        <a href="analyse_ecarts_avancee.php" class="nav-link">📉 Analyse des écarts</a>
+    </div>
+    <div class="nav-item">
+        <a href="manuel_previsions_pl.php" class="nav-link">📖 Manuel technique</a>
+    </div>
+
+    <div class="nav-section">📊 ANALYSE PROSPECTIVE</div>
+    <div class="nav-item">
+        <a href="analyse_scenarios.php" class="nav-link">📈 Scénarios financiers</a>
+    </div>
+    <div class="nav-item">
+        <a href="affectation_resultat.php" class="nav-link">💰 Affectation du résultat</a>
+    </div>
+    <div class="nav-item">
+        <a href="manuel_affectation_resultat.php" class="nav-link">📖 Manuel d'affectation</a>
+    </div>
+
+    <div class="nav-section">🚨 PLAN DE REDRESSEMENT</div>
+    <div class="nav-item">
+        <a href="seuil_rentabilite.php" class="nav-link">📊 Seuil de rentabilité</a>
+    </div>
+    <div class="nav-item">
+        <a href="plan_financement_urgence.php" class="nav-link">💰 Plan de financement</a>
+    </div>
+
+    <div class="nav-section">📦 STOCKS & APPROVISIONNEMENTS</div>
+    <div class="nav-item">
+        <a href="gestion_stocks_avancee.php" class="nav-link">📊 Valorisation CUMP/FIFO/LIFO</a>
+    </div>
+    <div class="nav-item">
+        <a href="gestion_approvisionnements.php" class="nav-link">📦 Approvisionnements (Wilson)</a>
+    </div>
+    <div class="nav-item">
+        <a href="manuel_valuation_stocks.php" class="nav-link">📖 Manuel stock & approvisionnements</a>
+    </div>
+
+    <div class="nav-section">📊 AMORTISSEMENTS & FINANCES</div>
+    <div class="nav-item">
+        <a href="calcul_annuites.php" class="nav-link">📅 Calcul des annuités</a>
+    </div>
+    <div class="nav-item">
+        <a href="amortissement_degressif.php" class="nav-link">📉 Amortissement dégressif</a>
+    </div>
+    <div class="nav-item">
+        <a href="programmation_lineaire.php" class="nav-link">📈 Moindres carrés</a>
+    </div>
+    <div class="nav-item">
+        <a href="revision_comptable.php" class="nav-link">🔍 Révision comptable</a>
+    </div>
+
+    <div class="nav-section">📊 PRÉVISIONS AVANCÉES</div>
+    <div class="nav-item">
+        <a href="previsions_avancees.php" class="nav-link">📈 Multi-méthodes</a>
+    </div>
+    <div class="nav-item">
+        <a href="comparaison_methodes.php" class="nav-link">📊 Comparaison</a>
+    </div>
+    <div class="nav-item">
+        <a href="seuil_rentabilite_avance.php" class="nav-link">⚖️ Seuil rentabilité</a>
+    </div>
+
+    <div class="nav-section">💰 CAPITAL & TITRES</div>
+    <div class="nav-item">
+        <a href="gestion_capital_titres.php" class="nav-link">
+            <i class="bi bi-bank"></i> Opérations sur capital
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="manuel_capital_titres.php" class="nav-link">
+            <i class="bi bi-book"></i> Manuel capital & titres
+        </a>
+    </div>
+
+    <div class="nav-section">📦 INVENTAIRE & FORMATION</div>
+    <div class="nav-item">
+        <a href="inventaire_complet.php" class="nav-link">
+            <i class="bi bi-clipboard-data"></i> Inventaire physique
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="inventaire_didacticiel.php" class="nav-link">
+            <i class="bi bi-book"></i> Didacticiel inventaire
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="gestion_stocks_complet.php" class="nav-link">
+            <i class="bi bi-box-seam"></i> Gestion des stocks
         </a>
     </div>
