@@ -574,3 +574,10 @@ function toggleSidebar() {
             <i class="bi bi-building"></i> Groupe & consolidation
         </a>
     </div>
+
+    <div class="nav-section">🔄 RESTRUCTURATION & FUSIONS</div>
+    <div class="nav-item">
+        <a href="manuel_restructuration.php" class="nav-link">
+            <i class="bi bi-arrow-left-right"></i> Fusions & restructuration
+        </a>
+    </div>
