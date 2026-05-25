@@ -548,3 +548,29 @@ function toggleSidebar() {
             <i class="bi bi-box-seam"></i> Gestion des stocks
         </a>
     </div>
+
+    <div class="nav-section">📚 INGÉNIERIE FINANCIÈRE</div>
+    <div class="nav-item">
+        <a href="manuel_ingenierie_financiere.php" class="nav-link">
+            <i class="bi bi-book"></i> Valorisation d'entreprise
+        </a>
+    </div>
+    <div class="nav-item">
+        <a href="gestion_capital_titres.php" class="nav-link">
+            <i class="bi bi-bank"></i> Fusions & acquisitions
+        </a>
+    </div>
+
+    <div class="nav-section">📈 VALEUR DE RENDEMENT & DPS</div>
+    <div class="nav-item">
+        <a href="manuel_valeur_rendement.php" class="nav-link">
+            <i class="bi bi-graph-up"></i> Goodwill & DPS
+        </a>
+    </div>
+
+    <div class="nav-section">🏢 CONSOLIDATION & GROUPE</div>
+    <div class="nav-item">
+        <a href="manuel_consolidation_groupe.php" class="nav-link">
+            <i class="bi bi-building"></i> Groupe & consolidation
+        </a>
+    </div>
