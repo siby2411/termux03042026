@@ -611,4 +611,21 @@ function toggleSidebar() {
     <div class="nav-item"><a class="nav-link" href="actualisation_cout_capital.php">💰 VAN - TRI - IP - Délai de récupération</a></div>
     <div class="nav-header text-white-50 small mt-3">📊 TABLEAU DE BORD</div>
     <div class="nav-item"><a class="nav-link" href="tableau_bord_interactif.php">🎯 KPIs interactifs & objectifs</a></div>
+    <div class="nav-header text-white-50 small mt-3">🏛️ STRUCTURE & RENTABILITÉ</div>
+    <div class="nav-item"><a class="nav-link" href="analyse_structure_rentabilite.php">📊 Analyse structure financière & rentabilité</a></div>
+    <div class="nav-header text-white-50 small mt-3">🔍 OUTILS DE RECHERCHE</div>
+    <div class="nav-item"><a class="nav-link" href="recherche_comptes.php">📋 Recherche de comptes</a></div>
+    <div class="nav-item"><a class="nav-link" href="recherche_formules.php">🧮 Formules financières</a></div>
+    <div class="nav-header text-white-50 small mt-3">📊 ÉTATS FINANCIERS</div>
+    <div class="nav-item"><a class="nav-link" href="etats_financiers_view.php">📑 États financiers (bilan, CR, SIG)</a></div>
+    <div class="nav-header text-white-50 small mt-3">📚 GUIDE DES FORMULES</div>
+    <div class="nav-item"><a class="nav-link" href="recherche_formules_avancee.php">🧮 Formules financières (EBE, CAF, VAN, TRI...)</a></div>
+    <div class="nav-header text-white-50 small mt-3">📚 GUIDE DES FORMULES</div>
+    <div class="nav-item"><a class="nav-link" href="recherche_formules_avancee.php">🧮 Formules financières (EBE, CAF, VAN, TRI...)</a></div>
+    <div class="nav-header text-white-50 small mt-3">📚 FORMULES AVANCÉES</div>
+    <div class="nav-item"><a class="nav-link" href="recherche_formules_avancee.php">🧮 Guide des formules (EBE, CAF, VAN, TRI, WACC)</a></div>
+    <div class="nav-header text-white-50 small mt-3">📈 INDICATEURS D'INVESTISSEMENT</div>
+    <div class="nav-item"><a class="nav-link" href="indicateurs_investissement.php">📊 VAN, TRI, IP, délai récupération</a></div>
+    <div class="nav-header text-white-50 small mt-3">📐 MATHÉMATIQUES FINANCIÈRES</div>
+    <div class="nav-item"><a class="nav-link" href="mathematiques_financieres.php">🧮 Intérêts, annuités, emprunts, TEG...</a></div>
     </div>
