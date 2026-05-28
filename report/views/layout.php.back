@@ -47,8 +47,6 @@ if (!isset($page_title)) $page_title = "SYSCOHADA PRO";
     <a href="/report/public/balance.php" class="<?= ($page_title=='Balance')?'active':'' ?>"><i class="bi bi-journal-check"></i> Balance</a>
     <a href="/report/public/ajout_compte.php"><i class="bi bi-journal-plus"></i> Ajouter un compte</a>
     <a href="/report/public/flux_tresorerie_oec.php">💵 Tableau des flux de trésorerie (OEC)</a>
-    <div style="margin-top:20px;"><hr><strong>📈 PRÉVISIONS STATISTIQUES</strong></div>
-    <a href="/report/public/gestion_previsionnelle.php">📊 Gestion prévisionnelle (loi normale & BFR)</a>
     <a href="/report/public/logout.php"><i class="bi bi-box-arrow-right"></i> Déconnexion</a>
 </div>
 

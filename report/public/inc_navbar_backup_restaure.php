@@ -299,19 +299,6 @@
 
     <!-- DÉCONNEXION -->
     <div class="nav-section">🔐 COMPTE</div>
-    <div class="nav-header text-white-50 small mt-3">📊 ANALYSE FINANCIÈRE</div>
-    <a class="nav-link" href="outil_diagnostic_af.php">EBE - EBITDA - CAF</a>
-    <a class="nav-link" href="equilibre_financier.php">Équilibre financier (6 situations)</a>
-    <a class="nav-link" href="plan_financement_pedagogique.php">Tableau financement PCG</a>
-    <a class="nav-link" href="flux_tresorerie_oec.php">Flux de trésorerie OEC</a>
-    <a class="nav-link" href="analyse_ratios.php">Analyse des ratios</a>
-    <a class="nav-link" href="bilan_fonctionnel.php">Bilan fonctionnel (FRNG/BFR)</a>
-    <div class="nav-header text-white-50 small mt-3">📚 MANUELS DE FORMATION</div>
-    <a class="nav-link" href="manuel_formation_af.php">Analyse financière</a>
-    <a class="nav-link" href="manuel_methodes_couts.php">Méthodes de coûts</a>
-    <a class="nav-link" href="manuel_cae.php">Comptabilité analytique</a>
-    <a class="nav-link" href="manuel_ingenierie_financiere.php">Ingénierie financière</a>
-    <a class="nav-link" href="manuel_evaluation_entreprise.php">Évaluation entreprise</a>
     <div class="nav-item"><a href="logout.php" class="nav-link"><i class="bi bi-box-arrow-right"></i> Déconnexion</a></div>
 </div>
 
@@ -593,22 +580,4 @@ function toggleSidebar() {
         <a href="manuel_restructuration.php" class="nav-link">
             <i class="bi bi-arrow-left-right"></i> Fusions & restructuration
         </a>
-    <div class="nav-header text-white-50 small mt-3">📈 PRÉVISIONS STATISTIQUES</div>
-    <div class="nav-item"><a class="nav-link" href="gestion_previsionnelle.php">📊 Gestion prévisionnelle (loi normale & BFR)</a></div>
-    <div class="nav-header text-white-50 small mt-3">📊 BUDGET & VAN/TRI</div>
-    <div class="nav-item"><a class="nav-link" href="budget_previsionnel_van_tri.php">💰 Budget prévisionnel – VAN / TRI</a></div>
-    <div class="nav-header text-white-50 small mt-3">🎲 ANALYSE DE SCÉNARIOS</div>
-    <div class="nav-item"><a class="nav-link" href="analyse_scenarios_avancee.php">📊 Comparaison optimiste / réaliste / pessimiste</a></div>
-    <div class="nav-header text-white-50 small mt-3">💰 SIMULATION CRÉDIT</div>
-    <div class="nav-item"><a class="nav-link" href="simulation_credit_emprunt.php">🏦 Simulation de crédit / emprunt</a></div>
-    <div class="nav-header text-white-50 small mt-3">📈 STRATÉGIE FINANCIÈRE</div>
-    <div class="nav-item"><a class="nav-link" href="strategie_financiere_previsionnelle.php">📊 Gestion prévisionnelle – Bilan & plan de financement</a></div>
-    <div class="nav-header text-white-50 small mt-3">📊 ANALYSE DE SENSIBILITÉ</div>
-    <div class="nav-item"><a class="nav-link" href="analyse_sensibilite_multi_produits.php">⚖️ Seuil rentabilité & sensibilité multi‑produits</a></div>
-    <div class="nav-header text-white-50 small mt-3">📊 RATIOS AVANCÉS</div>
-    <div class="nav-item"><a class="nav-link" href="tableau_bord_ratios_avances.php">📈 DuPont - Z-Score - EVA</a></div>
-    <div class="nav-header text-white-50 small mt-3">📈 ACTUALISATION & INVESTISSEMENT</div>
-    <div class="nav-item"><a class="nav-link" href="actualisation_cout_capital.php">💰 VAN - TRI - IP - Délai de récupération</a></div>
-    <div class="nav-header text-white-50 small mt-3">📊 TABLEAU DE BORD</div>
-    <div class="nav-item"><a class="nav-link" href="tableau_bord_interactif.php">🎯 KPIs interactifs & objectifs</a></div>
     </div>

@@ -593,22 +593,4 @@ function toggleSidebar() {
         <a href="manuel_restructuration.php" class="nav-link">
             <i class="bi bi-arrow-left-right"></i> Fusions & restructuration
         </a>
-    <div class="nav-header text-white-50 small mt-3">📈 PRÉVISIONS STATISTIQUES</div>
-    <div class="nav-item"><a class="nav-link" href="gestion_previsionnelle.php">📊 Gestion prévisionnelle (loi normale & BFR)</a></div>
-    <div class="nav-header text-white-50 small mt-3">📊 BUDGET & VAN/TRI</div>
-    <div class="nav-item"><a class="nav-link" href="budget_previsionnel_van_tri.php">💰 Budget prévisionnel – VAN / TRI</a></div>
-    <div class="nav-header text-white-50 small mt-3">🎲 ANALYSE DE SCÉNARIOS</div>
-    <div class="nav-item"><a class="nav-link" href="analyse_scenarios_avancee.php">📊 Comparaison optimiste / réaliste / pessimiste</a></div>
-    <div class="nav-header text-white-50 small mt-3">💰 SIMULATION CRÉDIT</div>
-    <div class="nav-item"><a class="nav-link" href="simulation_credit_emprunt.php">🏦 Simulation de crédit / emprunt</a></div>
-    <div class="nav-header text-white-50 small mt-3">📈 STRATÉGIE FINANCIÈRE</div>
-    <div class="nav-item"><a class="nav-link" href="strategie_financiere_previsionnelle.php">📊 Gestion prévisionnelle – Bilan & plan de financement</a></div>
-    <div class="nav-header text-white-50 small mt-3">📊 ANALYSE DE SENSIBILITÉ</div>
-    <div class="nav-item"><a class="nav-link" href="analyse_sensibilite_multi_produits.php">⚖️ Seuil rentabilité & sensibilité multi‑produits</a></div>
-    <div class="nav-header text-white-50 small mt-3">📊 RATIOS AVANCÉS</div>
-    <div class="nav-item"><a class="nav-link" href="tableau_bord_ratios_avances.php">📈 DuPont - Z-Score - EVA</a></div>
-    <div class="nav-header text-white-50 small mt-3">📈 ACTUALISATION & INVESTISSEMENT</div>
-    <div class="nav-item"><a class="nav-link" href="actualisation_cout_capital.php">💰 VAN - TRI - IP - Délai de récupération</a></div>
-    <div class="nav-header text-white-50 small mt-3">📊 TABLEAU DE BORD</div>
-    <div class="nav-item"><a class="nav-link" href="tableau_bord_interactif.php">🎯 KPIs interactifs & objectifs</a></div>
     </div>
