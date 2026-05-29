@@ -1,10 +1,7 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
-}
-$page_title = "Gestion prévisionnelle - Loi normale & BFR";
+if (!isset($_SESSION['user_id'])) { header("Location: login.php"); exit(); }
+$page_title = "Gestion prévisionnelle – Loi normale & BFR";
 include 'inc_navbar.php';
 ?>
 <!DOCTYPE html>
@@ -12,7 +9,7 @@ include 'inc_navbar.php';
 <head>
     <meta charset="UTF-8">
     <title><?= $page_title ?></title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -31,50 +28,13 @@ include 'inc_navbar.php';
                 </div>
                 <div class="card-body">
 
-                    <!-- Partie théorique -->
-                    <h3><i class="bi bi-book"></i> 1. Rappels sur la loi normale</h3>
-                    <p>La loi normale (ou loi de Laplace-Gauss) décrit de nombreux phénomènes financiers : ventes, BFR, erreurs de prévision…</p>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card bg-light">
-                                <div class="card-header">Paramètres</div>
-                                <div class="card-body">
-                                    <ul>
-                                        <li><strong>m (moyenne)</strong> : valeur centrale, symétrie de la courbe</li>
-                                        <li><strong>σ (écart type)</strong> : dispersion autour de la moyenne</li>
-                                        <li><strong>Loi normale N(m, σ²)</strong></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card bg-light">
-                                <div class="card-header">Propriétés</div>
-                                <div class="card-body">
-                                    <ul>
-                                        <li>68% des valeurs dans [m-σ ; m+σ]</li>
-                                        <li>95% dans [m-2σ ; m+2σ]</li>
-                                        <li>99,7% dans [m-3σ ; m+3σ]</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <h3 class="mt-4"><i class="bi bi-calculator"></i> 2. Application au BFR (Besoin en Fonds de Roulement)</h3>
-                    <p>Le BFR d’une entreprise peut être modélisé comme une variable aléatoire normale. On peut alors :</p>
-                    <ul>
-                        <li>Estimer la probabilité que le BFR dépasse un certain seuil (risque de sous-financement)</li>
-                        <li>Déterminer le niveau de BFR à ne pas dépasser avec une probabilité donnée (ex : 95%)</li>
-                        <li>Fixer une ligne de crédit adaptée</li>
-                    </ul>
                     <div class="alert alert-info">
-                        <strong>Formule de la fonction de répartition :</strong><br>
-                        P(X ≤ x) = Φ((x – m)/σ)   où Φ est la fonction de répartition de la loi normale centrée réduite.
+                        <strong>📘 Rappels : Loi normale N(m, σ²)</strong><br>
+                        • 68% des valeurs dans [m-σ ; m+σ]<br>
+                        • 95% dans [m-2σ ; m+2σ]<br>
+                        • 99,7% dans [m-3σ ; m+3σ]
                     </div>
 
-                    <!-- Simulateur -->
-                    <h3 class="mt-4"><i class="bi bi-sliders"></i> 3. Simulateur interactif</h3>
                     <div class="card bg-light">
                         <div class="card-body">
                             <form method="post" id="simulateur">
@@ -115,14 +75,11 @@ include 'inc_navbar.php';
                         </div>
                     </div>
 
-                    <!-- Interprétation -->
                     <div class="alert alert-secondary mt-4">
-                        <strong>💡 Interprétation pour la couverture du BFR :</strong><br>
-                        Si la probabilité que le BFR dépasse le seuil est élevée (>20%), l’entreprise doit prévoir une ligne de crédit ou augmenter son fonds de roulement. 
-                        On peut aussi déterminer le BFR maximal avec 95% de confiance : ce montant servira de base pour négocier un découvert autorisé.
+                        <strong>💡 Interprétation :</strong><br>
+                        Si la probabilité que le BFR dépasse le seuil est élevée (>20%), l'entreprise doit prévoir une ligne de crédit ou augmenter son fonds de roulement.
                     </div>
 
-                    <!-- Lien vers autres outils -->
                     <div class="mt-3">
                         <a href="bfr_previsionnel.php" class="btn btn-outline-primary">📊 BFR prévisionnel</a>
                         <a href="tresorerie_previsionnelle.php" class="btn btn-outline-primary">💵 Trésorerie prévisionnelle</a>
@@ -134,10 +91,7 @@ include 'inc_navbar.php';
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-// Calcul de la fonction de répartition normale (approximation de Abramowitz & Stegun)
 function normalCDF(x) {
     var t = 1 / (1 + 0.2316419 * Math.abs(x));
     var d = 0.3989423 * Math.exp(-x * x / 2);
@@ -151,7 +105,7 @@ function calculer() {
     var sigma = parseFloat(document.getElementById('sigma').value);
     var seuil = parseFloat(document.getElementById('seuil').value);
     if (isNaN(m) || isNaN(sigma) || sigma <= 0) {
-        document.getElementById('resultats').innerHTML = '<div class="alert alert-danger">Veuillez entrer des valeurs valides (σ > 0).</div>';
+        document.getElementById('resultats').innerHTML = '<div class="alert alert-danger">Valeurs invalides (σ > 0).</div>';
         return;
     }
     var z = (seuil - m) / sigma;
@@ -160,8 +114,8 @@ function calculer() {
     var html = '<div class="alert alert-info">';
     html += '🔹 P(BFR ≤ ' + seuil + ' k€) = ' + (proba_inf * 100).toFixed(2) + '%<br>';
     html += '🔸 P(BFR > ' + seuil + ' k€) = ' + (proba_sup * 100).toFixed(2) + '%<br>';
-    if (proba_sup > 0.2) html += '<span class="text-danger">⚠️ Risque élevé de dépassement → besoin de financement supplémentaire.</span>';
-    else html += '<span class="text-success">✅ Risque modéré, couverture BFR a priori adaptée.</span>';
+    if (proba_sup > 0.2) html += '<span class="text-danger">⚠️ Risque élevé → besoin de financement supplémentaire.</span>';
+    else html += '<span class="text-success">✅ Risque modéré, couverture BFR adaptée.</span>';
     html += '</div>';
     document.getElementById('resultats').innerHTML = html;
     tracerCourbe(m, sigma, seuil);
@@ -172,23 +126,21 @@ function calculerInverse() {
     var sigma = parseFloat(document.getElementById('sigma').value);
     var p = parseFloat(document.getElementById('proba_cible').value);
     if (isNaN(m) || isNaN(sigma) || sigma <= 0 || p <= 0 || p >= 1) {
-        document.getElementById('resultats').innerHTML = '<div class="alert alert-danger">Valeurs invalides (σ > 0, 0 < p < 1).</div>';
+        document.getElementById('resultats').innerHTML = '<div class="alert alert-danger">Valeurs invalides (σ > 0, 0<p<1).</div>';
         return;
     }
-    // Approximation inverse pour la normale (fonction quantile)
-    // Algorithme simple : recherche dichotomique
-    var left = -1000, right = 1000;
+    var left = -10, right = 10, z = 0;
     for (var i = 0; i < 100; i++) {
         var mid = (left + right) / 2;
         var fmid = normalCDF(mid);
         if (fmid < p) left = mid;
         else right = mid;
     }
-    var z = (left + right) / 2;
+    z = (left + right) / 2;
     var seuil = m + z * sigma;
     var html = '<div class="alert alert-success">';
-    html += '📌 Pour une probabilité de ' + (p * 100).toFixed(1) + '%, le BFR ne doit pas dépasser <strong>' + seuil.toFixed(0) + ' k€</strong>.<br>';
-    html += '👉 Ce montant peut servir à calibrer une ligne de crédit ou la couverture du besoin.</div>';
+    html += '📌 Pour une probabilité de ' + (p * 100).toFixed(1) + '%, le BFR ne doit pas dépasser <strong>' + seuil.toFixed(0) + ' k€</strong>.';
+    html += '</div>';
     document.getElementById('resultats').innerHTML = html;
     tracerCourbe(m, sigma, seuil);
 }
@@ -221,15 +173,12 @@ function tracerCourbe(m, sigma, seuil) {
         },
         options: {
             responsive: true,
-            plugins: {
-                tooltip: { callbacks: { label: (ctx) => 'f(x) = ' + ctx.raw.toFixed(4) } }
-            },
+            plugins: { tooltip: { callbacks: { label: (ctx) => 'f(x) = ' + ctx.raw.toFixed(4) } } },
             scales: { x: { title: { display: true, text: 'BFR (k€)' } } }
         }
     });
 }
 
-// Tracer courbe par défaut au chargement
 window.onload = function() { calculer(); };
 </script>
 </body>

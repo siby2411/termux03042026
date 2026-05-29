@@ -628,4 +628,16 @@ function toggleSidebar() {
     <div class="nav-item"><a class="nav-link" href="indicateurs_investissement.php">📊 VAN, TRI, IP, délai récupération</a></div>
     <div class="nav-header text-white-50 small mt-3">📐 MATHÉMATIQUES FINANCIÈRES</div>
     <div class="nav-item"><a class="nav-link" href="mathematiques_financieres.php">🧮 Intérêts, annuités, emprunts, TEG...</a></div>
+    <div class="nav-header text-white-50 small mt-3">📖 LEXIQUE</div>
+    <div class="nav-item"><a class="nav-link" href="lexique_technique.php">📚 Termes finance & comptabilité</a></div>
+    <div class="nav-header text-white-50 small mt-3">📖 LEXIQUE AVANCÉ</div>
+    <div class="nav-item"><a class="nav-link" href="lexique_complementaire.php">📚 Termes avancés (dérivés, ESG, crypto, M&A...)</a></div>
+    <div class="nav-header text-white-50 small mt-3">📘 DROIT COMMERCIAL</div>
+    <div class="nav-item"><a class="nav-link" href="guide_pratique_droit_commercial.php">⚖️ Guide pratique droit commercial & comptabilité</a></div>
+    <div class="nav-header text-white-50 small mt-3">📊 MARTINGALE FINANCIÈRE</div>
+    <div class="nav-item"><a class="nav-link" href="martingale_financiere.php">🎲 Processus stochastiques & IFRS 9</a></div>
+    <div class="nav-header text-white-50 small mt-3">🏦 CORPORATE FINANCE</div>
+    <div class="nav-item"><a class="nav-link" href="corporate_finance_lbo.php">📊 LBO & Modélisation financière</a></div>
+    <div class="nav-header text-white-50 small mt-3">📈 GESTION DE PORTEFEUILLE</div>
+    <div class="nav-item"><a class="nav-link" href="gestion_portefeuille.php">📊 Performance & risques</a></div>
     </div>
