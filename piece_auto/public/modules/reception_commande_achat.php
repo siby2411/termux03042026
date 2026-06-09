@@ -8,7 +8,7 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
 $page_title = "Réception de Commande d'Achat";
 include '../../config/Database.php';
-include '../../includes/header.php';
+include __DIR__ . '/../includes/header.php';
 
 $database = new Database();
 $db = $database->getConnection();

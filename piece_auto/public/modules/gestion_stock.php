@@ -3,69 +3,49 @@ require_once __DIR__ . '/../../includes/auth_check.php';
 require_once __DIR__ . '/../../config/Database.php';
 $db = (new Database())->getConnection();
 
-$page_title = "État des Stocks";
-include '../../includes/header.php';
+// Logique de recherche
+$search = $_GET['q'] ?? '';
+$sql = "SELECT * FROM PIECES WHERE nom_piece LIKE ? OR reference LIKE ? ORDER BY id_piece DESC";
+$stmt = $db->prepare($sql);
+$stmt->execute(["%$search%", "%$search%"]);
+$pieces = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// On récupère les pièces
-$pieces = $db->query("SELECT * FROM PIECES ORDER BY stock_actuel ASC")->fetchAll(PDO::FETCH_ASSOC);
-
-// On récupère les flux récents (Correction ici : quantite_impact)
-$flux = $db->query("SELECT m.*, p.nom_piece 
-                   FROM MOUVEMENTS_STOCK m 
-                   JOIN PIECES p ON m.id_piece = p.id_piece 
-                   ORDER BY m.date_mouvement DESC LIMIT 10")->fetchAll(PDO::FETCH_ASSOC);
+include __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white fw-bold">Stock Actuel</div>
-            <div class="card-body p-0">
-                <table class="table mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Référence</th>
-                            <th>Désignation</th>
-                            <th class="text-center">Stock</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach($pieces as $p): ?>
-                        <tr>
-                            <td><code><?= $p['reference'] ?></code></td>
-                            <td><?= $p['nom_piece'] ?></td>
-                            <td class="text-center">
-                                <span class="badge <?= $p['stock_actuel'] <= 5 ? 'bg-danger' : 'bg-success' ?>">
-                                    <?= $p['stock_actuel'] ?>
-                                </span>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3><i class="fas fa-search-plus"></i> Liste & Recherche de Pièces</h3>
+        <form class="d-flex" method="GET">
+            <input type="text" name="q" class="form-control" placeholder="Rechercher par nom ou réf..." value="<?= htmlspecialchars($search) ?>">
+            <button class="btn btn-primary ms-2"><i class="fas fa-search"></i></button>
+        </form>
     </div>
-    
-    <div class="col-md-4">
-        <div class="card shadow-sm border-0">
-            <div class="card-header bg-white fw-bold">Flux Récents</div>
-            <div class="list-group list-group-flush">
-                <?php foreach($flux as $f): ?>
-                <div class="list-group-item">
-                    <div class="d-flex justify-content-between">
-                        <small class="fw-bold <?= $f['type_mouvement'] == 'Vente' ? 'text-danger' : 'text-success' ?>">
-                            <?= strtoupper($f['type_mouvement']) ?>
-                        </small>
-                        <small class="text-muted"><?= date('d/m H:i', strtotime($f['date_mouvement'])) ?></small>
-                    </div>
-                    <div class="small"><?= $f['nom_piece'] ?></div>
-                    <div class="small fw-bold">Quantité : <?= $f['quantite_impact'] ?></div>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover bg-white shadow-sm">
+            <thead class="table-dark">
+                <tr><th>Référence</th><th>Nom de la pièce</th><th>Prix</th><th>Stock Actuel</th></tr>
+            </thead>
+            <tbody>
+                <?php if(count($pieces) > 0): ?>
+                    <?php foreach($pieces as $p): ?>
+                    <tr>
+                        <td><strong><?= htmlspecialchars($p['reference']) ?></strong></td>
+                        <td><?= htmlspecialchars($p['nom_piece']) ?></td>
+                        <td><?= number_format($p['prix_vente'], 0, ',', ' ') ?> F</td>
+                        <td>
+                            <span class="badge bg-<?= $p['stock_actuel'] < 10 ? 'danger' : 'success' ?>">
+                                <?= $p['stock_actuel'] ?>
+                            </span>
+                        </td>
+                    </tr>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <tr><td colspan="4" class="text-center">Aucune pièce trouvée.</td></tr>
+                <?php endif; ?>
+            </tbody>
+        </table>
     </div>
 </div>
-
-<?php include '../../includes/footer.php'; ?>
+<?php include __DIR__ . '/footer.php'; ?>

@@ -8,7 +8,7 @@ $fournisseurs = $db->query("SELECT * FROM FOURNISSEURS")->fetchAll(PDO::FETCH_AS
 $pieces = $db->query("SELECT id_piece, reference, nom_piece, stock_actuel, cump FROM PIECES")->fetchAll(PDO::FETCH_ASSOC);
 
 $page_title = "Nouvel Achat (Réappro)";
-include '../../includes/header.php';
+include __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="row">

@@ -4,7 +4,7 @@ require_once __DIR__ . '/../../config/Database.php';
 $db = (new Database())->getConnection();
 
 $page_title = "Gestion des Fournisseurs";
-include '../../includes/header.php';
+include __DIR__ . '/../includes/header.php';
 
 $stmt = $db->query("SELECT * FROM FOURNISSEURS ORDER BY nom_fournisseur ASC");
 ?>

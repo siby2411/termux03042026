@@ -1,111 +1,67 @@
 <?php
-ini_set('display_errors', 1);
-error_reporting(E_ALL);
-
 require_once __DIR__ . '/../../includes/auth_check.php';
 require_once __DIR__ . '/../../config/Database.php';
+$db = (new Database())->getConnection();
 
-$page_title = "Ajouter une Pièce";
-include '../../includes/header.php';
-
-$database = new Database();
-$db = $database->getConnection();
 $message = "";
 
-// Récupération des marques et fournisseurs pour les listes déroulantes
-$marques = $db->query("SELECT id_marque, nom_marque FROM MARQUES ORDER BY nom_marque")->fetchAll(PDO::FETCH_ASSOC);
-$fournisseurs = $db->query("SELECT id_fournisseur, nom_fournisseur FROM FOURNISSEURS ORDER BY nom_fournisseur")->fetchAll(PDO::FETCH_ASSOC);
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    try {
-        $sql = "INSERT INTO PIECES (reference, nom_piece, id_marque, prix_achat, prix_vente, stock_actuel, type_motorisation, id_fournisseur) 
-                VALUES (:ref, :nom, :marque, :pa, :pv, :stock, :moteur, :fourn)";
-        
-        $stmt = $db->prepare($sql);
-        $stmt->execute([
-            ':ref'    => $_POST['reference'],
-            ':nom'    => $_POST['nom_piece'],
-            ':marque' => $_POST['id_marque'],
-            ':pa'     => $_POST['prix_achat'],
-            ':pv'     => $_POST['prix_vente'],
-            ':stock'  => $_POST['stock_actuel'],
-            ':moteur' => $_POST['type_motorisation'],
-            ':fourn'  => $_POST['id_fournisseur']
-        ]);
-        
-        $message = "<div class='alert alert-success'>✅ Pièce ajoutée avec succès au catalogue !</div>";
-    } catch (PDOException $e) {
-        $message = "<div class='alert alert-danger'>❌ Erreur : " . $e->getMessage() . "</div>";
+    $ref = trim($_POST['ref']);
+    $nom = trim($_POST['nom']);
+    $prix = (float)$_POST['prix'];
+    $stock = (int)$_POST['stock'];
+    
+    // 1. Vérification de l'existence de la référence
+    $check = $db->prepare("SELECT id_piece FROM PIECES WHERE reference = ?");
+    $check->execute([$ref]);
+    
+    if ($check->rowCount() > 0) {
+        $message = '<div class="alert alert-danger mb-3"><i class="fas fa-exclamation-triangle me-2"></i> Erreur : La référence <strong>' . htmlspecialchars($ref) . '</strong> existe déjà !</div>';
+    } else {
+        // 2. Insertion avec le nom de colonne correct : stock_actuel
+        $stmt = $db->prepare("INSERT INTO PIECES (nom_piece, reference, prix_vente, stock_actuel) VALUES (?, ?, ?, ?)");
+        if ($stmt->execute([$nom, $ref, $prix, $stock])) {
+            header("Location: gestion_stock.php?success=1");
+            exit();
+        } else {
+            $message = '<div class="alert alert-danger mb-3">Erreur lors de l\'enregistrement en base de données.</div>';
+        }
     }
 }
+
+include __DIR__ . '/../includes/header.php';
 ?>
 
 <div class="container py-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0"><i class="fas fa-plus-circle"></i> Ajouter une nouvelle pièce</h4>
+    <div class="card shadow-sm border-0 col-md-6 mx-auto">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i> Ajouter une nouvelle pièce</h5>
+        </div>
+        <div class="card-body">
+            <?= $message ?>
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nom de la pièce</label>
+                    <input type="text" name="nom" class="form-control" placeholder="Ex: Plaquette de frein" required>
                 </div>
-                <div class="card-body">
-                    <?= $message ?>
-                    <form method="POST">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Référence (SKU)</label>
-                                <input type="text" name="reference" class="form-control" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Désignation / Nom</label>
-                                <input type="text" name="nom_piece" class="form-control" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Marque</label>
-                                <select name="id_marque" class="form-select">
-                                    <?php foreach ($marques as $m): ?>
-                                        <option value="<?= $m['id_marque'] ?>"><?= $m['nom_marque'] ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Motorisation</label>
-                                <select name="type_motorisation" class="form-select">
-                                    <option value="Thermique">Thermique</option>
-                                    <option value="Electrique">Electrique</option>
-                                    <option value="Hybride">Hybride</option>
-                                    <option value="Non Classé">Non Classé</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Prix Achat (€)</label>
-                                <input type="number" step="0.01" name="prix_achat" class="form-control" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Prix Vente (€)</label>
-                                <input type="number" step="0.01" name="prix_vente" class="form-control" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Stock Initial</label>
-                                <input type="number" name="stock_actuel" class="form-control" value="0">
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Fournisseur</label>
-                                <select name="id_fournisseur" class="form-select">
-                                    <?php foreach ($fournisseurs as $f): ?>
-                                        <option value="<?= $f['id_fournisseur'] ?>"><?= $f['nom_fournisseur'] ?></option>
-                                    <?php endforeach; ?>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="mt-4">
-                            <button type="submit" class="btn btn-success w-100">Enregistrer la pièce</button>
-                            <a href="gestion_pieces.php" class="btn btn-link w-100 text-muted mt-2">Retour au catalogue</a>
-                        </div>
-                    </form>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Référence (Unique)</label>
+                    <input type="text" name="ref" class="form-control" placeholder="Ex: REF-12345" required>
                 </div>
-            </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Prix de Vente (F)</label>
+                    <input type="number" name="prix" class="form-control" step="0.01" placeholder="0.00" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Stock Initial (Stock actuel)</label>
+                    <input type="number" name="stock" class="form-control" value="0" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 mt-2">
+                    <i class="fas fa-save me-2"></i> Enregistrer la pièce
+                </button>
+            </form>
         </div>
     </div>
 </div>
 
-<?php include '../../includes/footer.php'; ?>
+<?php include __DIR__ . '/footer.php'; ?>

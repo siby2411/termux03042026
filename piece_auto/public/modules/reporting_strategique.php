@@ -5,7 +5,7 @@ $database = new Database();
 $db = $database->getConnection();
 
 $page_title = "Reporting Stratégique";
-include '../../includes/header.php';
+include __DIR__ . '/../includes/header.php';
 
 // 1. Données pour le graphique linéaire (7 derniers jours)
 $ventes_jours = $db->query("SELECT DATE(date_vente) as jour, SUM(total_commande) as total 

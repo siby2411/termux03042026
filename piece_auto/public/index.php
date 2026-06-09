@@ -3,7 +3,7 @@ require_once __DIR__ . '/../includes/auth_check.php';
 require_once __DIR__ . '/../config/Database.php';
 
 $page_title = "OMEGA PIÈCE AUTO - Dashboard";
-include '../includes/header.php';
+include 'includes/header.php';
 
 $database = new Database();
 $db = $database->getConnection();
