@@ -12,8 +12,6 @@ $apps = [
     "Report" => ["url" => $host . ":8130/", "logo" => "📋"],
     "Centre DIOP" => ["url" => $host . ":8140/", "logo" => "🏥"],
     "Pharmacie" => ["url" => $host . ":8144/", "logo" => "💊"],
-    "Foot" => ["url" => $host . ":8142/", "logo" => "⚽"],
-    "Offre Emploi" => ["url" => $host . ":8164/", "logo" => "💼"],
     "Restauration" => ["url" => $host . ":8104/", "logo" => "🍽️"],
     "Auto" => ["url" => $host . ":8110/", "logo" => "🚘"],
     "Cabinet Radiologie" => ["url" => $host . ":8153/", "logo" => "🩻"],

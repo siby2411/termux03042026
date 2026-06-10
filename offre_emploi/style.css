@@ -1,0 +1,9 @@
+body { font-family: 'Arial', sans-serif; line-height: 1.6; margin: 0; padding: 0; }
+header { background: #0056b3; color: white; padding: 20px; text-align: center; }
+.pub-container { width: 100%; overflow: hidden; background: #f4f4f4; padding: 10px 0; border-bottom: 2px solid #0056b3; }
+.scrolling-wrapper { display: flex; white-space: nowrap; animation: scroll 20s linear infinite; }
+.scrolling-wrapper img { height: 50px; margin: 0 30px; }
+@keyframes scroll { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
+.admin-form { max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ccc; border-radius: 8px; }
+input, textarea { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; }
+button { background: #28a745; color: white; padding: 10px 20px; border: none; cursor: pointer; }
