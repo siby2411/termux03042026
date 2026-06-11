@@ -147,16 +147,7 @@ $services = $pdo->query("SELECT id, name FROM services ORDER BY name")->fetchAll
                         <h5>Centre Mamadou Diop</h5>
                         <small><?= ucfirst($_SESSION['user_role']) ?></small>
                     </div>
-                    <ul class="sidebar-menu">
-                        <li><a href="../<?= $_SESSION['user_role'] ?>/dashboard.php"><i class="fas fa-home"></i> Dashboard</a></li>
-                        <li><a href="liste.php"><i class="fas fa-users"></i> Patients</a></li>
-                        <li><a href="form.php" class="active"><i class="fas fa-user-plus"></i> <?= $patient_id ? 'Modifier' : 'Nouveau' ?> patient</a></li>
-                        <li><a href="../consultation/liste.php"><i class="fas fa-stethoscope"></i> Consultations</a></li>
-                        <li><a href="../consultation/form.php"><i class="fas fa-plus-circle"></i> Nouvelle consultation</a></li>
-                        <li><a href="../rendezvous/liste.php"><i class="fas fa-calendar"></i> Rendez-vous</a></li>
-                        <li><a href="../rendezvous/form.php"><i class="fas fa-calendar-plus"></i> Prendre RDV</a></li>
-                        <li><a href="/logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-                    </ul>
+<?php include $_SERVER["DOCUMENT_ROOT"] . "/includes/sidebar.php"; ?>
                 </div>
             </div>
             

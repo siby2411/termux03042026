@@ -110,14 +110,7 @@ $medecins = $pdo->query("
                         <h5>Centre Mamadou Diop</h5>
                         <small><?= ucfirst($role) ?></small>
                     </div>
-                    <ul class="sidebar-menu">
-                        <li><a href="../dashboard/index.php"><i class="fas fa-home"></i> Dashboard</a></li>
-                        <li><a href="index.php" class="active"><i class="fas fa-calendar"></i> Rendez-vous</a></li>
-                        <?php if ($role == 'admin'): ?>
-                        <li><a href="../patients/index.php"><i class="fas fa-users"></i> Patients</a></li>
-                        <?php endif; ?>
-                        <li><a href="/logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-                    </ul>
+<?php include $_SERVER["DOCUMENT_ROOT"] . "/includes/sidebar.php"; ?>
                 </div>
             </div>
             

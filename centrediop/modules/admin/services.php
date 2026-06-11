@@ -94,18 +94,7 @@ $services = $pdo->query("
                         <h5>Centre Mamadou Diop</h5>
                         <small>Administrateur</small>
                     </div>
-                    <ul class="sidebar-menu">
-                        <li><a href="dashboard.php"><i class="fas fa-home"></i> Dashboard</a></li>
-                        <li><a href="patients.php"><i class="fas fa-users"></i> Patients</a></li>
-                        <li><a href="personnel.php"><i class="fas fa-user-md"></i> Personnel</a></li>
-                        <li><a href="services.php" class="active"><i class="fas fa-building"></i> Services</a></li>
-                        <li><a href="prix_services.php"><i class="fas fa-tag"></i> Prix</a></li>
-                        <li><a href="consultations.php"><i class="fas fa-stethoscope"></i> Consultations</a></li>
-                        <li><a href="paiements.php"><i class="fas fa-credit-card"></i> Paiements</a></li>
-                        <li><a href="../pointage/index.php"><i class="fas fa-clock"></i> Pointage</a></li>
-                        <li><a href="../statistiques/index.php"><i class="fas fa-chart-line"></i> Statistiques</a></li>
-                        <li><a href="/logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-                    </ul>
+<?php include $_SERVER["DOCUMENT_ROOT"] . "/includes/sidebar.php"; ?>
                 </div>
             </div>
             

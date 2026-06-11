@@ -152,15 +152,7 @@ $patients_recents->execute([$_SESSION['user_id']]);
                             <strong><?= $user['prenom'] ?> <?= $user['nom'] ?></strong>
                         </div>
                     </div>
-                    <ul class="sidebar-menu">
-                        <li><a href="dashboard.php" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
-                        <li><a href="ajout_patient.php"><i class="fas fa-user-plus"></i> Nouveau patient</a></li>
-                        <li><a href="paiement_traitement.php"><i class="fas fa-credit-card"></i> Paiement traitement</a></li>
-                        <li><a href="etat_journalier.php"><i class="fas fa-chart-bar"></i> État journalier</a></li>
-                        <li><a href="/modules/medical/edition_dossier.php"><i class="fas fa-edit"></i> Édition dossier</a></li>
-                        <li><a href="historique.php"><i class="fas fa-history"></i> Historique</a></li>
-                        <li><a href="/logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-                    </ul>
+<?php include $_SERVER["DOCUMENT_ROOT"] . "/includes/sidebar.php"; ?>
                 </div>
             </div>
             

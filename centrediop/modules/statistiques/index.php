@@ -99,11 +99,7 @@ try {
                         <h5>Centre Mamadou Diop</h5>
                         <small>Statistiques</small>
                     </div>
-                    <ul class="sidebar-menu">
-                        <li><a href="../admin/dashboard.php"><i class="fas fa-home"></i> Dashboard</a></li>
-                        <li><a href="index.php" class="active"><i class="fas fa-chart-line"></i> Statistiques</a></li>
-                        <li><a href="/logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-                    </ul>
+<?php include $_SERVER["DOCUMENT_ROOT"] . "/includes/sidebar.php"; ?>
                 </div>
             </div>
             

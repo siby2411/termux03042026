@@ -57,13 +57,7 @@ $total_consultations = array_sum(array_column($stats, 'nb_consultations'));
                         <h5>Centre Mamadou Diop</h5>
                         <small>Caissier</small>
                     </div>
-                    <ul class="sidebar-menu">
-                        <li><a href="index.php"><i class="fas fa-home"></i> Dashboard</a></li>
-                        <li><a href="etat_caisse.php"><i class="fas fa-chart-line"></i> État de caisse</a></li>
-                        <li><a href="liste_patients.php"><i class="fas fa-users"></i> Liste patients</a></li>
-                        <li><a href="stats_departements.php" class="active"><i class="fas fa-chart-pie"></i> Stats départements</a></li>
-                        <li><a href="/logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-                    </ul>
+<?php include $_SERVER["DOCUMENT_ROOT"] . "/includes/sidebar.php"; ?>
                 </div>
             </div>
             

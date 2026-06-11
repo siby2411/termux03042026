@@ -56,12 +56,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_rdv'])) {
                         <i class="fas fa-hospital fa-3x mb-2"></i>
                         <h5>Centre Mamadou Diop</h5>
                     </div>
-                    <ul class="sidebar-menu">
-                        <li><a href="../admin/dashboard.php"><i class="fas fa-home"></i> Dashboard</a></li>
-                        <li><a href="liste.php"><i class="fas fa-calendar"></i> Liste RDV</a></li>
-                        <li><a href="form.php" class="active"><i class="fas fa-plus-circle"></i> Nouveau RDV</a></li>
-                        <li><a href="/logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-                    </ul>
+<?php include $_SERVER["DOCUMENT_ROOT"] . "/includes/sidebar.php"; ?>
                 </div>
             </div>
             

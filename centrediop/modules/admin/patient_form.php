@@ -81,22 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <h5>Centre Mamadou Diop</h5>
                         <small>Administrateur</small>
                     </div>
-                    <ul class="sidebar-menu">
-                        <li><a href="dashboard.php"><i class="fas fa-home"></i> Dashboard</a></li>
-                        <li><a href="patients.php"><i class="fas fa-users"></i> Patients</a></li>
-                        <li><a href="patient_form.php" class="active"><i class="fas fa-user-plus"></i> Nouveau patient</a></li>
-                        <li><a href="personnel.php"><i class="fas fa-user-md"></i> Personnel</a></li>
-                        <li><a href="personnel_form.php"><i class="fas fa-user-plus"></i> Nouveau personnel</a></li>
-                        <li><a href="../consultation/liste.php"><i class="fas fa-stethoscope"></i> Consultations</a></li>
-                        <li><a href="../consultation/form.php"><i class="fas fa-plus-circle"></i> Nouvelle consultation</a></li>
-                        <li><a href="../rendezvous/liste.php"><i class="fas fa-calendar"></i> Rendez-vous</a></li>
-                        <li><a href="../rendezvous/form.php"><i class="fas fa-calendar-plus"></i> Prendre RDV</a></li>
-                        <li><a href="../paiements/liste.php"><i class="fas fa-credit-card"></i> Paiements</a></li>
-                        <li><a href="../paiements/form.php"><i class="fas fa-plus-circle"></i> Nouveau paiement</a></li>
-                        <li><a href="../pointage/index.php"><i class="fas fa-clock"></i> Pointage</a></li>
-                        <li><a href="../statistiques/index.php"><i class="fas fa-chart-line"></i> Statistiques</a></li>
-                        <li><a href="/logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-                    </ul>
+<?php include $_SERVER["DOCUMENT_ROOT"] . "/includes/sidebar.php"; ?>
                 </div>
             </div>
             

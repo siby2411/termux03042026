@@ -82,17 +82,7 @@ if (isset($_GET['search_rdv'])) {
                         <h5>Centre Mamadou Diop</h5>
                         <small>Sage-femme</small>
                     </div>
-                    <ul class="sidebar-menu">
-                        <li><a href="/modules/medical/edition_dossier.php"><i class="fas fa-edit"></i> Édition dossier</a></li>
-                        <li><a href="dashboard.php" class="active"><i class="fas fa-home"></i> Dashboard</a></li>
-                        <li><a href="../patients/liste.php"><i class="fas fa-users"></i> Patients</a></li>
-                        <li><a href="../patients/form.php"><i class="fas fa-user-plus"></i> Nouveau patient</a></li>
-                        <li><a href="../consultation/liste.php"><i class="fas fa-stethoscope"></i> Consultations</a></li>
-                        <li><a href="../consultation/form.php"><i class="fas fa-plus-circle"></i> Nouvelle consultation</a></li>
-                        <li><a href="../rendezvous/liste.php"><i class="fas fa-calendar"></i> Rendez-vous</a></li>
-                        <li><a href="../rendezvous/form.php"><i class="fas fa-calendar-plus"></i> Prendre RDV</a></li>
-                        <li><a href="/logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-                    </ul>
+<?php include $_SERVER["DOCUMENT_ROOT"] . "/includes/sidebar.php"; ?>
                 </div>
             </div>
             

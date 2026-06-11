@@ -46,12 +46,7 @@ $total_heures = array_sum(array_column($stats, 'heures_total'));
                         <i class="fas fa-hospital fa-3x mb-2"></i>
                         <h5>Centre Mamadou Diop</h5>
                     </div>
-                    <ul class="sidebar-menu">
-                        <li><a href="../admin/dashboard.php"><i class="fas fa-home"></i> Dashboard</a></li>
-                        <li><a href="index.php"><i class="fas fa-fingerprint"></i> Pointage</a></li>
-                        <li><a href="stats.php" class="active"><i class="fas fa-chart-line"></i> Statistiques</a></li>
-                        <li><a href="/logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-                    </ul>
+<?php include $_SERVER["DOCUMENT_ROOT"] . "/includes/sidebar.php"; ?>
                 </div>
             </div>
             

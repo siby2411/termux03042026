@@ -76,13 +76,7 @@ if ($_SESSION['user_role'] == 'admin') {
                         <h5>Centre Mamadou Diop</h5>
                         <small><?= ucfirst($_SESSION['user_role']) ?></small>
                     </div>
-                    <ul class="sidebar-menu">
-                        <li><a href="liste.php" class="active"><i class="fas fa-calendar"></i> Rendez-vous</a></li>
-                        <li><a href="form.php"><i class="fas fa-plus-circle"></i> Nouveau rendez-vous</a></li>
-                        <li><a href="../consultation/liste.php"><i class="fas fa-stethoscope"></i> Consultations</a></li>
-                        <li><a href="../paiements/liste.php"><i class="fas fa-credit-card"></i> Paiements</a></li>
-                        <li><a href="/logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
-                    </ul>
+<?php include $_SERVER["DOCUMENT_ROOT"] . "/includes/sidebar.php"; ?>
                 </div>
             </div>
             
