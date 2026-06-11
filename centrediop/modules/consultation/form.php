@@ -2,187 +2,72 @@
 session_start();
 require_once '../../config/database.php';
 require_once '../../includes/auth.php';
-
-if (!isset($_SESSION['user_id']) || !in_array($_SESSION['user_role'], ['admin', 'medecin', 'sagefemme'])) {
-    header('Location: /login.php');
-    exit();
-}
-
 $pdo = getPDO();
-$message = '';
-$error = '';
-$patient_id = $_GET['patient_id'] ?? null;
-$file_id = $_GET['file_id'] ?? null;
-$patient = null;
 
-if ($patient_id) {
-    $stmt = $pdo->prepare("
-        SELECT p.*, d.*
-        FROM patients p
-        LEFT JOIN dossiers_medicaux d ON p.id = d.patient_id
-        WHERE p.id = ?
-    ");
-    $stmt->execute([$patient_id]);
-    $patient = $stmt->fetch();
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $stmt = $pdo->prepare("INSERT INTO consultations (patient_id, medecin_id, service_id, date_consultation, motif_consultation, type_consultation, statut) VALUES (?, ?, ?, NOW(), ?, ?, 'planifiee')");
+    $stmt->execute([$_POST['patient_id'], $_POST['medecin_id'], $_POST['service_id'], $_POST['motif'], $_POST['type']]);
+    header('Location: index.php?msg=success');
+    exit;
 }
-
-$actes = $pdo->query("SELECT * FROM actes_medicaux ORDER BY libelle")->fetchAll();
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_consultation'])) {
-    try {
-        $pdo->beginTransaction();
-        
-        $numero_consult = 'CONS-' . date('Ymd') . '-' . str_pad(rand(1, 999), 3, '0', STR_PAD_LEFT);
-        
-        $stmt = $pdo->prepare("
-            INSERT INTO consultations (
-                numero_consultation, patient_id, medecin_id, service_id,
-                date_consultation, motif_consultation, diagnostic, observations, statut
-            ) VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, 'terminee')
-        ");
-        $stmt->execute([
-            $numero_consult,
-            $_POST['patient_id'],
-            $_SESSION['user_id'],
-            $_SESSION['user_service'] ?? 1,
-            $_POST['motif'],
-            $_POST['diagnostic'],
-            $_POST['observations']
-        ]);
-        
-        $consultation_id = $pdo->lastInsertId();
-        
-        if (isset($_POST['actes']) && is_array($_POST['actes'])) {
-            foreach ($_POST['actes'] as $acte_id) {
-                $stmt_acte = $pdo->prepare("SELECT prix_consultation, prix_traitement FROM actes_medicaux WHERE id = ?");
-                $stmt_acte->execute([$acte_id]);
-                $acte = $stmt_acte->fetch();
-                $prix = $acte['prix_consultation'] ?: $acte['prix_traitement'];
-                
-                $stmt = $pdo->prepare("INSERT INTO consultation_actes (consultation_id, acte_id, prix_applique) VALUES (?, ?, ?)");
-                $stmt->execute([$consultation_id, $acte_id, $prix]);
-            }
-        }
-        
-        if ($file_id) {
-            $pdo->prepare("UPDATE file_attente SET statut = 'termine' WHERE id = ?")->execute([$file_id]);
-        }
-        
-        $pdo->commit();
-        $message = "Consultation enregistrée avec succès";
-        
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        $error = "Erreur: " . $e->getMessage();
-    }
-}
-
-// File d'attente
-$queue = $pdo->prepare("
-    SELECT f.*, p.prenom, p.nom, p.code_patient_unique
-    FROM file_attente f
-    JOIN patients p ON f.patient_id = p.id
-    WHERE f.service_id = ? AND f.statut = 'en_attente'
-    ORDER BY FIELD(f.priorite, 'urgence', 'senior', 'normal'), f.cree_a ASC
-");
-$queue->execute([$_SESSION['user_service'] ?? 1]);
-$waiting = $queue->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nouvelle consultation</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-md-2 p-0">
-                <div class="sidebar">
-                    <div class="text-center mb-4">
-                        <i class="fas fa-hospital fa-3x mb-2"></i>
-                        <h5>Centre Mamadou Diop</h5>
-                        <small><?= ucfirst($_SESSION['user_role']) ?></small>
-                    </div>
-<?php include $_SERVER["DOCUMENT_ROOT"] . "/includes/sidebar.php"; ?>
-                </div>
-            </div>
-            
-            <div class="col-md-10 p-4">
-                <h2 class="mb-4"><i class="fas fa-stethoscope"></i> Nouvelle consultation</h2>
-                
-                <?php if ($message): ?><div class="alert alert-success"><?= $message ?></div><?php endif; ?>
-                <?php if ($error): ?><div class="alert alert-danger"><?= $error ?></div><?php endif; ?>
-                
-                <div class="row">
-                    <div class="col-md-4">
-                        <div class="dashboard-card">
-                            <h5 class="mb-3"><i class="fas fa-clock"></i> En attente</h5>
-                            <?php foreach ($waiting as $w): ?>
-                            <div class="border p-2 mb-2">
-                                <strong><?= $w['prenom'] ?> <?= $w['nom'] ?></strong><br>
-                                <small><?= $w['code_patient_unique'] ?></small><br>
-                                <a href="?patient_id=<?= $w['patient_id'] ?>&file_id=<?= $w['id'] ?>" class="btn btn-sm btn-primary mt-2">
-                                    Consulter
-                                </a>
-                            </div>
-                            <?php endforeach; ?>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-2 p-0"><?php require_once '../../includes/sidebar.php'; ?></div>
+        <div class="col-md-10 p-4">
+            <div class="card p-4 shadow-sm border-0">
+                <h2 class="mb-4"><i class="fas fa-stethoscope"></i> Nouvelle Consultation</h2>
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Patient</label>
+                            <select name="patient_id" class="form-select" required>
+                                <?php $pats = $pdo->query("SELECT id, nom, prenom FROM patients");
+                                foreach($pats as $p) echo "<option value='{$p['id']}'>{$p['nom']} {$p['prenom']}</option>"; ?>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Service / Département</label>
+                            <select name="service_id" class="form-select" required>
+                                <?php $serv = $pdo->query("SELECT id, nom_service FROM services");
+                                foreach($serv as $s) echo "<option value='{$s['id']}'>{$s['nom_service']}</option>"; ?>
+                            </select>
                         </div>
                     </div>
-                    
-                    <div class="col-md-8">
-                        <?php if ($patient): ?>
-                        <div class="dashboard-card">
-                            <h5 class="mb-3">Patient: <?= $patient['prenom'] ?> <?= $patient['nom'] ?></h5>
-                            <form method="POST">
-                                <input type="hidden" name="patient_id" value="<?= $patient['id'] ?>">
-                                <input type="hidden" name="file_id" value="<?= $file_id ?>">
-                                
-                                <div class="row mb-3">
-                                    <div class="col-md-6">Code: <?= $patient['code_patient_unique'] ?></div>
-                                    <div class="col-md-6">Tél: <?= $patient['telephone'] ?></div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label>Motif</label>
-                                    <input type="text" name="motif" class="form-control" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label>Diagnostic</label>
-                                    <textarea name="diagnostic" class="form-control" rows="3" required></textarea>
-                                </div>
-                                <div class="mb-3">
-                                    <label>Observations</label>
-                                    <textarea name="observations" class="form-control" rows="2"></textarea>
-                                </div>
-                                <div class="mb-3">
-                                    <label>Actes</label>
-                                    <?php foreach ($actes as $a): ?>
-                                    <div class="form-check">
-                                        <input type="checkbox" name="actes[]" value="<?= $a['id'] ?>" class="form-check-input">
-                                        <label class="form-check-label"><?= $a['libelle'] ?></label>
-                                    </div>
-                                    <?php endforeach; ?>
-                                </div>
-                                
-                                <button type="submit" name="save_consultation" class="btn btn-primary">
-                                    Enregistrer
-                                </button>
-                            </form>
-                        </div>
-                        <?php else: ?>
-                        <div class="alert alert-info">Sélectionnez un patient dans la file d'attente</div>
-                        <?php endif; ?>
+                    <div class="mb-3">
+                        <label class="form-label">Médecin</label>
+                        <select name="medecin_id" class="form-select" required>
+                            <?php $docs = $pdo->query("SELECT id, nom FROM users WHERE role='medecin'");
+                            foreach($docs as $d) echo "<option value='{$d['id']}'>Dr. {$d['nom']}</option>"; ?>
+                        </select>
                     </div>
-                </div>
+                    <div class="mb-3">
+                        <label class="form-label">Motif de consultation</label>
+                        <textarea name="motif" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Type de consultation</label>
+                        <select name="type" class="form-select">
+                            <option value="normale">Normale</option>
+                            <option value="urgence">Urgence</option>
+                            <option value="controle">Contrôle</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary px-4">Enregistrer la consultation</button>
+                    <a href="index.php" class="btn btn-secondary px-4">Annuler</a>
+                </form>
             </div>
         </div>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</div>
 </body>
 </html>

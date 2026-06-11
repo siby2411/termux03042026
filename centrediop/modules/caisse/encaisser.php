@@ -1,13 +1,17 @@
 <?php
+session_start();
 require_once '../../includes/db.php';
-$id = filter_var($_GET['id'], FILTER_VALIDATE_INT);
 
-$stmt = $conn->prepare("UPDATE factures SET statut_paiement = 'payee' WHERE id = ?");
-$stmt->bind_param("i", $id);
-
-if ($stmt->execute()) {
-    echo "Paiement enregistré avec succès. <a href='index.php'>Retour à la caisse</a>";
-} else {
-    echo "Erreur lors de l'encaissement.";
+if (isset($_GET['id']) && is_numeric($_GET['id'])) {
+    $c_id = (int)$_GET['id'];
+    
+    $stmt = $conn->prepare("UPDATE consultations SET statut = 'payee' WHERE id = ?");
+    $stmt->bind_param("i", $c_id);
+    
+    if ($stmt->execute()) {
+        // Redirection vers le reçu qui s'imprime automatiquement
+        header("Location: imprimer_recu.php?id=" . $c_id);
+        exit();
+    }
 }
 ?>

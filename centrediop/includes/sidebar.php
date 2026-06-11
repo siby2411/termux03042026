@@ -1,24 +1,22 @@
-<div class="bg-dark text-white p-3" style="min-height: 100vh; width: 250px;">
+<div class="sidebar" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); min-height: 100vh; color: white; padding: 20px;">
     <h5>Centre Mamadou Diop</h5>
-    <hr>
-    <ul class="nav flex-column">
-        <li class="nav-item"><a href="/index.php" class="nav-link text-white"><i class="fas fa-home"></i> Dashboard</a></li>
+    <ul class="nav flex-column mt-4">
+        <li><a href="/modules/admin/dashboard.php" class="text-white text-decoration-none py-2 d-block"><i class="fas fa-home"></i> Dashboard</a></li>
         
-        <li class="nav-item mt-3 text-muted small px-3">MÉDICAL</li>
-        <li class="nav-item"><a href="/modules/consultation/index.php" class="nav-link text-white"><i class="fas fa-stethoscope"></i> Consultations</a></li>
-        <li class="nav-item"><a href="/modules/admin/patients.php" class="nav-link text-white"><i class="fas fa-user-injured"></i> Patients</a></li>
+        <li class="mt-3 text-uppercase small opacity-75">Administration</li>
+        <li><a href="/modules/admin/batiments_form.php" class="text-white text-decoration-none py-1 d-block">Bâtiments</a></li>
+        <li><a href="/modules/admin/salles_form.php" class="text-white text-decoration-none py-1 d-block">Salles</a></li>
+        <li><a href="/modules/admin/materiel_form.php" class="text-white text-decoration-none py-1 d-block">Matériel</a></li>
+        <li><a href="/modules/admin/personnel.php" class="text-white text-decoration-none py-1 d-block">Personnel</a></li>
         
-        <li class="nav-item mt-3 text-muted small px-3">ADMINISTRATION</li>
-        <li class="nav-item"><a href="/modules/admin/batiments_form.php" class="nav-link text-white"><i class="fas fa-building"></i> Bâtiments</a></li>
-        <li class="nav-item"><a href="/modules/admin/personnel.php" class="nav-link text-white"><i class="fas fa-user-tie"></i> Personnel</a></li>
-        <li class="nav-item"><a href="/modules/admin/services.php" class="nav-link text-white"><i class="fas fa-cogs"></i> Services</a></li>
+        <li class="mt-3 text-uppercase small opacity-75">Patients & Médical</li>
+        <li><a href="/modules/patients/liste.php" class="text-white text-decoration-none py-1 d-block">Liste Patients</a></li>
+        <li><a href="/modules/consultation/index.php" class="text-white text-decoration-none py-1 d-block">Consultations</a></li>
+        <li><a href="/modules/rendezvous/liste.php" class="text-white text-decoration-none py-1 d-block">Rendez-vous</a></li>
         
-        <li class="nav-item mt-3 text-muted small px-3">OPÉRATIONNEL</li>
-        <li class="nav-item"><a href="/modules/stock/index.php" class="nav-link text-white"><i class="fas fa-boxes"></i> Stock</a></li>
-        <li class="nav-item"><a href="/modules/facturation/index.php" class="nav-link text-white"><i class="fas fa-file-invoice"></i> Facturation</a></li>
-        <li class="nav-item"><a href="/modules/pharmacie/index.php" class="nav-link text-white"><i class="fas fa-pills"></i> Pharmacie</a></li>
-        <li class="nav-item"><a href="/modules/caisse/index.php" class="nav-link text-white"><i class="fas fa-cash-register"></i> Caisse</a></li>
-        
-        <li class="nav-item mt-5"><a href="/logout.php" class="nav-link text-danger"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+        <li class="mt-3 text-uppercase small opacity-75">Gestion & Stock</li>
+        <li><a href="/modules/stock/index.php" class="text-white text-decoration-none py-1 d-block">Gestion Stock</a></li>
+        <li><a href="/modules/facturation/index.php" class="text-white text-decoration-none py-1 d-block">Facturation</a></li>
+        <li><a href="/modules/caisse/index.php" class="text-white text-decoration-none py-1 d-block">Caisse</a></li>
     </ul>
 </div>
