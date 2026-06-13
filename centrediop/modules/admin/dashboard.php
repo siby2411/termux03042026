@@ -42,37 +42,26 @@ $stats = $pdo->query("SELECT
             </div>
 
             <div class="row">
-                <div class="col-md-3">
-                    <div class="card p-3 shadow-sm border-0 mb-3">
-                        <small class="text-muted">Total Patients</small>
-                        <div class="fs-4"><strong><?= $stats['patients'] ?></strong></div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card p-3 shadow-sm border-0 mb-3">
-                        <small class="text-muted">En cours / Attente</small>
-                        <div class="fs-4"><strong><?= $stats['en_cours'] ?> / <?= $stats['paiements_attente'] ?></strong></div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card p-3 shadow-sm border-0 mb-3">
-                        <small class="text-muted">Prescriptions du jour</small>
-                        <div class="fs-4 text-success"><strong><?= $stats['prescriptions_jour'] ?></strong></div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card p-3 shadow-sm border-0 mb-3">
-                        <small class="text-muted">Alerte Stock Pharmacie</small>
-                        <div class="fs-4 text-danger"><strong><?= $stats['alertes_stock'] ?></strong></div>
-                    </div>
-                </div>
+                <div class="col-md-3"><div class="card p-3 shadow-sm border-0 mb-3"><small class="text-muted">Total Patients</small><div class="fs-4"><strong><?= $stats['patients'] ?></strong></div></div></div>
+                <div class="col-md-3"><div class="card p-3 shadow-sm border-0 mb-3"><small class="text-muted">En cours / Attente</small><div class="fs-4"><strong><?= $stats['en_cours'] ?> / <?= $stats['paiements_attente'] ?></strong></div></div></div>
+                <div class="col-md-3"><div class="card p-3 shadow-sm border-0 mb-3"><small class="text-muted">Prescriptions du jour</small><div class="fs-4 text-success"><strong><?= $stats['prescriptions_jour'] ?></strong></div></div></div>
+                <div class="col-md-3"><div class="card p-3 shadow-sm border-0 mb-3"><small class="text-muted">Alerte Stock Pharmacie</small><div class="fs-4 text-danger"><strong><?= $stats['alertes_stock'] ?></strong></div></div></div>
             </div>
-            
+
             <div class="row">
-                <div class="col-md-12">
-                    <div class="card p-3 shadow-sm border-0">
+                <div class="col-md-6">
+                    <div class="card p-4 shadow-sm border-0">
                         <small class="text-muted">Recettes Totales</small>
                         <div class="fs-2 text-primary"><strong><?= number_format($stats['recettes'] ?? 0, 0, ',', ' ') ?> FCFA</strong></div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card p-4 shadow-sm border-0">
+                        <h5><i class="fas fa-file-invoice-dollar text-success"></i> État Financier Rapide</h5>
+                        <div class="d-flex gap-2 mt-2">
+                            <a href="/modules/statistiques/index.php?date_debut=<?= date('Y-m-d') ?>&date_fin=<?= date('Y-m-d') ?>" class="btn btn-outline-success btn-sm">Rapport du Jour</a>
+                            <a href="/modules/statistiques/index.php?date_debut=<?= date('Y-m-01') ?>&date_fin=<?= date('Y-m-t') ?>" class="btn btn-outline-primary btn-sm">Rapport du Mois</a>
+                        </div>
                     </div>
                 </div>
             </div>
