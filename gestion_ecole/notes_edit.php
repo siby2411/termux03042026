@@ -1,101 +1,79 @@
 <?php
 require_once 'db_connect_ecole.php';
 $conn = db_connect_ecole();
-$page_title = "Saisie des Notes - OMEGA";
 include 'header_ecole.php';
 
-$classe_id = $_GET['classe_id'] ?? 0;
-$matiere_id = $_GET['matiere_id'] ?? 0;
-$semestre = $_GET['semestre'] ?? 1;
-$annee = "2025-2026";
+$classe_id = isset($_GET['classe_id']) ? intval($_GET['classe_id']) : 0;
+$matiere_id = isset($_GET['matiere_id']) ? intval($_GET['matiere_id']) : 0;
+$semestre = isset($_GET['semestre']) ? intval($_GET['semestre']) : 1;
 
-if (isset($_POST['save_notes'])) {
-    foreach ($_POST['notes'] as $code_etudiant => $n) {
-        $cc1 = ($n['cc1'] !== "") ? $n['cc1'] : null;
-        $cc2 = ($n['cc2'] !== "") ? $n['cc2'] : null;
-        $exam = ($n['exam'] !== "") ? $n['exam'] : null;
-
-        $stmt = $conn->prepare("INSERT INTO notes (code_etudiant, id_matiere, semestre, annee_academique, note_cc1, note_cc2, note_exam) 
-                                VALUES (?, ?, ?, ?, ?, ?, ?) 
-                                ON DUPLICATE KEY UPDATE note_cc1=?, note_cc2=?, note_exam=?");
-        $stmt->bind_param("siisdddddd", $code_etudiant, $matiere_id, $semestre, $annee, $cc1, $cc2, $exam, $cc1, $cc2, $exam);
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && $matiere_id > 0) {
+    foreach ($_POST['cc1'] as $code_etu => $val_cc1) {
+        $val_cc2 = $_POST['cc2'][$code_etu] ?? 0;
+        $val_exam = $_POST['exam'][$code_etu] ?? 0;
+        
+        $stmt = $conn->prepare("INSERT INTO notes (code_etudiant, id_matiere, semestre, note_cc1, note_cc2, note_exam, est_valide) 
+                                VALUES (?, ?, ?, ?, ?, ?, 1) 
+                                ON DUPLICATE KEY UPDATE note_cc1 = VALUES(note_cc1), note_cc2 = VALUES(note_cc2), note_exam = VALUES(note_exam)");
+        $stmt->bind_param("siiddd", $code_etu, $matiere_id, $semestre, $val_cc1, $val_cc2, $val_exam);
         $stmt->execute();
+        
+        // Automatisation : Calcul des moyennes après chaque enregistrement
+        $conn->query("CALL update_bulletins('$code_etu')");
     }
-    echo "<div class='alert alert-success'>Notes enregistrées avec succès !</div>";
+    echo "<div class='alert alert-success container mt-3'>Notes enregistrées et bulletin mis à jour pour la classe.</div>";
 }
-
-$classes = $conn->query("SELECT * FROM classes");
-$matieres = ($classe_id) ? $conn->query("SELECT m.id, m.nom_matiere FROM matieres m JOIN unites_valeur uv ON m.id = uv.matiere_id WHERE uv.classe_id = $classe_id") : null;
-$etudiants = ($classe_id && $matiere_id) ? $conn->query("SELECT * FROM etudiants WHERE classe_id = $classe_id ORDER BY nom ASC") : null;
 ?>
 
 <div class="container mt-4">
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-body bg-light">
-            <form method="GET" class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">1. Choisir Classe</label>
-                    <select name="classe_id" class="form-select" onchange="this.form.submit()">
-                        <option value="">-- Sélectionner --</option>
-                        <?php while($c = $classes->fetch_assoc()): ?>
-                            <option value="<?= $c['id'] ?>" <?= ($classe_id == $c['id']) ? 'selected' : '' ?>><?= $c['nom_class'] ?></option>
-                        <?php endwhile; ?>
-                    </select>
-                </div>
-                <?php if ($matieres): ?>
-                <div class="col-md-3">
-                    <label class="form-label fw-bold">2. Matière</label>
-                    <select name="matiere_id" class="form-select" onchange="this.form.submit()">
-                        <option value="">-- Sélectionner --</option>
-                        <?php while($m = $matieres->fetch_assoc()): ?>
-                            <option value="<?= $m['id'] ?>" <?= ($matiere_id == $m['id']) ? 'selected' : '' ?>><?= $m['nom_matiere'] ?></option>
-                        <?php endwhile; ?>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <label class="form-label fw-bold">3. Semestre</label>
-                    <select name="semestre" class="form-select" onchange="this.form.submit()">
-                        <option value="1" <?= ($semestre == 1) ? 'selected' : '' ?>>S1</option>
-                        <option value="2" <?= ($semestre == 2) ? 'selected' : '' ?>>S2</option>
-                    </select>
-                </div>
-                <?php endif; ?>
-            </form>
-        </div>
-    </div>
+    <div class="card p-4 shadow-sm">
+        <h4 class="mb-4"><i class="bi bi-pencil-square"></i> Saisie Notes (CC1:20% | CC2:20% | Examen:60%)</h4>
+        <form method="GET" class="row g-3 mb-4">
+            <div class="col-md-3">
+                <select name="classe_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">Sélectionner Classe</option>
+                    <?php 
+                    $res = $conn->query("SELECT * FROM classes");
+                    while($c = $res->fetch_assoc()) echo "<option value='{$c['id']}' ".($classe_id==$c['id']?'selected':'').">{$c['nom_class']}</option>";
+                    ?>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="matiere_id" class="form-select" onchange="this.form.submit()">
+                    <option value="">Sélectionner Matière</option>
+                    <?php 
+                    $res = $conn->query("SELECT * FROM matieres");
+                    while($m = $res->fetch_assoc()) echo "<option value='{$m['id']}' ".($matiere_id==$m['id']?'selected':'').">{$m['nom_matiere']}</option>";
+                    ?>
+                </select>
+            </div>
+        </form>
 
-    <?php if ($etudiants && $etudiants->num_rows > 0): ?>
-    <form method="POST">
-        <div class="table-responsive">
-            <table class="table table-bordered bg-white align-middle">
+        <?php if($classe_id > 0 && $matiere_id > 0): ?>
+        <form method="POST">
+            <table class="table table-bordered table-hover">
                 <thead class="table-dark">
-                    <tr>
-                        <th>Étudiant</th>
-                        <th width="15%">CC1 (40%)</th>
-                        <th width="15%">CC2 (40%)</th>
-                        <th width="15%">EXAMEN (60%)</th>
-                    </tr>
+                    <tr><th>Étudiant</th><th>CC1 (20%)</th><th>CC2 (20%)</th><th>Examen (60%)</th></tr>
                 </thead>
                 <tbody>
-                    <?php while($e = $etudiants->fetch_assoc()): 
-                        // Récupérer notes existantes
-                        $res_n = $conn->query("SELECT * FROM notes WHERE code_etudiant='".$e['code_etudiant']."' AND id_matiere=$matiere_id AND semestre=$semestre");
-                        $dn = $res_n->fetch_assoc();
+                    <?php 
+                    $etudiants = $conn->query("SELECT code_etudiant, nom, prenom FROM etudiants WHERE classe_id = $classe_id");
+                    while($e = $etudiants->fetch_assoc()): 
+                        $code = $e['code_etudiant'];
+                        $n = $conn->query("SELECT note_cc1, note_cc2, note_exam FROM notes WHERE code_etudiant='$code' AND id_matiere=$matiere_id AND semestre=$semestre")->fetch_assoc();
                     ?>
                     <tr>
-                        <td><strong><?= $e['nom'] ?> <?= $e['prenom'] ?></strong><br><small class="text-muted"><?= $e['code_etudiant'] ?></small></td>
-                        <td><input type="number" step="0.01" name="notes[<?= $e['code_etudiant'] ?>][cc1]" class="form-control" value="<?= $dn['note_cc1'] ?? '' ?>"></td>
-                        <td><input type="number" step="0.01" name="notes[<?= $e['code_etudiant'] ?>][cc2]" class="form-control" value="<?= $dn['note_cc2'] ?? '' ?>"></td>
-                        <td class="bg-warning-subtle"><input type="number" step="0.01" name="notes[<?= $e['code_etudiant'] ?>][exam]" class="form-control fw-bold" value="<?= $dn['note_exam'] ?? '' ?>"></td>
+                        <td class="align-middle"><?= $e['nom'].' '.$e['prenom'] ?></td>
+                        <td><input type="number" step="0.5" name="cc1[<?= $code ?>]" value="<?= $n['note_cc1'] ?? '' ?>" class="form-control"></td>
+                        <td><input type="number" step="0.5" name="cc2[<?= $code ?>]" value="<?= $n['note_cc2'] ?? '' ?>" class="form-control"></td>
+                        <td><input type="number" step="0.5" name="exam[<?= $code ?>]" value="<?= $n['note_exam'] ?? '' ?>" class="form-control"></td>
                     </tr>
                     <?php endwhile; ?>
                 </tbody>
             </table>
-        </div>
-        <button type="submit" name="save_notes" class="btn btn-primary w-100 py-3 fw-bold shadow">ENREGISTRER TOUTES LES NOTES</button>
-    </form>
-    <?php elseif($classe_id && $matiere_id): ?>
-        <div class="alert alert-warning">Aucun étudiant inscrit dans cette classe.</div>
-    <?php endif; ?>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Enregistrer les notes</button>
+        </form>
+        <?php endif; ?>
+    </div>
 </div>
 <?php include 'footer_ecole.php'; ?>

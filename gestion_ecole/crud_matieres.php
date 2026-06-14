@@ -3,11 +3,32 @@ if (session_status() == PHP_SESSION_NONE) { session_start(); }
 require_once 'db_connect_ecole.php';
 $conn = db_connect_ecole();
 
+// 1. Logique d'insertion
+if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['nom_matiere'])) {
+    $stmt = $conn->prepare("INSERT INTO matieres (nom_matiere, coefficient, semestre) VALUES (?, ?, ?)");
+    $stmt->bind_param("sds", $_POST['nom_matiere'], $_POST['coefficient'], $_POST['semestre']);
+    $stmt->execute();
+    
+    // Génération du code matière (Ex: MAT-1)
+    $id = $conn->insert_id;
+    $code = "MAT-" . $id;
+    $conn->query("UPDATE matieres SET code_matiere = '$code' WHERE id = $id");
+    
+    header("Location: crud_matieres.php"); exit();
+}
+
+// 2. Logique de suppression
+if (isset($_GET['delete'])) {
+    $conn->query("DELETE FROM matieres WHERE id = " . intval($_GET['delete']));
+    header("Location: crud_matieres.php"); exit();
+}
+
 $matieres = $conn->query("SELECT * FROM matieres ORDER BY semestre, nom_matiere");
 include 'header_ecole.php';
 ?>
 
 <div class="container mt-4">
+    <h2 class="mb-4 text-primary fw-bold">Gestion des Matières</h2>
     <div class="row">
         <div class="col-md-4">
             <div class="card shadow-sm border-0">
@@ -19,11 +40,11 @@ include 'header_ecole.php';
                         <div class="mb-2">
                             <label class="small">Semestre</label>
                             <select name="semestre" class="form-select">
-                                <option value="S1">Semestre 1</option>
-                                <option value="S2">Semestre 2</option>
+                                <option value="S1">S1</option>
+                                <option value="S2">S2</option>
                             </select>
                         </div>
-                        <button class="btn btn-primary w-100 mt-3 fw-bold">Enregistrer</button>
+                        <button type="submit" class="btn btn-primary w-100 mt-3 fw-bold">Enregistrer</button>
                     </form>
                 </div>
             </div>
@@ -32,20 +53,18 @@ include 'header_ecole.php';
             <div class="card shadow-sm border-0">
                 <table class="table table-hover mb-0">
                     <thead class="table-light small">
-                        <tr>
-                            <th>Matière</th>
-                            <th>Coef</th>
-                            <th>Semestre</th>
-                            <th class="text-end">Action</th>
-                        </tr>
+                        <tr><th>Code</th><th>Matière</th><th>Coef</th><th>Semestre</th><th class="text-end">Action</th></tr>
                     </thead>
                     <tbody>
                         <?php while($m = $matieres->fetch_assoc()): ?>
                         <tr>
+                            <td><code><?= $m['code_matiere'] ?></code></td>
                             <td class="fw-bold"><?= $m['nom_matiere'] ?></td>
                             <td><?= $m['coefficient'] ?></td>
                             <td><span class="badge <?= $m['semestre']=='S1'?'bg-warning text-dark':'bg-info' ?>"><?= $m['semestre'] ?></span></td>
-                            <td class="text-end"><a href="#" class="text-danger"><i class="bi bi-trash"></i></a></td>
+                            <td class="text-end">
+                                <a href="?delete=<?= $m['id'] ?>" class="text-danger" onclick="return confirm('Supprimer ?')"><i class="bi bi-trash"></i></a>
+                            </td>
                         </tr>
                         <?php endwhile; ?>
                     </tbody>
@@ -54,5 +73,4 @@ include 'header_ecole.php';
         </div>
     </div>
 </div>
-
 <?php include 'footer_ecole.php'; ?>

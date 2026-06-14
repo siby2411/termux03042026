@@ -3,33 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OMEGA ERP - Gestion École</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <title>OMEGA ERP | Gestion Scolaire</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <style>
-        :root { --omega-blue: #1a2a6c; --omega-gold: #D4AF37; }
-        .navbar-omega { background: var(--omega-blue); border-bottom: 3px solid var(--omega-gold); }
-        .nav-link { color: rgba(255,255,255,0.8) !important; font-weight: 500; }
-        .nav-link:hover { color: var(--omega-gold) !important; }
-        footer { background: #f8f9fa; border-top: 1px solid #dee2e6; padding: 20px 0; margin-top: 50px; }
+        body { background-color: #f8f9fa; }
+        .navbar-brand { font-weight: bold; color: #0d6efd !important; }
+        .nav-link { font-weight: 500; }
     </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark navbar-omega shadow-sm mb-4">
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-4">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="index.php">
-            <i class="bi bi-mortarboard-fill me-2"></i>OMEGA ERP <span style="color:var(--omega-gold)">GOLD</span>
+        <a class="navbar-brand" href="dashboard.php">
+            <i class="bi bi-cpu"></i> OMEGA ERP
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" href="index.php">Tableau de Bord</a></li>
-                <li class="nav-item"><a class="nav-link" href="crud_etudiants.php">Étudiants</a></li>
-                <li class="nav-item"><a class="nav-link" href="crud_paiements.php">Scolarité</a></li>
-                <li class="nav-item"><a class="nav-link text-danger fw-bold" href="logout.php"><i class="bi bi-power"></i></a></li>
-            </ul>
+                <li class="nav-item">
+                    <a class="nav-link" href="dashboard.php">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="generer_bulletin.php">
+                        <i class="bi bi-file-earmark-text"></i> Générer Bulletin
+                    </a>
+                </li>
+                </ul>
         </div>
     </div>
 </nav>
