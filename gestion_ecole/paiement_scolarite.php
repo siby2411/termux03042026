@@ -2,42 +2,15 @@
 include 'header_ecole.php'; 
 require_once 'db_connect_ecole.php'; 
 $conn = db_connect_ecole();
-
-$message = "";
-
-// --- Validation côté serveur ---
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $code = $conn->real_escape_string($_POST['etudiant_code']);
-    $montant = floatval($_POST['montant_verse']);
-    $type = $conn->real_escape_string($_POST['type_paiement']); // 'Inscription' ou 'Scolarité'
-    $mode = $conn->real_escape_string($_POST['mode_paiement']);
-    $recu = $conn->real_escape_string($_POST['recu_numero']);
-
-    // Récupérer l'ID étudiant à partir du code
-    $res_e = $conn->query("SELECT id FROM etudiants WHERE code_etudiant = '$code'");
-    $etu = $res_e->fetch_assoc();
-
-    if ($etu) {
-        $stmt = $conn->prepare("INSERT INTO paiements_scolarite (etudiant_id, montant_verse, mode_paiement, recu_numero) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("idss", $etu['id'], $montant, $mode, $recu);
-        
-        if ($stmt->execute()) {
-            $message = "<div class='alert alert-success'>Paiement de $montant FCFA enregistré avec succès pour $code.</div>";
-        }
-    } else {
-        $message = "<div class='alert alert-danger'>Erreur : Étudiant introuvable.</div>";
-    }
-}
 ?>
 
 <div class="container mt-4">
-    <?= $message ?>
     <div class="card shadow p-4">
-        <h4><i class="bi bi-wallet2"></i> Encaisser un Paiement</h4>
-        <form method="POST" id="formPaiement">
+        <h4><i class="bi bi-cash-stack"></i> Encaisser une Scolarité</h4>
+        <form method="POST" action="process_paiement.php">
             <div class="mb-3">
-                <label>Sélectionner Étudiant</label>
-                <select name="etudiant_code" id="etudiant_code" class="form-select" onchange="loadData()" required>
+                <label>Sélectionner Étudiant (Code)</label>
+                <select name="etudiant_code" id="etudiant_code" class="form-select" onchange="loadMontant()" required>
                     <option value="">Choisir un étudiant...</option>
                     <?php 
                     $res = $conn->query("SELECT code_etudiant, nom, prenom FROM etudiants");
@@ -48,16 +21,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label>Montant Scolarité dû</label>
-                    <input type="number" id="montant_scol_display" class="form-control" readonly>
+                    <label>Montant Scolarité dû (FCFA)</label>
+                    <input type="number" id="montant_du" class="form-control" readonly placeholder="Sélectionnez un étudiant">
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label>Montant à verser</label>
+                    <label>Montant à verser (FCFA)</label>
                     <input type="number" name="montant_verse" class="form-control" required>
                 </div>
             </div>
 
             <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label>Mois concerné</label>
+                    <select name="mois" class="form-select" required>
+                        <option value="Octobre">Octobre</option><option value="Novembre">Novembre</option>
+                        <option value="Decembre">Décembre</option><option value="Janvier">Janvier</option>
+                        <option value="Fevrier">Février</option><option value="Mars">Mars</option>
+                        <option value="Avril">Avril</option><option value="Mai">Mai</option>
+                        <option value="Juin">Juin</option>
+                    </select>
+                </div>
                 <div class="col-md-4 mb-3">
                     <label>Mode Paiement</label>
                     <select name="mode_paiement" class="form-select">
@@ -71,19 +54,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="text" name="recu_numero" class="form-control" required>
                 </div>
             </div>
-            <button type="submit" class="btn btn-primary w-100">Enregistrer l'encaissement</button>
+            <button type="submit" class="btn btn-primary w-100">Valider l'encaissement</button>
         </form>
     </div>
 </div>
 
 <script>
-function loadData() {
+function loadMontant() {
     let code = document.getElementById('etudiant_code').value;
     if(!code) return;
     fetch('get_etudiant_details.php?code=' + encodeURIComponent(code))
         .then(res => res.json())
         .then(data => {
-            document.getElementById('montant_scol_display').value = data.montant_scolarite;
+            document.getElementById('montant_du').value = data.montant_scolarite || 0;
         });
 }
 </script>

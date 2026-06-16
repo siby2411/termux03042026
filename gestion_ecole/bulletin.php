@@ -31,11 +31,17 @@ $bul = $conn->query("SELECT * FROM bulletins WHERE code_etudiant = '$code'")->fe
         </div>
     </div>
 
+    <div class="alert alert-info d-print-none">
+        <strong>Pondération :</strong> La note finale par matière est calculée sur la base de <strong>40% pour le contrôle continu (CC1+CC2)</strong> et <strong>60% pour l'examen</strong>.
+    </div>
+
     <?php foreach([1, 2] as $sem): ?>
         <h5 class="mt-4 text-primary"><i class="bi bi-calendar-event"></i> Semestre <?= $sem ?></h5>
         <table class="table table-bordered table-omega table-hover">
             <thead>
-                <tr class="text-center"><th>Matière</th><th>CC1</th><th>CC2</th><th>Examen</th><th>Moyenne</th></tr>
+                <tr class="text-center">
+                    <th>Matière</th><th>CC1 (20%)</th><th>CC2 (20%)</th><th>Examen (60%)</th><th>Moyenne</th>
+                </tr>
             </thead>
             <tbody>
                 <?php 
