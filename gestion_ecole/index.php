@@ -1,70 +1,85 @@
 <?php 
-if (session_status() == PHP_SESSION_NONE) { session_start(); }
-if (!isset($_SESSION['role'])) { header("Location: login.php"); exit(); }           
-require_once 'db_connect_ecole.php';
-$conn = db_connect_ecole();
-
-// Statistiques
-$res_etu = $conn->query("SELECT COUNT(*) as total FROM etudiants");
-$total_etudiants = $res_etu->fetch_assoc()['total'];
-
-$res_mois = $conn->query("SELECT SUM(montant_verse) as total FROM paiements_scolarite WHERE MONTH(date_paiement) = MONTH(CURRENT_DATE())");
-$total_mois = $res_mois->fetch_assoc()['total'] ?? 0;
-
-$res_global = $conn->query("SELECT SUM(montant_verse) as total FROM paiements_scolarite");
-$total_global = $res_global->fetch_assoc()['total'] ?? 0;
-
-include 'header_ecole.php';
+include 'header_ecole.php'; 
+require_once 'db_connect_ecole.php'; 
+$conn = db_connect_ecole(); 
 ?>
 
-<style>
-    :root { --omega-blue: #1a2a6c; --omega-gold: #D4AF37; }
-    body { background-color: #f4f7f6; }
-    .omega-banner { background: linear-gradient(135deg, #1a2a6c, #b21f1f); color: white; padding: 30px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-    .menu-card { background: white; border-radius: 15px; padding: 20px; text-align: center; text-decoration: none !important; color: #333; transition: all 0.3s ease; display: flex; flex-direction: column; height: 100%; box-shadow: 0 5px 15px rgba(0,0,0,0.05); border: 1px solid #eee; }
-    .menu-card:hover { transform: translateY(-8px); background: var(--omega-blue); color: white !important; box-shadow: 0 15px 30px rgba(26, 42, 108, 0.3); }
-    .menu-card i { font-size: 2rem; margin-bottom: 10px; }
-    .menu-card span { font-weight: 700; text-transform: uppercase; font-size: 0.75rem; }
-    .stat-card { border-radius: 10px; padding: 20px; color: white; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-</style>
-
 <div class="container mt-4">
-    <div class="row text-center">
-        <div class="col-md-4">
-            <div class="stat-card bg-primary">
-                <h6>Total Étudiants</h6>
-                <h3><?= $total_etudiants ?></h3>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="stat-card bg-success">
-                <h6>Encaissé ce mois</h6>
-                <h3><?= number_format($total_mois, 0, ' ', ' ') ?> FCFA</h3>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="stat-card bg-dark">
-                <h6>Total Recettes Globales</h6>
-                <h3><?= number_format($total_global, 0, ' ', ' ') ?> FCFA</h3>
-            </div>
-        </div>
+    <div class="p-5 mb-5 rounded shadow-lg text-white" style="background: linear-gradient(135deg, #2c3e50, #34495e);">
+        <h1 class="display-5 fw-bold">OMEGA INFORMATIQUE CONSULTING</h1>
+        <p class="lead">Progiciel de Gestion pour École de Formation - Système LMD (Licence, Master, Doctorat)</p>
+        <hr class="my-4 border-light">
+        <p class="mb-0 text-white-50"><i class="bi bi-shield-check"></i> Environnement Client-Serveur Sécurisé</p>
     </div>
 
-    <div class="omega-banner text-center shadow">
-        <h2 class="fw-bold">OMEGA INFORMATIQUE <span style="color:var(--omega-gold)">CONSULTING</span></h2>
-        <p class="mb-0 opacity-75">Système de Gestion Académique & Financière - Dakar, Sénégal</p>
-    </div>
-
+    <h5 class="mb-3 text-dark"><i class="bi bi-gear-fill me-2"></i>Administration</h5>
     <div class="row g-4 mb-5">
-        <div class="col-6 col-md-3"><a href="crud_etudiants.php" class="menu-card"><i class="bi bi-people-fill text-primary"></i><span>Étudiants</span></a></div>
-        <div class="col-6 col-md-3"><a href="paiement_scolarite.php" class="menu-card"><i class="bi bi-cash-stack text-success"></i><span>Scolarité</span></a></div>
-        <div class="col-6 col-md-3"><a href="notes_edit.php" class="menu-card"><i class="bi bi-journal-check text-warning"></i><span>Notes</span></a></div>
-        <div class="col-6 col-md-3"><a href="generer_bulletin.php" class="menu-card border-danger"><i class="bi bi-file-earmark-bar-graph text-danger"></i><span>Bulletins</span></a></div>
-        <div class="col-6 col-md-3"><a href="crud_professeurs.php" class="menu-card"><i class="bi bi-person-badge text-info"></i><span>Professeurs</span></a></div>
-        <div class="col-6 col-md-3"><a href="crud_filieres.php" class="menu-card"><i class="bi bi-mortarboard text-primary"></i><span>Filières</span></a></div>
-        <div class="col-6 col-md-3"><a href="crud_classes.php" class="menu-card"><i class="bi bi-diagram-3 text-secondary"></i><span>Classes</span></a></div>
-        <div class="col-6 col-md-3"><a href="crud_stock.php" class="menu-card"><i class="bi bi-box-seam text-dark"></i><span>Stock</span></a></div>
+        <?php 
+        $admin_modules = [
+            ['url' => 'crud_etudiants.php', 'icon' => 'bi-people', 'title' => 'Étudiants', 'color' => '#2980b9'],
+            ['url' => 'classes.php', 'icon' => 'bi-building', 'title' => 'Classes', 'color' => '#7f8c8d'],
+            ['url' => 'filieres.php', 'icon' => 'bi-book', 'title' => 'Filières', 'color' => '#16a085'],
+            ['url' => 'generer_bulletin.php', 'icon' => 'bi-file-earmark-bar-graph', 'title' => 'Bulletins', 'color' => '#c0392b']
+        ];
+        foreach($admin_modules as $mod): ?>
+            <div class="col-6 col-md-3">
+                <div class="card h-100 border-0 shadow-sm" style="border-top: 5px solid <?= $mod['color'] ?>;">
+                    <div class="card-body text-center">
+                        <i class="bi <?= $mod['icon'] ?> fs-1 mb-2" style="color: <?= $mod['color'] ?>;"></i>
+                        <h6 class="card-title fw-bold text-dark"><?= $mod['title'] ?></h6>
+                        <a href="<?= $mod['url'] ?>" class="stretched-link"></a>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+
+    <h5 class="mb-3 text-dark"><i class="bi bi-cash-stack me-2"></i>Gestion Financière</h5>
+    <div class="row g-4">
+        <?php 
+        $finance_modules = [
+            ['url' => 'paiement_scolarite.php', 'icon' => 'bi-wallet2', 'title' => 'Scolarité', 'color' => '#2980b9'],
+            ['url' => 'paiement_inscription.php', 'icon' => 'bi-pencil-square', 'title' => 'Inscription', 'color' => '#27ae60'],
+            ['url' => 'recherche_fiche.php', 'icon' => 'bi-search', 'title' => 'Fiche Suivi', 'color' => '#8e44ad'],
+            ['url' => 'etat_classe.php?classe_id=1', 'icon' => 'bi-graph-up', 'title' => 'État Financier', 'color' => '#f39c12']
+        ];
+        foreach($finance_modules as $mod): ?>
+            <div class="col-6 col-md-3">
+                <div class="card h-100 border-0 shadow-sm" style="border-top: 5px solid <?= $mod['color'] ?>;">
+                    <div class="card-body text-center">
+                        <i class="bi <?= $mod['icon'] ?> fs-1 mb-2" style="color: <?= $mod['color'] ?>;"></i>
+                        <h6 class="card-title fw-bold text-dark"><?= $mod['title'] ?></h6>
+                        <a href="<?= $mod['url'] ?>" class="stretched-link"></a>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+
+    <div class="card mt-5 shadow-sm border-0">
+        <div class="card-header bg-white py-3 fw-bold text-secondary">Récapitulatif des Tarifs par Classe</div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th class="ps-4">Classe</th>
+                        <th class="text-end">Frais Scolarité</th>
+                        <th class="text-end pe-4">Frais Inscription</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php 
+                    $classes = $conn->query("SELECT nom_class, montant_scolarite, montant_inscription FROM classes");
+                    while($c = $classes->fetch_assoc()): ?>
+                    <tr>
+                        <td class="ps-4 fw-medium"><?= htmlspecialchars($c['nom_class']) ?></td>
+                        <td class="text-end text-primary fw-bold"><?= number_format($c['montant_scolarite'], 0, ' ', ' ') ?> FCFA</td>
+                        <td class="text-end pe-4 text-success fw-bold"><?= number_format($c['montant_inscription'], 0, ' ', ' ') ?> FCFA</td>
+                    </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-
 <?php include 'footer_ecole.php'; ?>
