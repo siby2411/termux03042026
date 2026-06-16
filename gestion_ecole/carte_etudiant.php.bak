@@ -42,16 +42,14 @@ $img_src = (!empty($e['photo_path']) && file_exists($e['photo_path'])) ? $e['pho
     <div class="left-side">
         <div class="brand-name">OMEGA<br>CONSULTING</div>
         <img src="<?= htmlspecialchars($img_src) ?>" class="photo-frame" alt="Photo">
-        <div class="code-id"><?= htmlspecialchars($e['code_id'] ?? 'N/A') ?></div>
+        <div class="code-id"><?= htmlspecialchars($e['code_etudiant'] ?? 'N/A') ?></div>
 
         <div class="qr-code">
             <?php
-            // Détection automatique du domaine (Local ou Public via Cloudflared)
-            $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'];
-            $url_verif = $base_url . "/verification.php?id=" . $id;
+            $url_verif = "http://127.0.0.1:8000/verification.php?id=" . $id;
             $qr_src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" . urlencode($url_verif);
             ?>
-            <a href="<?= $url_verif ?>" target="_blank">
+            <a href="<?= $url_verif ?>" target="_blank" title="Cliquez pour vérifier l'étudiant">
                 <img src="<?= $qr_src ?>" alt="QR Code" style="width: 70px; height: 70px; border: 2px solid white; background: white; padding: 2px;">
             </a>
         </div>
