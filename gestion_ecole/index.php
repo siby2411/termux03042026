@@ -39,7 +39,8 @@ $conn = db_connect_ecole();
         <?php
         $academic_modules = [
             ['url' => 'crud_programmes.php', 'icon' => 'bi-journals', 'title' => 'Programmes', 'color' => '#d35400'],
-            ['url' => 'crud_uv.php', 'icon' => 'bi-list-check', 'title' => 'Unités de Valeur', 'color' => '#8e44ad']
+            ['url' => 'crud_uv.php', 'icon' => 'bi-list-check', 'title' => 'Unités de Valeur', 'color' => '#8e44ad'],
+            ['url' => 'gestion_emploi.php', 'icon' => 'bi-calendar-event', 'title' => 'Emploi du Temps', 'color' => '#e67e22']
         ];
         foreach($academic_modules as $mod): ?>
             <div class="col-6 col-md-3">

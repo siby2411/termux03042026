@@ -8,64 +8,66 @@ $query = "SELECT e.nom, e.prenom, e.code_etudiant, c.nom_class, e.adresse, ce.ph
           JOIN classes c ON e.classe_id = c.id
           LEFT JOIN cartes_etudiants ce ON e.id = ce.etudiant_id
           WHERE e.id = $id";
-
 $result = $conn->query($query);
 $e = $result ? $result->fetch_assoc() : null;
 
 if (!$e) { die("<h1>Étudiant introuvable</h1>"); }
 
-$default_img = 'assets/default_avatar.png';
-$img_src = (!empty($e['photo_path']) && file_exists($e['photo_path'])) ? $e['photo_path'] : $default_img;
+// Gestion image profil
+$photo = (!empty($e['photo_path']) && file_exists($e['photo_path'])) ? $e['photo_path'] : 'assets/default_avatar.png';
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Carte Étudiant - OMEGA CONSULTING</title>
+    <title>Dossier Étudiant - OMEGA ERP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
     <style>
-        body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #e3f2fd; font-family: 'Segoe UI', Arial, sans-serif; }
-        .badge-card { width: 520px; height: 310px; background: linear-gradient(135deg, #2196f3 0%, #bbdefb 100%); border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); padding: 25px; display: flex; position: relative; border: 1px solid #90caf9; }
-        .left-side { width: 35%; border-right: 2px solid #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        .right-side { width: 65%; padding-left: 30px; display: flex; flex-direction: column; justify-content: center; }
-        .brand-name { font-family: 'Arial Black', sans-serif; font-size: 14px; text-align: center; color: #ffffff; letter-spacing: 1px; margin-bottom: 15px; text-transform: uppercase; }
-        .photo-frame { width: 100px; height: 100px; border-radius: 12px; border: 3px solid #ffffff; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.2); background: #f8f9fa; }
-        .info-label { color: #1565c0; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; margin-top: 15px; font-weight: bold; }
-        .info-value { color: #0d47a1; font-weight: 700; font-size: 17px; margin-top: 2px; }
-        .code-id { background: #0d47a1; color: white; padding: 3px 8px; border-radius: 5px; font-family: monospace; margin-top: 8px; font-size: 13px; }
-        .qr-code { margin-top: 12px; }
-        .footer-badge { position: absolute; bottom: 20px; right: 25px; font-size: 11px; color: #0d47a1; font-weight: bold; }
+        body { background: #f4f7f6; }
+        .main-container { max-width: 900px; margin: 30px auto; }
+        .profile-card { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 30px; }
+        .profile-img { width: 150px; height: 150px; object-fit: cover; border-radius: 50%; border: 4px solid #0d6efd; }
     </style>
 </head>
 <body>
-
-<div class="badge-card">
-    <div class="left-side">
-        <div class="brand-name">OMEGA<br>CONSULTING</div>
-        <img src="<?= htmlspecialchars($img_src) ?>" class="photo-frame" alt="Photo">
-        <div class="code-id"><?= htmlspecialchars($e['code_id'] ?? 'N/A') ?></div>
-
-        <div class="qr-code">
+<div class="main-container">
+    <div class="profile-card mb-5">
+        <img src="<?= htmlspecialchars($photo) ?>" class="profile-img" alt="Photo Étudiant">
+        <div>
+            <h2 class="text-primary"><?= htmlspecialchars($e['nom'].' '.$e['prenom']) ?></h2>
+            <p class="mb-1"><strong>Code:</strong> <?= htmlspecialchars($e['code_etudiant']) ?></p>
+            <p class="mb-1"><strong>Classe:</strong> <?= htmlspecialchars($e['nom_class']) ?></p>
+        </div>
+        <div class="ms-auto text-center">
             <?php
-            // Détection automatique du domaine (Local ou Public via Cloudflared)
-            $base_url = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'];
-            $url_verif = $base_url . "/verification.php?id=" . $id;
-            $qr_src = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" . urlencode($url_verif);
+            $url_verif = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://" . $_SERVER['HTTP_HOST'] . "/verification.php?id=" . $id;
+            $qr = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=" . urlencode($url_verif);
             ?>
-            <a href="<?= $url_verif ?>" target="_blank">
-                <img src="<?= $qr_src ?>" alt="QR Code" style="width: 70px; height: 70px; border: 2px solid white; background: white; padding: 2px;">
-            </a>
+            <img src="<?= $qr ?>" style="width: 100px;">
         </div>
     </div>
-    <div class="right-side">
-        <div class="info-label">Nom & Prénom</div>
-        <div class="info-value"><?= htmlspecialchars(($e['nom'] ?? '') . ' ' . ($e['prenom'] ?? '')) ?></div>
-        <div class="info-label">Classe</div>
-        <div class="info-value"><?= htmlspecialchars($e['nom_class'] ?? 'N/A') ?></div>
-        <div class="info-label">Adresse</div>
-        <div class="info-value"><?= htmlspecialchars($e['adresse'] ?? 'N/A') ?></div>
+
+    <div class="card p-4 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="text-primary"><i class="bi bi-calendar-week"></i> Emploi du Temps</h4>
+            <button class="btn btn-sm btn-outline-primary" onclick="document.getElementById('vue-tableau').classList.toggle('d-none')">Tableau / Calendrier</button>
+        </div>
+        <div id='calendar'></div>
+        <div id="vue-tableau" class="d-none mt-4">
+            <?php include 'tableau_emploi.php'; ?>
+        </div>
     </div>
-    <div class="footer-badge">2026 | CARTE PROFESSIONNELLE</div>
 </div>
 
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    new FullCalendar.Calendar(document.getElementById('calendar'), {
+      initialView: 'timeGridWeek',
+      events: 'api_emploi.php?id=<?= $id ?>',
+      height: 'auto'
+    }).render();
+  });
+</script>
 </body>
 </html>
