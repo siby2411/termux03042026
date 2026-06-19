@@ -1,9 +1,7 @@
-<?php
-include 'header_ecole.php';
+<?php include 'header_ecole.php';
 require_once 'db_connect_ecole.php';
 $conn = db_connect_ecole();
-?>
-
+?>                          
 <div class="container mt-4">
     <div class="p-5 mb-5 rounded shadow-lg text-white" style="background: linear-gradient(135deg, #2c3e50, #34495e);">
         <h1 class="display-5 fw-bold">OMEGA INFORMATIQUE CONSULTING</h1>
@@ -56,7 +54,7 @@ $conn = db_connect_ecole();
     </div>
 
     <h5 class="mb-3 text-dark"><i class="bi bi-cash-stack me-2"></i>Gestion Financière</h5>
-    <div class="row g-4">
+    <div class="row g-4 mb-5">
         <?php
         $finance_modules = [
             ['url' => 'paiement_scolarite.php', 'icon' => 'bi-wallet2', 'title' => 'Scolarité', 'color' => '#2980b9'],
@@ -75,6 +73,28 @@ $conn = db_connect_ecole();
                 </div>
             </div>
         <?php endforeach; ?>
+    </div>
+
+    <h5 class="mb-3 text-dark"><i class="bi bi-qr-code-scan me-2"></i>Cartes & Identification</h5>
+    <div class="row g-4 mb-5">
+        <div class="col-6 col-md-3">
+            <div class="card h-100 border-0 shadow-sm" style="border-top: 5px solid #2c3e50;">
+                <div class="card-body text-center">
+                    <i class="bi bi-qr-code fs-1 mb-2" style="color: #2c3e50;"></i>
+                    <h6 class="card-title fw-bold text-dark">Générateur QR</h6>
+                    <a href="qr_generator.php" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card h-100 border-0 shadow-sm" style="border-top: 5px solid #27ae60;">
+                <div class="card-body text-center">
+                    <i class="bi bi-list-ol fs-1 mb-2" style="color: #27ae60;"></i>
+                    <h6 class="card-title fw-bold text-dark">Liste QR Codes</h6>
+                    <a href="liste_qrcodes.php" class="stretched-link"></a>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 <?php include 'footer_ecole.php'; ?>
