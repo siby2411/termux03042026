@@ -3,13 +3,14 @@ require_once 'db_connect_ecole.php';
 $conn = db_connect_ecole();
 $id = intval($_GET['id'] ?? 0);
 
-// Récupération des données
+// Récupération des données étudiant
 $query = "SELECT e.*, c.nom_class, c.montant_scolarite FROM etudiants e JOIN classes c ON e.classe_id = c.id WHERE e.id = $id";
 $res = $conn->query($query);
 $e = $res->fetch_assoc();
 
 if (!$e) { die("<div class='container mt-5 alert alert-danger'>Étudiant introuvable.</div>"); }
 
+// Calculs financiers
 $code = $e['code_etudiant'];
 $scolarite_mensuelle = $e['montant_scolarite'];
 $mois_inscription = (int)date('m', strtotime($e['date_inscription'] ?? '2025-10-01'));
@@ -27,6 +28,12 @@ include 'header_ecole.php';
         
         <div class="bg-white p-2 mt-3 d-inline-block shadow" id="qrcode"></div>
         <p class="mt-2 small text-white-50">Scannez pour vérifier l'authenticité</p>
+        
+        <div class="mt-3">
+            <a href="bulletin.php?id=<?= $id ?>" class="btn btn-warning btn-lg fw-bold shadow-sm">
+                <i class="bi bi-file-earmark-bar-graph"></i> Consulter le Bulletin
+            </a>
+        </div>
     </div>
 
     <div class="row">
@@ -48,11 +55,11 @@ include 'header_ecole.php';
                 <div class="card-body p-0">
                     <ul class="list-group list-group-flush">
                         <?php
-                        $sql = "SELECT p.nom, p.prenom, p.telephone, u.nom_uv 
-                                FROM affectations a 
-                                JOIN professeurs p ON a.prof_id = p.id_prof 
-                                JOIN uvs u ON a.uv_id = u.id 
-                                WHERE a.classe_id = {$e['classe_id']} 
+                        $sql = "SELECT p.nom, p.prenom, p.telephone, u.nom_uv
+                                FROM affectations a
+                                JOIN professeurs p ON a.prof_id = p.id_prof
+                                JOIN uvs u ON a.uv_id = u.id
+                                WHERE a.classe_id = {$e['classe_id']}
                                 GROUP BY u.nom_uv";
                         $profs = $conn->query($sql);
                         while($p = $profs->fetch_assoc()): ?>
@@ -69,13 +76,20 @@ include 'header_ecole.php';
 </div>
 
 <script>
-    // URL dynamique pour s'adapter au tunnel Cloudflare ou Localhost
-    var baseUrl = window.location.protocol + "//" + window.location.host;
-    var fullUrl = baseUrl + "/verification.php?id=<?= $id ?>";
+    // 1. On récupère le nom d'hôte de la page actuelle (ex: root-pull-neighborhood-remember.trycloudflare.com)
+    var host = window.location.hostname;
     
-    console.log("QR Code URL: " + fullUrl);
+    // 2. Si on est sur localhost, on affiche une alerte pour vous prévenir que le scan ne marchera pas
+    if(host === "localhost" || host === "127.0.0.1") {
+        console.warn("Attention : Vous utilisez localhost, le QR code ne sera pas scannable par des appareils externes.");
+    }
 
-    // Génération avec niveau de correction H pour une détection maximale par Google Lens
+    // 3. On construit l'URL avec le host dynamique (protocole + hôte public)
+    var fullUrl = window.location.protocol + "//" + host + "/verification.php?id=<?= $id ?>";
+    
+    console.log("URL encodée dans le QR : " + fullUrl);
+
+    // 4. Génération avec un niveau de correction d'erreur élevé pour Google Lens
     new QRCode(document.getElementById("qrcode"), {
         text: fullUrl,
         width: 180,

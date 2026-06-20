@@ -1,7 +1,6 @@
 <?php include 'header_ecole.php';
 require_once 'db_connect_ecole.php';
-$conn = db_connect_ecole();
-?>                          
+$conn = db_connect_ecole(); ?>
 <div class="container mt-4">
     <div class="p-5 mb-5 rounded shadow-lg text-white" style="background: linear-gradient(135deg, #2c3e50, #34495e);">
         <h1 class="display-5 fw-bold">OMEGA INFORMATIQUE CONSULTING</h1>
@@ -15,8 +14,8 @@ $conn = db_connect_ecole();
         <?php
         $admin_modules = [
             ['url' => 'crud_etudiants.php', 'icon' => 'bi-people', 'title' => 'Étudiants', 'color' => '#2980b9'],
-            ['url' => 'classes.php', 'icon' => 'bi-building', 'title' => 'Classes', 'color' => '#7f8c8d'],
-            ['url' => 'filieres.php', 'icon' => 'bi-book', 'title' => 'Filières', 'color' => '#16a085'],
+            ['url' => 'crud_classes.php', 'icon' => 'bi-building', 'title' => 'Classes', 'color' => '#7f8c8d'],
+            ['url' => 'crud_filieres.php', 'icon' => 'bi-book', 'title' => 'Filières', 'color' => '#16a085'],
             ['url' => 'generer_bulletin.php', 'icon' => 'bi-file-earmark-bar-graph', 'title' => 'Bulletins', 'color' => '#c0392b']
         ];
         foreach($admin_modules as $mod): ?>
@@ -38,6 +37,7 @@ $conn = db_connect_ecole();
         $academic_modules = [
             ['url' => 'crud_programmes.php', 'icon' => 'bi-journals', 'title' => 'Programmes', 'color' => '#d35400'],
             ['url' => 'crud_uv.php', 'icon' => 'bi-list-check', 'title' => 'Unités de Valeur', 'color' => '#8e44ad'],
+            ['url' => 'liste_programme_classes.php', 'icon' => 'bi-list-ul', 'title' => 'Programmes Classes', 'color' => '#8e44ad'],
             ['url' => 'gestion_emploi.php', 'icon' => 'bi-calendar-event', 'title' => 'Emploi du Temps', 'color' => '#e67e22']
         ];
         foreach($academic_modules as $mod): ?>
