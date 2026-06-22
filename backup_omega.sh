@@ -26,7 +26,7 @@ scooter_db synthesepro_db transport_omega
 )
 
 for DB in "${DB_LIST[@]}"; do
-    echo "📦 Backup DB: $DB"
+    echo "📦 DB: $DB"
     mysqldump -u root $DB > "$BACKUP_DIR/${DB}_${DATE}.sql" 2>/dev/null
 
     if [ $? -eq 0 ]; then
@@ -34,28 +34,27 @@ for DB in "${DB_LIST[@]}"; do
     fi
 done
 
-# ================= CODE BACKUP (SAFE) =================
-echo "📦 Code backup léger..."
+# ================= CODE BACKUP (LOCAL ONLY) =================
+echo "📦 Backup code (LOCAL ONLY - NOT GITHUB)..."
 
 tar -czf "$BACKUP_DIR/code_${DATE}.tar.gz" \
 --exclude="backups" \
---exclude="node_modules" \
---exclude=".git" \
 --exclude="uploads" \
+--exclude=".git" \
+--exclude="vendor" \
 .
 
-# ⚠️ IMPORTANT: NO GIT PUSH FOR LARGE FILES
-echo "⚠️ Backups lourds NON envoyés sur Git (local only)"
+echo "⚠️ Backup code NON envoyé sur GitHub (trop lourd)"
 
-# ================= GIT CLEAN SYNC =================
+# ================= GIT SAFE SYNC =================
 git add .
 
-# uniquement SQL compressés légers (< règles Git safe)
+# uniquement SQL compressés légers
 git add $BACKUP_DIR/*.gz 2>/dev/null
 
 git commit -m "🚀 OMEGA SYNC $DATE" || echo "Rien à commit"
 git push origin main
 
 echo "=================================="
-echo "✅ BACKUP TERMINÉ PROPREMENT"
+echo "✅ SYNC TERMINÉ PROPREMENT"
 echo "=================================="
