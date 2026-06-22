@@ -1,57 +1,103 @@
 <?php
-$conn = new mysqli('localhost', 'root', '', 'omega_multisectoriel');
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nom = $conn->real_escape_string($_POST['nom_intervenant']);
-    $role = $_POST['role'];
-    $montant = $_POST['montant_contrat'];
-    $acompte = $_POST['acomptes_verses'];
-    $date = $_POST['date_dernier_versement'];
+$conn = new mysqli(
+'localhost',
+'root',
+'',
+'omega_multisectoriel'
+);
 
-    $conn->query("INSERT INTO gestion_paie (nom_intervenant, role, montant_contrat, acomptes_verses, date_dernier_versement, statut_paiement) 
-                  VALUES ('$nom', '$role', '$montant', '$acompte', '$date', 'Partiel')");
-    header("Location: stats_innovation.php");
+if($_SERVER['REQUEST_METHOD']=='POST'){
+
+$nom=$_POST['nom_complet'];
+$specialite=$_POST['specialite'];
+$type=$_POST['type_remuneration'];
+$tarif=$_POST['tarif_base'];
+
+$stmt=$conn->prepare("
+INSERT INTO personnel
+(
+nom_complet,
+specialite,
+type_remuneration,
+tarif_base
+)
+VALUES(?,?,?,?)
+");
+
+$stmt->bind_param(
+"sssd",
+$nom,
+$specialite,
+$type,
+$tarif
+);
+
+$stmt->execute();
+
+header("Location: gestion_rh.php");
+exit;
 }
+
 ?>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <title>Omega - Contrats RH</title>
+<meta charset="UTF-8">
+<title>Nouveau Personnel</title>
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-zinc-950 text-white p-6">
-    <div class="max-w-xl mx-auto bg-zinc-900 p-8 rounded-3xl border border-blue-500 shadow-2xl">
-        <h2 class="text-xl font-black mb-6 text-blue-500 uppercase italic">Nouveau Contrat Prestataire</h2>
-        <form method="POST" class="space-y-4">
-            <div class="grid grid-cols-2 gap-4">
-                <input type="text" name="nom_intervenant" placeholder="Nom ou Entreprise" class="w-full bg-zinc-800 p-3 rounded border border-zinc-700" required>
-                <select name="role" class="w-full bg-zinc-800 p-3 rounded border border-zinc-700">
-                    <option>Chef de Projet</option>
-                    <option>Maçon</option>
-                    <option>Plombier</option>
-                    <option>Électricien</option>
-                    <option>Menuisier</option>
-                    <option>Peintre</option>
-                </select>
-            </div>
-            <div>
-                <label class="text-[10px] text-gray-500 uppercase font-bold">Montant Global du Contrat (FCFA)</label>
-                <input type="number" name="montant_contrat" placeholder="Ex: 5000000" class="w-full bg-zinc-800 p-3 rounded border border-zinc-700" required>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-[10px] text-gray-500 uppercase font-bold">Acompte Versé</label>
-                    <input type="number" name="acomptes_verses" value="0" class="w-full bg-zinc-800 p-3 rounded border border-zinc-700">
-                </div>
-                <div>
-                    <label class="text-[10px] text-gray-500 uppercase font-bold">Date de signature</label>
-                    <input type="date" name="date_dernier_versement" value="<?= date('Y-m-d') ?>" class="w-full bg-zinc-800 p-3 rounded border border-zinc-700">
-                </div>
-            </div>
-            <button type="submit" class="w-full bg-blue-600 py-4 rounded-xl font-black uppercase">Enregistrer Engagement</button>
-            <a href="stats_innovation.php" class="block text-center text-xs text-gray-500 mt-4 tracking-widest">RETOUR DASHBOARD</a>
-        </form>
-    </div>
+
+<body class="bg-zinc-950 text-white p-8">
+
+<div class="max-w-3xl mx-auto bg-zinc-900 p-8 rounded-3xl">
+
+<h1 class="text-2xl font-black text-blue-500 mb-8">
+NOUVEL OUVRIER / TECHNICIEN
+</h1>
+
+<form method="post" class="space-y-4">
+
+<input
+name="nom_complet"
+placeholder="Nom complet"
+required
+class="w-full p-3 bg-zinc-800 rounded">
+
+<input
+name="specialite"
+placeholder="Spécialité"
+required
+class="w-full p-3 bg-zinc-800 rounded">
+
+<select
+name="type_remuneration"
+class="w-full p-3 bg-zinc-800 rounded">
+
+<option>Journalier</option>
+<option>Forfait</option>
+<option>Unitaire</option>
+
+</select>
+
+<input
+type="number"
+step="0.01"
+name="tarif_base"
+placeholder="Tarif de base"
+required
+class="w-full p-3 bg-zinc-800 rounded">
+
+<button
+class="w-full bg-blue-600 p-4 rounded-xl font-bold">
+
+ENREGISTRER
+
+</button>
+
+</form>
+
+</div>
+
 </body>
 </html>

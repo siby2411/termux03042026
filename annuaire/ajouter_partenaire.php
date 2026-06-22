@@ -1,8 +1,7 @@
 <?php
-require('config/db.php');
-
-$success = '';
-$error = '';
+    require('config/db.php');
+    $success = '';          
+    $error = '';            
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nom               = trim($_POST['nom'] ?? '');
@@ -12,7 +11,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $zone_geographique = trim($_POST['zone_geographique'] ?? '');
     $categorie         = $_POST['categorie'] ?? '';
 
-    $categories_valides = ['URGENCE', 'CLINIQUE', 'DENTAIRE', 'PHARMACIE'];
+    $categories_valides = [
+        'URGENCE', 'CLINIQUE', 'DENTAIRE', 'PHARMACIE',
+        'AGENCE_VOYAGE', 'ANNUAIRE', 'ASSURANCE', 'AUTO', 'BANQUE',
+        'CHARCUTERIE', 'COUTURE', 'ECOMMERCE', 'FITNESS', 'FOOT',
+        'GENIE_CIVIL', 'GESTION_AUTO', 'GESTION_COMMERCIALE', 'GESTION_ECOLE',
+        'GESTION_ECOMMERCIALE', 'GESTION_IMMOBILIERE', 'GESTION_POINTAGE',
+        'GESTION_PREVISIONNELLE', 'GP', 'HOTEL', 'OFFRE_EMPLOI', 'O_GARAGE',
+        'PARFUMERIE', 'PIECE_AUTO', 'PIZZERIA', 'PME', 'PORTAIL', 'PRESSING',
+        'REPORT', 'RESTAU', 'SCOOTER'
+    ];
 
     if (empty($nom) || empty($categorie) || !in_array($categorie, $categories_valides)) {
         $error = 'Veuillez remplir tous les champs obligatoires.';
@@ -73,12 +81,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             min-height: 100vh;
         }
 
-        /* ── NAVBAR ── */
+        /* -- NAVBAR -- */
         <?php include 'includes/navbar_styles.css.php'; ?>
 
-        /* ── PAGE ── */
+        /* -- PAGE -- */
         .page-wrapper {
-            max-width: 680px;
+            max-width: 1000px;
             margin: 40px auto 60px;
             padding: 0 20px;
         }
@@ -110,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             font-weight: 400;
         }
 
-        /* ── CARD ── */
+        /* -- CARD -- */
         .card {
             background: white;
             border-radius: 14px;
@@ -135,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             margin-bottom: 20px;
         }
 
-        /* ── FORM ── */
+        /* -- FORM -- */
         .field-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -197,11 +205,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             cursor: pointer;
         }
 
-        /* ── CATEGORIE PILLS ── */
+        /* -- CATEGORIE GRID -- */
         .cat-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
         }
 
         .cat-pill input[type="radio"] { display: none; }
@@ -218,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             cursor: pointer;
             transition: all 0.18s;
             text-align: center;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 500;
             color: var(--muted);
         }
@@ -237,7 +245,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background: white;
         }
 
-        /* ── SUBMIT ── */
+        /* -- SUBMIT -- */
         .card-footer {
             padding: 20px 32px;
             background: #f8fafc;
@@ -282,7 +290,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .btn-primary:hover { background: var(--navy2); }
         .btn-primary:active { transform: scale(0.98); }
 
-        /* ── ALERTS ── */
+        /* -- ALERTS -- */
         .alert {
             padding: 14px 18px;
             border-radius: 9px;
@@ -309,8 +317,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         .alert-icon { flex-shrink: 0; font-size: 1rem; margin-top: 1px; }
 
-        @media (max-width: 560px) {
+        @media (max-width: 1024px) {
+            .cat-grid { grid-template-columns: repeat(4, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .cat-grid { grid-template-columns: repeat(3, 1fr); }
             .field-row { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 560px) {
             .cat-grid { grid-template-columns: repeat(2, 1fr); }
             .card-section { padding: 22px 20px; }
             .card-footer { flex-direction: column-reverse; }
@@ -344,7 +360,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
     <?php endif; ?>
 
-    <form method="POST" action="ajouter_partenaire.php" novalidate>
+    <form method="POST" action="ajout_client.php" novalidate>
         <div class="card">
 
             <!-- SECTION 1 : Identité -->
@@ -411,10 +427,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="cat-grid">
                     <?php
                     $cats = [
-                        'URGENCE'  => ['icon' => '🚨', 'label' => 'Urgence'],
-                        'CLINIQUE' => ['icon' => '🏥', 'label' => 'Clinique'],
-                        'DENTAIRE' => ['icon' => '🦷', 'label' => 'Dentaire'],
-                        'PHARMACIE'=> ['icon' => '💊', 'label' => 'Pharmacie'],
+                        'URGENCE'          => ['icon' => '🚨', 'label' => 'Urgence'],
+                        'CLINIQUE'         => ['icon' => '🏥', 'label' => 'Clinique'],
+                        'DENTAIRE'         => ['icon' => '🦷', 'label' => 'Dentaire'],
+                        'PHARMACIE'        => ['icon' => '💊', 'label' => 'Pharmacie'],
+                        'AGENCE_VOYAGE'    => ['icon' => '✈️', 'label' => 'Agence Voyage'],
+                        'ANNUAIRE'         => ['icon' => '📚', 'label' => 'Annuaire'],
+                        'ASSURANCE'        => ['icon' => '🛡️', 'label' => 'Assurance'],
+                        'AUTO'             => ['icon' => '🚗', 'label' => 'Auto'],
+                        'BANQUE'           => ['icon' => '🏦', 'label' => 'Banque'],
+                        'CHARCUTERIE'      => ['icon' => '🥓', 'label' => 'Charcuterie'],
+                        'COUTURE'          => ['icon' => '👗', 'label' => 'Couture'],
+                        'ECOMMERCE'        => ['icon' => '🛒', 'label' => 'E-commerce'],
+                        'FITNESS'          => ['icon' => '💪', 'label' => 'Fitness'],
+                        'FOOT'             => ['icon' => '⚽', 'label' => 'Foot'],
+                        'GENIE_CIVIL'      => ['icon' => '🏗️', 'label' => 'Génie Civil'],
+                        'GESTION_AUTO'     => ['icon' => '🚗', 'label' => 'Gestion Auto'],
+                        'GESTION_COMMERCIALE' => ['icon' => '📊', 'label' => 'Gestion Commerciale'],
+                        'GESTION_ECOLE'    => ['icon' => '🎓', 'label' => 'Gestion École'],
+                        'GESTION_ECOMMERCIALE' => ['icon' => '🛒', 'label' => 'Gestion E-commerce'],
+                        'GESTION_IMMOBILIERE' => ['icon' => '🏠', 'label' => 'Gestion Immobilière'],
+                        'GESTION_POINTAGE' => ['icon' => '⏰', 'label' => 'Gestion Pointage'],
+                        'GESTION_PREVISIONNELLE' => ['icon' => '📈', 'label' => 'Gestion Prévisionnelle'],
+                        'GP'               => ['icon' => '📋', 'label' => 'GP'],
+                        'HOTEL'            => ['icon' => '🏨', 'label' => 'Hôtel'],
+                        'OFFRE_EMPLOI'     => ['icon' => '💼', 'label' => 'Offre Emploi'],
+                        'O_GARAGE'         => ['icon' => '🔧', 'label' => 'Garage'],
+                        'PARFUMERIE'       => ['icon' => '🌹', 'label' => 'Parfumerie'],
+                        'PIECE_AUTO'       => ['icon' => '🔧', 'label' => 'Pièce Auto'],
+                        'PIZZERIA'         => ['icon' => '🍕', 'label' => 'Pizzeria'],
+                        'PME'              => ['icon' => '🏢', 'label' => 'PME'],
+                        'PORTAIL'          => ['icon' => '🚪', 'label' => 'Portail'],
+                        'PRESSING'         => ['icon' => '👔', 'label' => 'Pressing'],
+                        'REPORT'           => ['icon' => '📄', 'label' => 'Report'],
+                        'RESTAU'           => ['icon' => '🍽️', 'label' => 'Restaurant'],
+                        'SCOOTER'          => ['icon' => '🛵', 'label' => 'Scooter'],
                     ];
                     $selected_cat = $_POST['categorie'] ?? '';
                     foreach ($cats as $val => $info):
@@ -440,10 +487,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </button>
             </div>
 
-        </div><!-- /card -->
+        </div>
     </form>
 
-</div><!-- /page-wrapper -->
+</div>
 
 </body>
 </html>
+
+
