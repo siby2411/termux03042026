@@ -34,27 +34,26 @@ for DB in "${DB_LIST[@]}"; do
     fi
 done
 
-# ================= CODE BACKUP (LOCAL ONLY) =================
-echo "📦 Backup code (LOCAL ONLY - NOT GITHUB)..."
+# ================= CODE BACKUP LOCAL ONLY =================
+echo "📦 Backup local (NON GitHub)..."
 
 tar -czf "$BACKUP_DIR/code_${DATE}.tar.gz" \
 --exclude="backups" \
 --exclude="uploads" \
 --exclude=".git" \
---exclude="vendor" \
 .
 
-echo "⚠️ Backup code NON envoyé sur GitHub (trop lourd)"
+echo "⚠️ Archive stockée localement uniquement"
 
-# ================= GIT SAFE SYNC =================
+# ================= GIT SAFE =================
 git add .
 
-# uniquement SQL compressés légers
+# NE PAS ajouter backups lourds
 git add $BACKUP_DIR/*.gz 2>/dev/null
 
 git commit -m "🚀 OMEGA SYNC $DATE" || echo "Rien à commit"
 git push origin main
 
 echo "=================================="
-echo "✅ SYNC TERMINÉ PROPREMENT"
+echo "✅ SYNC PROPRE TERMINÉ"
 echo "=================================="
